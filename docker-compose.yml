@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: erp_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: erp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: America/La_Paz
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_erp_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d erp_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - erp_network
+
+volumes:
+  pg_erp_data:
+    name: erp_postgres_data
+
+networks:
+  erp_network:
+    name: erp_network
+    driver: bridge
