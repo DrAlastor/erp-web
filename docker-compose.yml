@@ -20,6 +20,20 @@ services:
     networks:
       - erp_network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: erp-frontend:latest
+    container_name: erp_frontend
+    restart: unless-stopped
+    ports:
+      - "80:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+    networks:
+      - erp_network
 volumes:
   pg_erp_data:
     name: erp_postgres_data

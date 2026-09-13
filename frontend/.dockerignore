@@ -1,0 +1,10 @@
+node_modules
+.angular
+dist
+.git
+.vscode
+.editorconfig
+.prettierrc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
