@@ -1,0 +1,49 @@
+name: Despliegue Automático Frontend (S3 + CloudFront)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: 1. Descargar Código Fuente
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: 3. Instalar Dependencias
+        run: npm ci
+
+      - name: 4. Compilar Frontend en Producción
+        run: npm run build
+
+      - name: 5. Autenticar con AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: 6. Sincronizar Archivos con Bucket S3
+        run: |
+          aws s3 sync dist/frontend/browser s3://erp-contable-comercial --delete
+
+      - name: 7. Invalidar Caché de CloudFront para Refresco Inmediato
+        run: |
+          aws cloudfront create-invalidation --distribution-id E391I4EET1AU1X --paths "/*"
