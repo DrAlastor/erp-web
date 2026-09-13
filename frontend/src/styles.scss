@@ -1,35 +1,68 @@
 /* ==========================================================================
    NexoERP - Design System Global SCSS
-   Ámbito Comercial & Contable
+   Ámbito Comercial & Contable (Inspirado en Estilo Light Tech Premium)
    ========================================================================== */
 
 :root {
-  /* Color Palette: Dark Navy & Deep Slate */
-  --bg-dark: #070a13;
-  --bg-surface: #0e1424;
-  --bg-card: #0d1424;
-  --bg-card-hover: #131c31;
-  --bg-card-border: rgba(255, 255, 255, 0.08);
-  --bg-card-border-glow: rgba(99, 102, 241, 0.35);
+  /* Color Palette: Clean Light Tech with Electric Violet & Deep Navy */
+  --bg-main: #f8faff;            /* Fondo general sutilmente liláceo/blanco */
+  --bg-surface: #ffffff;         /* Superficies y tarjetas en blanco puro */
+  --bg-subtle: #f1f5f9;          /* Fondos secundarios suaves */
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-card-border: rgba(226, 232, 240, 0.9);
+  --bg-card-border-glow: rgba(91, 75, 246, 0.3);
 
-  /* Primary Brand - Commercial Indigo & Violet */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-light: rgba(99, 102, 241, 0.15);
-  --primary-glow: 0 0 25px rgba(99, 102, 241, 0.4);
+  /* Primary Brand - Electric Royal Violet / Indigo */
+  --primary: #5b4bf6;
+  --primary-hover: #4838e5;
+  --primary-light: rgba(91, 75, 246, 0.1);
+  --primary-glow: 0 8px 24px rgba(91, 75, 246, 0.25);
 
-  /* Accounting & Financial Accents - Emerald & Cyan */
+  /* High Contrast Deep Navy (Obsidiana) */
+  --dark-navy: #0b0f19;
+  --dark-navy-hover: #1e293b;
+  --dark-navy-surface: #0f172a;
+
+  /* Pastel Card Colors (Inspirados en la sección "What We Do") */
+  --card-blue-bg: #eff6ff;
+  --card-blue-border: #dbeafe;
+  --card-blue-text: #1d4ed8;
+  --card-blue-btn: #2563eb;
+
+  --card-purple-bg: #f5f3ff;
+  --card-purple-border: #ede9fe;
+  --card-purple-text: #6d28d9;
+  --card-purple-btn: #7c3aed;
+
+  --card-cyan-bg: #ecfeff;
+  --card-cyan-border: #cffafe;
+  --card-cyan-text: #0e7490;
+  --card-cyan-btn: #0891b2;
+
+  --card-peach-bg: #fff7ed;
+  --card-peach-border: #ffedd5;
+  --card-peach-text: #c2410c;
+  --card-peach-btn: #ea580c;
+
+  /* Accounting & Financial Accents */
   --accounting-green: #10b981;
   --accounting-green-light: rgba(16, 185, 129, 0.12);
-  --accounting-glow: 0 0 25px rgba(16, 185, 129, 0.35);
   --accent-cyan: #06b6d4;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
 
   /* Text colors */
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-main: #0b1329;          /* Títulos en azul noche profundo */
+  --text-secondary: #475569;     /* Párrafos legibles y nítidos */
+  --text-muted: #64748b;         /* Metadatos */
+  --text-dim: #94a3b8;          /* Desactivados o secundarios */
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 20px 35px -10px rgba(91, 75, 246, 0.1);
+  --shadow-floating: 0 25px 50px -12px rgba(15, 23, 42, 0.12);
 
   /* Typography */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -50,22 +83,23 @@
 
 html {
   scroll-behavior: smooth;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-dark);
+  background-color: var(--bg-main);
   background-image:
-    radial-gradient(circle at 50% -100px, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.05) 40%, transparent 65%),
-    radial-gradient(circle at 90% 100%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
-  background-attachment: fixed;
+    radial-gradient(circle at 15% 10%, rgba(91, 75, 246, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(124, 58, 237, 0.03) 0%, transparent 50%);
   color: var(--text-main);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Scrollbar styling */
@@ -74,16 +108,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94a3b8;
 }
 
 /* Container */
@@ -94,6 +128,11 @@ body {
   margin-right: auto;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+
+  @media (max-width: 640px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 /* Typography Helpers */
@@ -110,7 +149,7 @@ body {
   font-weight: 600;
   font-size: 0.925rem;
   padding: 0.75rem 1.4rem;
-  border-radius: 10px;
+  border-radius: 9999px; /* Pill shape como en la referencia */
   border: 1px solid transparent;
   cursor: pointer;
   text-decoration: none;
@@ -119,50 +158,66 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: var(--primary);
   color: #ffffff;
-  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35);
+  box-shadow: var(--primary-glow);
+
+  &:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(91, 75, 246, 0.35);
+  }
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.5);
-  background: linear-gradient(135deg, #6e72f7 0%, #5850ec 100%);
+.btn-dark {
+  background: var(--dark-navy);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(11, 15, 25, 0.2);
+
+  &:hover {
+    background: var(--dark-navy-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(11, 15, 25, 0.3);
+  }
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
+  background: #ffffff;
+  color: var(--text-main);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: var(--shadow-sm);
 
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  &:hover {
+    background: #f8fafc;
+    border-color: rgba(91, 75, 246, 0.4);
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
 }
 
 .btn-accounting {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.4);
+  }
 }
 
-.btn-accounting:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
-}
-
-/* Glass Card */
+/* Glass & Surface Card */
 .glass-card {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--bg-card-border);
-  border-radius: 16px;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 
-.glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  &:hover {
+    border-color: rgba(91, 75, 246, 0.3);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 /* Badges */
@@ -173,24 +228,24 @@ body {
   padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .badge-commercial {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(91, 75, 246, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(91, 75, 246, 0.2);
 }
 
 .badge-accounting {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .badge-cyan {
-  background: rgba(6, 182, 212, 0.15);
-  color: #67e8f9;
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.1);
+  color: #0891b2;
+  border: 1px solid rgba(6, 182, 212, 0.25);
 }

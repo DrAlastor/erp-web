@@ -11,14 +11,14 @@
   </div>
 }
 
-<!-- Top Navigation Bar -->
+<!-- Top Navigation Bar (Clean Light Floating Header) -->
 <header class="navbar-wrapper">
   <div class="container navbar-content">
     
     <!-- Brand Logo -->
     <a href="/" class="brand-logo">
       <div class="brand-symbol">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 3v18h18"/>
           <path d="m19 9-5 5-4-4-3 3"/>
         </svg>
@@ -31,11 +31,11 @@
 
     <!-- Nav Links -->
     <nav class="nav-links">
-      <button type="button" class="nav-link" (click)="scrollToSection('comercial')">Ámbito Comercial</button>
-      <button type="button" class="nav-link" (click)="scrollToSection('contable')">Ámbito Contable</button>
-      <button type="button" class="nav-link" (click)="scrollToSection('empresas')">Empresas</button>
+      <button type="button" class="nav-link" (click)="scrollToSection('pilares')">Ámbitos</button>
       <button type="button" class="nav-link" (click)="scrollToSection('modulos')">Módulos</button>
+      <button type="button" class="nav-link" (click)="scrollToSection('empresas')">Empresas (SaaS)</button>
       <button type="button" class="nav-link" (click)="scrollToSection('movil')">App Móvil</button>
+      <button type="button" class="nav-link" (click)="scrollToSection('equipo')">Equipo</button>
     </nav>
 
     <!-- Nav Actions -->
@@ -48,18 +48,13 @@
         </div>
       }
 
-      <button type="button" class="btn btn-secondary btn-sm" (click)="openCreateModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span>Nueva Empresa</span>
-      </button>
-
-      <button type="button" class="btn btn-primary btn-sm" (click)="scrollToSection('empresas')">
-        <span>Ingresar al ERP</span>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+      <button type="button" class="btn btn-primary btn-pill-action" (click)="openCreateModal()">
+        <span>Registrar Empresa</span>
+        <div class="btn-arrow-circle">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
       </button>
     </div>
 
@@ -70,64 +65,60 @@
 <main class="main-landing">
 
   <!-- ========================================================================= -->
-  <!-- 1. HERO SECTION -->
+  <!-- 1. HERO SECTION (Transforming Ideas Into Digital Excellence style) -->
   <!-- ========================================================================= -->
   <section class="hero-section">
     <div class="container hero-container">
       
       <!-- Left Content -->
       <div class="hero-text-col">
-        <div class="hero-badge">
-          <span class="badge-ping"></span>
-          <span class="badge-text">SISTEMA ERP EMPRESARIAL • SI2 UAGRM</span>
+        <div class="hero-kicker font-mono">
+          <span>GESTIÓN COMERCIAL</span>
+          <span class="kicker-dot">•</span>
+          <span>CONTABILIDAD AUTOMÁTICA</span>
+          <span class="kicker-dot">•</span>
+          <span>SAAS MULTI-EMPRESA</span>
         </div>
 
         <h1 class="hero-title">
-          Gestión <span class="gradient-text-commercial">Comercial</span> y 
-          <span class="gradient-text-accounting">Contabilidad</span> en Perfecta Sincronía
+          Potenciando Empresas Con Un ERP <span class="gradient-text-purple">Comercial y Contable</span> Inteligente
         </h1>
 
-        <p class="hero-description">
-          Plataforma centralizada diseñada para controlar el ciclo de ventas, catálogos de productos y facturación, con <strong>contabilización automática e inmediata</strong> en el Libro Diario y estados financieros.
-        </p>
-
-        <!-- CTA Buttons -->
-        <div class="hero-cta-group">
-          <button type="button" class="btn btn-primary hero-btn" (click)="openCreateModal()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-            <span>Crear Empresa para Productos</span>
-          </button>
-
-          <button type="button" class="btn btn-secondary hero-btn" (click)="scrollToSection('empresas')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
-              <path d="M9 22v-4h6v4"/>
-            </svg>
-            <span>Elegir Empresa Existente</span>
-          </button>
+        <!-- Decorative squiggly SVG -->
+        <div class="hero-squiggle">
+          <svg width="90" height="14" viewBox="0 0 90 14" fill="none">
+            <path d="M2 7C9.33333 2 16.6667 2 24 7C31.3333 12 38.6667 12 46 7C53.3333 2 60.6667 2 68 7C75.3333 12 82.6667 12 90 7" stroke="#5b4bf6" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
         </div>
 
-        <!-- Quick highlights ticker -->
-        <div class="hero-highlights">
-          <div class="highlight-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Asientos Contables Automáticos</span>
-          </div>
-          <div class="highlight-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Catálogo y Multialmacén</span>
-          </div>
-          <div class="highlight-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Preventa Móvil Android</span>
-          </div>
+        <p class="hero-description">
+          Plataforma en la nube multi-inquilino diseñada para adaptarse a <strong>cualquier tipo de empresa</strong>. Registra y administra tus <strong>productos, empleados, clientes, inventario y facturación</strong> con contabilización automática inmediata y <strong>aislamiento estricto de datos</strong>: ninguna empresa puede ver la información de otra.
+        </p>
+
+        <!-- CTA Buttons (Dark Navy Pill + White Pill Demo) -->
+        <div class="hero-cta-group">
+          <button type="button" class="btn btn-dark hero-btn-dark" (click)="openCreateModal()">
+            <span>Registrar mi Empresa</span>
+            <div class="btn-arrow-circle-white">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </button>
+
+          <button type="button" class="btn btn-secondary hero-btn-light" (click)="scrollToSection('empresas')">
+            <div class="btn-play-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <span>Ver Empresas Demo</span>
+          </button>
         </div>
 
       </div>
 
-      <!-- Right Column: Interactive ERP Showcase Dashboard -->
+      <!-- Right Column: Interactive ERP Simulation Card -->
       <div class="hero-dashboard-col">
         <div class="dashboard-preview-card glass-card">
           
@@ -163,28 +154,27 @@
 
           <!-- Active Simulation Body -->
           @if (activeSimulationTab() === 'comercial') {
-            <!-- Tab Comercial Content -->
             <div class="dashboard-body">
               
               <!-- KPI Row -->
               <div class="kpi-grid">
-                <div class="kpi-box">
-                  <div class="kpi-label">Ventas del Día (Facturación)</div>
-                  <div class="kpi-value font-mono">BOB 24,850.00</div>
+                <div class="kpi-box box-blue">
+                  <div class="kpi-label">Ventas del Día</div>
+                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.currency }} 24,850.00</div>
                   <div class="kpi-sub positive">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
                     +14.2% vs ayer
                   </div>
                 </div>
 
-                <div class="kpi-box">
+                <div class="kpi-box box-purple">
                   <div class="kpi-label">Catálogo Activo</div>
-                  <div class="kpi-value font-mono">420 Items</div>
-                  <div class="kpi-sub neutral">3 Almacenes centrales</div>
+                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.productCatalogCount }} Items</div>
+                  <div class="kpi-sub neutral">Almacén Central</div>
                 </div>
 
-                <div class="kpi-box">
-                  <div class="kpi-label">Pedidos Preventa Móvil</div>
+                <div class="kpi-box box-cyan">
+                  <div class="kpi-label">Preventa Móvil</div>
                   <div class="kpi-value font-mono">28 Pedidos</div>
                   <div class="kpi-sub accent-cyan-text">Sincronizados en ruta</div>
                 </div>
@@ -192,46 +182,36 @@
 
               <!-- Stream List -->
               <div class="stream-panel">
-                <div class="stream-panel-title">Últimas Transacciones Comerciales</div>
+                <div class="stream-panel-title">Operaciones de: {{ companyService.activeCompany()?.name }}</div>
                 
                 <div class="stream-item">
                   <div class="item-icon commercial-icon">🛒</div>
                   <div class="item-details">
                     <div class="item-main">Nota de Venta #1094 - Supermercados Fidalga</div>
-                    <div class="item-meta">15x Cajas Producto Lote A2 • Almacén Central</div>
+                    <div class="item-meta">15x Unidades • Stock reservado en Almacén Central</div>
                   </div>
-                  <div class="item-amount font-mono positive">+ BOB 4,350.00</div>
+                  <div class="item-amount font-mono positive">+ {{ companyService.activeCompany()?.currency }} 4,350.00</div>
                 </div>
 
                 <div class="stream-item">
                   <div class="item-icon commercial-icon">📱</div>
                   <div class="item-details">
                     <div class="item-main">Preventa Móvil Android (Ruta 4 - Vendedor 02)</div>
-                    <div class="item-meta">Confirmado y descontado de stock disponible</div>
+                    <div class="item-meta">Confirmado y descontado en tiempo real</div>
                   </div>
-                  <div class="item-amount font-mono positive">+ BOB 1,890.00</div>
-                </div>
-
-                <div class="stream-item">
-                  <div class="item-icon notice-icon">📦</div>
-                  <div class="item-details">
-                    <div class="item-main">Ingreso de Mercadería - Proveedor Importadora</div>
-                    <div class="item-meta">Orden de Compra #551 recepcionada</div>
-                  </div>
-                  <div class="item-amount font-mono text-muted">120 unidades</div>
+                  <div class="item-amount font-mono positive">+ {{ companyService.activeCompany()?.currency }} 1,890.00</div>
                 </div>
 
               </div>
 
             </div>
           } @else {
-            <!-- Tab Contable Content -->
             <div class="dashboard-body">
               
               <!-- KPI Row Contable -->
               <div class="kpi-grid">
-                <div class="kpi-box">
-                  <div class="kpi-label">Asientos Generados Hoy</div>
+                <div class="kpi-box box-emerald">
+                  <div class="kpi-label">Asientos Generados</div>
                   <div class="kpi-value font-mono">54 Asientos</div>
                   <div class="kpi-sub positive">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -239,16 +219,16 @@
                   </div>
                 </div>
 
-                <div class="kpi-box">
-                  <div class="kpi-label">Débito Fiscal IVA Acumulado</div>
-                  <div class="kpi-value font-mono">BOB 3,230.50</div>
+                <div class="kpi-box box-peach">
+                  <div class="kpi-label">Débito Fiscal IVA</div>
+                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.currency }} 3,230.50</div>
                   <div class="kpi-sub neutral">Régimen General 13%</div>
                 </div>
 
-                <div class="kpi-box">
-                  <div class="kpi-label">Balance Activo / Pasivo</div>
-                  <div class="kpi-value font-mono">482K / 135K</div>
-                  <div class="kpi-sub positive">Solvencia 3.57</div>
+                <div class="kpi-box box-purple">
+                  <div class="kpi-label">Solvencia Contable</div>
+                  <div class="kpi-value font-mono">3.57</div>
+                  <div class="kpi-sub positive">Activo / Pasivo OK</div>
                 </div>
               </div>
 
@@ -262,25 +242,16 @@
                     <div class="item-main">Asiento #804 - Venta Contado Factura #1094</div>
                     <div class="item-meta font-mono">D: Caja Moneda Nacional | H: Ventas (87%) + Débito Fiscal (13%)</div>
                   </div>
-                  <div class="item-amount font-mono accounting-text">BOB 4,350.00</div>
+                  <div class="item-amount font-mono accounting-text">{{ companyService.activeCompany()?.currency }} 4,350.00</div>
                 </div>
 
                 <div class="stream-item accounting-border">
                   <div class="item-icon accounting-icon">📊</div>
                   <div class="item-details">
                     <div class="item-main">Asiento #805 - Costo de Ventas e Inventario</div>
-                    <div class="item-meta font-mono">D: Costo de Mercaderías Vendidas | H: Inventario de Productos</div>
+                    <div class="item-meta font-mono">D: Costo Mercaderías Vendidas | H: Inventario</div>
                   </div>
-                  <div class="item-amount font-mono text-muted">BOB 2,820.00</div>
-                </div>
-
-                <div class="stream-item accounting-border">
-                  <div class="item-icon accounting-icon">🏦</div>
-                  <div class="item-details">
-                    <div class="item-main">Asiento #806 - Pago a Proveedor por Transferencia</div>
-                    <div class="item-meta font-mono">D: Cuentas por Pagar Comerciales | H: Banco BNB M/N</div>
-                  </div>
-                  <div class="item-amount font-mono text-rose">- BOB 5,400.00</div>
+                  <div class="item-amount font-mono text-muted">{{ companyService.activeCompany()?.currency }} 2,820.00</div>
                 </div>
 
               </div>
@@ -291,10 +262,10 @@
           <!-- Dashboard Footer -->
           <div class="dashboard-footer">
             <span class="footer-info">
-              Sincronización bidireccional activa • Base de Datos PostgreSQL 16
+              Tenant Activo: <strong>{{ companyService.activeCompany()?.name }}</strong> (Aislamiento de Datos)
             </span>
             <span class="backend-status-badge">
-              <span class="status-dot"></span> Backend Spring Boot 8080 OK
+              <span class="status-dot"></span> PostgreSQL 16
             </span>
           </div>
 
@@ -305,16 +276,207 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 2. SECCIÓN: GESTIÓN MULTIEMPRESA (Elegir o Crear Empresa) -->
+  <!-- 2. FOUR VALUE PILLARS (Just like the 4 white cards with circular icons) -->
+  <!-- ========================================================================= -->
+  <section class="value-pillars-section">
+    <div class="container">
+      <div class="value-pillars-grid">
+        
+        <!-- Pillar 1: Scalable -->
+        <div class="pillar-mini-card">
+          <div class="mini-icon-circle circle-blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2">
+              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+              <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+            </svg>
+          </div>
+          <h4 class="pillar-mini-title">Solución Escalable</h4>
+          <p class="pillar-mini-desc">Diseñado para adaptarse a cualquier empresa (comercio, importación, alimentos o servicios).</p>
+        </div>
+
+        <!-- Pillar 2: High Performance / Security -->
+        <div class="pillar-mini-card">
+          <div class="mini-icon-circle circle-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <h4 class="pillar-mini-title">Aislamiento Total</h4>
+          <p class="pillar-mini-desc">Cada empresa tiene su base de datos hermética: ninguna empresa puede ver datos de otra.</p>
+        </div>
+
+        <!-- Pillar 3: Sinergia Contable -->
+        <div class="pillar-mini-card">
+          <div class="mini-icon-circle circle-peach">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
+              <path d="M12 18V6"/>
+            </svg>
+          </div>
+          <h4 class="pillar-mini-title">Sinergia Contable</h4>
+          <p class="pillar-mini-desc">Cada venta o compra genera de inmediato el asiento en el Libro Diario sin trabajo manual.</p>
+        </div>
+
+        <!-- Pillar 4: Mobile Support -->
+        <div class="pillar-mini-card">
+          <div class="mini-icon-circle circle-cyan">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.2">
+              <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+              <path d="M12 18h.01"/>
+            </svg>
+          </div>
+          <h4 class="pillar-mini-title">Preventa Móvil</h4>
+          <p class="pillar-mini-desc">Sincronización de pedidos y stock en tiempo real con la app móvil Flutter en ruta.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. "WHAT WE DO" - PASTEL MODULE CARDS (Exact match to reference image) -->
+  <!-- ========================================================================= -->
+  <section id="modulos" class="section-padding what-we-do-section">
+    <div class="container">
+      
+      <div class="section-header text-center">
+        <div class="header-divider-label">
+          <span class="divider-line"></span>
+          <span class="label-text">Lo Que Ofrece Nuestro ERP</span>
+          <span class="divider-line"></span>
+        </div>
+        <p class="section-subtitle">
+          Módulos potentes integrados para gestionar todo el ciclo comercial y contable de tu negocio.
+        </p>
+      </div>
+
+      <!-- 4 Pastel Cards Grid -->
+      <div class="pastel-cards-grid">
+        
+        <!-- Card 1: Facturación & Ventas (Soft Blue) -->
+        <div class="pastel-card card-blue">
+          <div class="card-device-mockup">
+            <div class="mini-screen screen-blue">
+              <div class="screen-header-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="screen-content-preview">
+                <div class="preview-bar w-80"></div>
+                <div class="preview-bar w-50"></div>
+                <div class="preview-metric">BOB 24,850</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="pastel-card-title">Gestión Comercial & Ventas</h3>
+          <p class="pastel-card-desc">
+            Facturación ágil, cotizaciones, pedidos de clientes, políticas de crédito y registro histórico de ventas.
+          </p>
+          <div class="card-footer-action">
+            <button class="circle-action-btn btn-blue" (click)="scrollToSection('empresas')" aria-label="Ir a ventas">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Preventa Móvil (Soft Purple) -->
+        <div class="pastel-card card-purple">
+          <div class="card-device-mockup">
+            <div class="mini-phone-screen">
+              <div class="phone-notch"></div>
+              <div class="phone-content-preview">
+                <div class="preview-pill"></div>
+                <div class="preview-bar w-60"></div>
+                <div class="preview-check">✓ Pedido Sincronizado</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="pastel-card-title">Preventa Móvil Android</h3>
+          <p class="pastel-card-desc">
+            Toma de pedidos en la calle con la app Flutter (en <code>erp-movil/</code>) con reserva y descuento de existencias al instante.
+          </p>
+          <div class="card-footer-action">
+            <button class="circle-action-btn btn-purple" (click)="scrollToSection('movil')" aria-label="Ir a móvil">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Inventarios & Almacenes (Soft Cyan) -->
+        <div class="pastel-card card-cyan">
+          <div class="card-device-mockup">
+            <div class="mini-screen screen-cyan">
+              <div class="screen-header-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="screen-content-preview">
+                <div class="preview-boxes-grid">
+                  <span>📦</span><span>📦</span><span>📦</span>
+                </div>
+                <div class="preview-metric">Kardex Físico</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="pastel-card-title">Inventarios & Multialmacén</h3>
+          <p class="pastel-card-desc">
+            Catálogo universal de artículos para cualquier rubro, unidades de medida, transferencias y alertas de stock mínimo.
+          </p>
+          <div class="card-footer-action">
+            <button class="circle-action-btn btn-cyan" (click)="scrollToSection('empresas')" aria-label="Ir a inventario">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 4: Contabilidad Automatizada (Soft Peach) -->
+        <div class="pastel-card card-peach">
+          <div class="card-device-mockup">
+            <div class="mini-screen screen-peach">
+              <div class="screen-header-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="screen-content-preview">
+                <div class="preview-balance-icon">⚖️</div>
+                <div class="preview-metric">Debe = Haber</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="pastel-card-title">Contabilidad & Finanzas</h3>
+          <p class="pastel-card-desc">
+            Libro Diario con asientos automáticos derivados de ventas y compras, Plan de Cuentas, Mayores y Balances.
+          </p>
+          <div class="card-footer-action">
+            <button class="circle-action-btn btn-peach" (click)="scrollToSection('empresas')" aria-label="Ir a contabilidad">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. SECCIÓN: GESTIÓN MULTIEMPRESA (Elegir o Crear Empresa) -->
   <!-- ========================================================================= -->
   <section id="empresas" class="section-padding section-companies">
     <div class="container">
       
       <div class="section-header text-center">
-        <div class="badge badge-commercial">MULTIEMPRESA & SUCURSALES</div>
-        <h2 class="section-title">Elige la Empresa para Administrar sus Productos</h2>
+        <div class="badge badge-commercial">ARQUITECTURA SAAS MULTI-INQUILINO</div>
+        <h2 class="section-title">Entorno Privado y Aislado Para Cada Empresa</h2>
         <p class="section-subtitle">
-          Cada empresa cuenta con su propio catálogo independiente de productos, inventario en almacenes, plan de cuentas y correlativo de facturación.
+          Cualquier empresa que contrate nuestro sistema se registra y dispone de su propio espacio exclusivo. Podrá gestionar sus productos, empleados, clientes, inventario y contabilidad con la garantía de que <strong>ninguna empresa puede ver los datos de otra</strong>.
         </p>
       </div>
 
@@ -328,7 +490,7 @@
           >
             <div class="company-card-header">
               <div class="company-icon-circle">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4bf6" stroke-width="2">
                   <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
                   <path d="M9 22v-4h6v4"/>
                   <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01"/>
@@ -358,7 +520,7 @@
               </div>
               <div class="spec-item">
                 <span class="spec-label">Catálogo:</span>
-                <span class="spec-value">{{ company.productCatalogCount }} Productos</span>
+                <span class="spec-value">{{ company.productCatalogCount }} Artículos</span>
               </div>
               <div class="spec-item">
                 <span class="spec-label">Sucursales:</span>
@@ -372,9 +534,9 @@
 
             <div class="company-card-actions">
               @if (company.id === companyService.activeCompany()?.id) {
-                <button type="button" class="btn btn-accounting w-100" (click)="showNotification('¡Empresa ' + company.name + ' lista! En el siguiente paso configuraremos su catálogo de productos.')">
+                <button type="button" class="btn btn-accounting w-100" (click)="showNotification('¡Empresa ' + company.name + ' seleccionada! Su espacio de trabajo está activo.')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Gestionar Productos</span>
+                  <span>Empresa en Uso</span>
                 </button>
               } @else {
                 <button type="button" class="btn btn-secondary w-100" (click)="selectCompany(company)">
@@ -390,17 +552,17 @@
         <div class="company-card create-card glass-card" (click)="openCreateModal()">
           <div class="create-card-inner">
             <div class="create-plus-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5b4bf6" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </div>
             <h3 class="create-card-title">Registrar Nueva Empresa</h3>
             <p class="create-card-desc">
-              Crea una nueva razón social con su respectivo NIT, moneda y plan de cuentas para gestionar sus productos.
+              Incorpora un nuevo negocio de cualquier rubro. Tendrá su propio catálogo, empleados y contabilidad con aislamiento estricto.
             </p>
             <button type="button" class="btn btn-primary btn-sm">
-              <span>Comenzar Registro</span>
+              <span>Registrar Empresa</span>
             </button>
           </div>
         </div>
@@ -411,16 +573,16 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. PILARES: ÁMBITO COMERCIAL VS ÁMBITO CONTABLE -->
+  <!-- 5. PILARES: ÁMBITO COMERCIAL VS ÁMBITO CONTABLE -->
   <!-- ========================================================================= -->
-  <section class="section-padding pillars-section">
+  <section id="pilares" class="section-padding pillars-section">
     <div class="container">
       
       <div class="section-header text-center">
-        <div class="badge badge-cyan">ARQUITECTURA DUAL INTEGRADA</div>
+        <div class="badge badge-commercial">INTEGRACIÓN TOTAL</div>
         <h2 class="section-title">Dos Ámbitos Esenciales, Una Sola Base de Datos</h2>
         <p class="section-subtitle">
-          El ERP elimina la separación manual entre el departamento comercial y el departamento de contabilidad. Cada venta se registra contablemente de forma inmediata.
+          El ERP elimina la separación manual entre el departamento comercial y el departamento contable: cada venta genera asientos en tiempo real.
         </p>
       </div>
 
@@ -441,7 +603,7 @@
               <div class="feature-icon">📦</div>
               <div>
                 <strong>Catálogo Maestro de Productos</strong>
-                <p>Clasificación por categorías, marcas, códigos de barra y unidades de medida (unidad, caja, paquete).</p>
+                <p>Clasificación por categorías, marcas, códigos de barra y unidades de medida (unidad, caja, pack).</p>
               </div>
             </li>
             <li class="feature-item">
@@ -462,7 +624,7 @@
               <div class="feature-icon">📱</div>
               <div>
                 <strong>Sincronización con App de Preventa</strong>
-                <p>Los vendedores toman pedidos desde la app móvil Flutter y se reservan en el inventario web al instante.</p>
+                <p>Los pedidos tomados en calle se reservan en el inventario web al instante.</p>
               </div>
             </li>
           </ul>
@@ -516,76 +678,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 4. MÓDULOS DEL SISTEMA -->
-  <!-- ========================================================================= -->
-  <section id="modulos" class="section-padding section-modules">
-    <div class="container">
-      
-      <div class="section-header text-center">
-        <div class="badge badge-commercial">ECOSISTEMA MODULAR</div>
-        <h2 class="section-title">Módulos Especializados del ERP</h2>
-        <p class="section-subtitle">
-          Una suite completa diseñada para responder a los requerimientos de la materia Sistemas de Información 2 (UAGRM).
-        </p>
-      </div>
-
-      <div class="modules-grid">
-        
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          </div>
-          <h4 class="module-title">Facturación & Ventas</h4>
-          <p class="module-desc">Registro de pedidos, descuentos comerciales, cálculo de impuestos e historial por cliente.</p>
-        </div>
-
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <h4 class="module-title">Contabilidad General</h4>
-          <p class="module-desc">Asientos automáticos y manuales, plan contable, mayores analíticos y balances periódicos.</p>
-        </div>
-
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-          </div>
-          <h4 class="module-title">Inventarios & Productos</h4>
-          <p class="module-desc">Catálogo de productos, lotes, existencias multialmacén y costeo de inventarios (PEPS/Promedio).</p>
-        </div>
-
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-          </div>
-          <h4 class="module-title">Cuentas por Cobrar y Pagar</h4>
-          <p class="module-desc">Gestión de créditos a clientes, calendario de vencimientos y liquidación de proveedores.</p>
-        </div>
-
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-          </div>
-          <h4 class="module-title">Preventa Móvil Android</h4>
-          <p class="module-desc">Toma de pedidos en la calle por geolocalización, sincronizada con el backend Spring Boot.</p>
-        </div>
-
-        <div class="module-card glass-card">
-          <div class="module-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-          </div>
-          <h4 class="module-title">Reportes & Analítica</h4>
-          <p class="module-desc">Indicadores clave de rendimiento (KPIs), márgenes por producto y estados contables auditables.</p>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ========================================================================= -->
-  <!-- 5. APP MÓVIL (FLUTTER INTEGRATION) -->
+  <!-- 6. APP MÓVIL (FLUTTER INTEGRATION) -->
   <!-- ========================================================================= -->
   <section id="movil" class="section-padding mobile-integration-section">
     <div class="container">
@@ -595,7 +688,7 @@
           <div class="badge badge-commercial">SINCRONIZACIÓN MÓVIL EN TIEMPO REAL</div>
           <h2 class="mobile-title">Conexión con la App de Preventa Flutter</h2>
           <p class="mobile-description">
-            El sistema web se comunica de forma directa con la aplicación móvil (ubicada en <code>erp-movil/</code>). Los agentes comerciales registran pedidos en la calle, y el sistema web descuenta automáticamente el stock y proyecta las cuentas por cobrar y asientos contables.
+            El sistema web se comunica con la aplicación móvil (en <code>erp-movil/</code>). Los agentes registran pedidos en calle y el sistema descuenta automáticamente el stock y proyecta las cuentas por cobrar y asientos contables.
           </p>
 
           <div class="mobile-features-list">
@@ -626,12 +719,12 @@
                 <span class="phone-app-status">En línea</span>
               </div>
               <div class="phone-order-card">
-                <div class="order-client">Cliente: Bodega El Triunfo</div>
+                <div class="order-client">Cliente: Supermercados Fidalga</div>
                 <div class="order-items">3 items • BOB 890.00</div>
                 <div class="order-tag">Sincronizado con NexoERP</div>
               </div>
               <div class="phone-order-card">
-                <div class="order-client">Cliente: Comercial Doña Rosa</div>
+                <div class="order-client">Cliente: Distribuidora Los Pozos</div>
                 <div class="order-items">5 items • BOB 1,450.00</div>
                 <div class="order-tag">Sincronizado con NexoERP</div>
               </div>
@@ -646,9 +739,142 @@
     </div>
   </section>
 
+  <!-- ========================================================================= -->
+  <!-- 7. EQUIPO DE DESARROLLO (SI2 - UAGRM) -->
+  <!-- ========================================================================= -->
+  <section id="equipo" class="section-padding team-section">
+    <div class="container">
+      
+      <div class="section-header text-center">
+        <div class="badge badge-commercial">FACULTAD DE CIENCIAS DE LA COMPUTACIÓN Y TELECOMUNICACIONES</div>
+        <h2 class="section-title">Equipo de Ingeniería y Desarrollo</h2>
+        <p class="section-subtitle">
+          Estudiantes a cargo de la arquitectura, diseño y desarrollo del sistema ERP Comercial y Contable (Sistemas de Información 2 - UAGRM).
+        </p>
+      </div>
+
+      <!-- Team Members Grid (6 Integrantes) -->
+      <div class="team-grid">
+        @for (member of teamMembers(); track member.id) {
+          <div class="team-card glass-card">
+            
+            <div class="team-card-top">
+              <div class="member-avatar" [style.background]="member.avatarGradient">
+                <span>{{ member.initials }}</span>
+              </div>
+              <div class="member-header-info">
+                <h4 class="member-name">{{ member.name }}</h4>
+                <span class="member-role-badge">{{ member.role }}</span>
+              </div>
+            </div>
+
+            <p class="member-desc">{{ member.description }}</p>
+
+            <div class="member-tags">
+              @for (tag of member.tags; track tag) {
+                <span class="tag-pill">{{ tag }}</span>
+              }
+            </div>
+
+            <!-- Social Links Bar (GitHub, LinkedIn, Portafolio, Instagram, WhatsApp) -->
+            <div class="member-social-bar">
+              <!-- GitHub -->
+              <a [href]="member.githubUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-github" title="GitHub">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </a>
+
+              <!-- LinkedIn -->
+              <a [href]="member.linkedinUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-linkedin" title="LinkedIn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </a>
+
+              <!-- Portafolio / Web -->
+              <a [href]="member.portfolioUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-portfolio" title="Portafolio Web">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </a>
+
+              <!-- Instagram -->
+              <a [href]="member.instagramUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-instagram" title="Instagram">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+              </a>
+
+              <!-- WhatsApp -->
+              <a [href]="member.whatsappUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-whatsapp" title="WhatsApp">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                </svg>
+              </a>
+            </div>
+
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 8. HIGH-IMPACT DARK CALLOUT BANNER (Exact match to reference bottom banner) -->
+  <!-- ========================================================================= -->
+  <section class="callout-banner-section">
+    <div class="container">
+      <div class="dark-callout-card">
+        
+        <!-- Left Target / Bullseye graphic -->
+        <div class="callout-graphic-col">
+          <div class="target-graphic">
+            <div class="target-outer">
+              <div class="target-middle">
+                <div class="target-inner">
+                  <div class="target-bullseye"></div>
+                </div>
+              </div>
+            </div>
+            <div class="target-arrow">🎯</div>
+          </div>
+        </div>
+
+        <!-- Center Text -->
+        <div class="callout-text-col">
+          <h2 class="callout-title">
+            Tu Empresa. Nuestra Plataforma. <br/>
+            <span class="gradient-text-callout">Posibilidades Infinitas.</span>
+          </h2>
+          <p class="callout-desc">
+            Comienza a gestionar tus operaciones comerciales y contables con total aislamiento y seguridad.
+          </p>
+        </div>
+
+        <!-- Right Action Button -->
+        <div class="callout-action-col">
+          <button type="button" class="btn btn-callout" (click)="openCreateModal()">
+            <span>Registrar Empresa</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
 </main>
 
-<!-- Footer -->
+<!-- Footer (Matching bottom contact bar in reference) -->
 <footer class="main-footer">
   <div class="container footer-content">
     
@@ -666,16 +892,16 @@
         </div>
       </div>
       <p class="footer-bio">
-        Sistema Integral de Información Empresarial desarrollado para la materia Sistemas de Información 2 (Facultad de Ciencias de la Computación y Telecomunicaciones - UAGRM).
+        Sistema Integral de Información Empresarial SaaS desarrollado para la materia Sistemas de Información 2 (Facultad de Ciencias de la Computación y Telecomunicaciones - UAGRM).
       </p>
     </div>
 
     <div class="footer-col-links">
-      <h5 class="footer-col-title">Ámbitos</h5>
+      <h5 class="footer-col-title">Navegación</h5>
       <ul>
-        <li><a (click)="scrollToSection('comercial')">Ventas y Facturación</a></li>
-        <li><a (click)="scrollToSection('contable')">Contabilidad y Asientos</a></li>
-        <li><a (click)="scrollToSection('empresas')">Multiempresa</a></li>
+        <li><a (click)="scrollToSection('pilares')">Ámbito Comercial</a></li>
+        <li><a (click)="scrollToSection('pilares')">Ámbito Contable</a></li>
+        <li><a (click)="scrollToSection('empresas')">Empresas SaaS</a></li>
         <li><a (click)="scrollToSection('movil')">Preventa Móvil</a></li>
       </ul>
     </div>
@@ -692,13 +918,19 @@
 
   </div>
 
-  <div class="container footer-bottom">
-    <div class="copy-text">
-      © 2026 NexoERP - Proyecto Oficial Sistemas de Información 2 (UAGRM). Todos los derechos reservados.
+  <!-- Bottom Strip matching reference footer -->
+  <div class="container footer-contact-strip">
+    <div class="contact-item">
+      <span class="contact-icon">✉️</span>
+      <span class="contact-text">contacto&#64;erp-contable-comercial.online</span>
     </div>
-    <div class="footer-status">
-      <span class="status-dot"></span>
-      <span>Empresa Activa: <strong>{{ companyService.activeCompany()?.name }}</strong></span>
+    <div class="contact-item">
+      <span class="contact-icon">🏢</span>
+      <span class="contact-text">Empresa Activa: <strong>{{ companyService.activeCompany()?.name }}</strong></span>
+    </div>
+    <div class="contact-item">
+      <span class="contact-icon">🎓</span>
+      <span class="contact-text">SI2 - UAGRM © 2026</span>
     </div>
   </div>
 </footer>

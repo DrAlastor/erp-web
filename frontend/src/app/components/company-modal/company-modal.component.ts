@@ -197,13 +197,14 @@ import { CreateCompanyDto } from '../../core/models/company.model';
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(4, 7, 15, 0.85);
+      background: rgba(15, 23, 42, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
       padding: 1rem;
-      animation: fadeIn 0.2s ease-out;
+      animation: fadeIn 0.15s ease-out;
+      will-change: opacity;
     }
 
     .modal-card {
@@ -211,11 +212,14 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       max-width: 640px;
       max-height: 90vh;
       overflow-y: auto;
-      background: #0d1322;
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.18);
-      padding: 1.75rem;
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 24px;
+      box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.3);
+      padding: 2rem;
+      transform: translateZ(0);
+      will-change: transform, opacity;
+      animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .modal-header {
@@ -230,9 +234,9 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: #f5f3ff;
+      color: #5b4bf6;
+      border: 1px solid #ede9fe;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -241,22 +245,22 @@ import { CreateCompanyDto } from '../../core/models/company.model';
 
     .modal-title {
       font-size: 1.25rem;
-      font-weight: 700;
-      color: #f8fafc;
+      font-weight: 800;
+      color: #0b1329;
       line-height: 1.2;
     }
 
     .modal-subtitle {
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #64748b;
       margin-top: 0.25rem;
     }
 
     .close-btn {
       margin-left: auto;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      background: #f1f5f9;
+      border: none;
+      color: #64748b;
       width: 34px;
       height: 34px;
       border-radius: 8px;
@@ -267,8 +271,8 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       transition: all 0.2s;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
+        background: #e2e8f0;
+        color: #0b1329;
       }
     }
 
@@ -293,36 +297,36 @@ import { CreateCompanyDto } from '../../core/models/company.model';
 
       label {
         font-size: 0.82rem;
-        font-weight: 600;
-        color: #cbd5e1;
+        font-weight: 700;
+        color: #334155;
       }
     }
 
     .form-input {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius: 10px;
       padding: 0.7rem 0.9rem;
-      color: #f8fafc;
+      color: #0b1329;
       font-size: 0.9rem;
       font-family: inherit;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
 
       &:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        border-color: #5b4bf6;
+        box-shadow: 0 0 0 3px rgba(91, 75, 246, 0.15);
       }
 
       &::placeholder {
-        color: #64748b;
+        color: #94a3b8;
       }
     }
 
     .form-select {
       cursor: pointer;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 0.75rem center;
       padding-right: 2.2rem;
@@ -335,12 +339,12 @@ import { CreateCompanyDto } from '../../core/models/company.model';
     }
 
     .curr-btn {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #f8faff;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
       padding: 0.6rem;
       font-size: 0.82rem;
-      color: #94a3b8;
+      color: #64748b;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -348,17 +352,17 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       transition: all 0.2s;
 
       &.active {
-        background: rgba(99, 102, 241, 0.2);
-        border-color: #6366f1;
-        color: #c7d2fe;
-        font-weight: 600;
+        background: #f5f3ff;
+        border-color: #5b4bf6;
+        color: #5b4bf6;
+        font-weight: 700;
       }
     }
 
     .accounting-notice {
       margin-top: 1.25rem;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
       border-radius: 12px;
       padding: 0.85rem 1rem;
       display: flex;
@@ -366,28 +370,28 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       gap: 0.75rem;
 
       .notice-icon {
-        color: #10b981;
+        color: #059669;
         margin-top: 2px;
       }
 
       .notice-text {
         font-size: 0.8rem;
-        color: #a7f3d0;
+        color: #065f46;
         line-height: 1.4;
 
         strong {
-          color: #34d399;
+          color: #047857;
         }
       }
     }
 
     .error-banner {
       margin-top: 1rem;
-      background: rgba(244, 63, 94, 0.12);
-      border: 1px solid rgba(244, 63, 94, 0.3);
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
       border-radius: 8px;
       padding: 0.6rem 0.9rem;
-      color: #fca5a5;
+      color: #be123c;
       font-size: 0.85rem;
     }
 
@@ -399,8 +403,13 @@ import { CreateCompanyDto } from '../../core/models/company.model';
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.98); }
-      to { opacity: 1; transform: scale(1); }
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.96) translateZ(0); }
+      to { opacity: 1; transform: scale(1) translateZ(0); }
     }
   `]
 })
