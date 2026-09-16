@@ -2,7 +2,8 @@
 
 [![CI/CD Despliegue Frontend](https://github.com/DrAlastor/erp-web/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/DrAlastor/erp-web/actions/workflows/deploy-frontend.yml)
 [![Producción](https://img.shields.io/badge/Producci%C3%B3n-erp--contable--comercial.online-5b4bf6?style=flat&logo=amazon-aws)](https://erp-contable-comercial.online)
-[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.3.5-6db33f?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.3.5%20(Java%2021)-6db33f?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Gradle](https://img.shields.io/badge/Build-Gradle%208.11-02303a?logo=gradle)](https://gradle.org)
 [![Angular](https://img.shields.io/badge/Frontend-Angular%2022%20SSR-dd0031?logo=angular)](https://angular.dev)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-336791?logo=postgresql)](https://www.postgresql.org)
 
@@ -89,7 +90,8 @@ graph LR
 * **Tipografía:** Plus Jakarta Sans & JetBrains Mono.
 
 ### Backend
-* **Lenguaje & Framework:** Java 17 / Spring Boot 3.3.5.
+* **Lenguaje & Framework:** Java 21 LTS / Spring Boot 3.3.5.
+* **Build Tool:** Gradle 8.11 (con Gradle Wrapper).
 * **Seguridad:** Spring Security con Tokens JWT criptográficos e inyección de `empresa_id` (Tenant Context).
 * **Persistencia:** Spring Data JPA / Hibernate con filtros multi-tenant.
 
@@ -108,7 +110,7 @@ graph LR
 
 ### Prerrequisitos
 * Node.js >= 22 (Recomendado 24 LTS)
-* Java JDK 17
+* Java JDK 21 LTS
 * Docker y Docker Compose
 
 ### 1. Clonar el repositorio
@@ -125,7 +127,7 @@ docker-compose up -d postgres
 ### 3. Ejecutar el Backend (Spring Boot)
 ```bash
 cd backend
-./mvnw spring-boot:run
+./gradlew bootRun
 ```
 El servidor backend responderá en: `http://localhost:8080`
 

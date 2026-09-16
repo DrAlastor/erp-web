@@ -33,23 +33,14 @@
     <nav class="nav-links">
       <button type="button" class="nav-link" (click)="scrollToSection('pilares')">Ámbitos</button>
       <button type="button" class="nav-link" (click)="scrollToSection('modulos')">Módulos</button>
-      <button type="button" class="nav-link" (click)="scrollToSection('empresas')">Empresas (SaaS)</button>
+      <button type="button" class="nav-link" (click)="scrollToSection('empresas')">Empresas Registradas</button>
       <button type="button" class="nav-link" (click)="scrollToSection('movil')">App Móvil</button>
-      <button type="button" class="nav-link" (click)="scrollToSection('equipo')">Equipo</button>
     </nav>
 
     <!-- Nav Actions -->
     <div class="nav-actions">
-      @if (companyService.activeCompany(); as active) {
-        <div class="active-company-pill" (click)="scrollToSection('empresas')" title="Empresa actual activa en el sistema">
-          <span class="status-dot"></span>
-          <span class="company-badge-name">{{ active.name }}</span>
-          <span class="currency-tag">{{ active.currency }}</span>
-        </div>
-      }
-
-      <button type="button" class="btn btn-primary btn-pill-action" (click)="openCreateModal()">
-        <span>Registrar Empresa</span>
+      <button type="button" class="btn btn-primary btn-pill-action" (click)="onLoginClick()">
+        <span>Iniciar Sesión</span>
         <div class="btn-arrow-circle">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -65,13 +56,14 @@
 <main class="main-landing">
 
   <!-- ========================================================================= -->
-  <!-- 1. HERO SECTION (Transforming Ideas Into Digital Excellence style) -->
+  <!-- 1. HERO SECTION -->
   <!-- ========================================================================= -->
   <section class="hero-section">
     <div class="container hero-container">
       
-      <!-- Left Content -->
-      <div class="hero-text-col">
+      <!-- Left Column: Copy & Actions -->
+      <div class="hero-content-col">
+        
         <div class="hero-kicker font-mono">
           <span>GESTIÓN COMERCIAL</span>
           <span class="kicker-dot">•</span>
@@ -84,21 +76,21 @@
           Potenciando Empresas Con Un ERP <span class="gradient-text-purple">Comercial y Contable</span> Inteligente
         </h1>
 
-        <!-- Decorative squiggly SVG -->
+        <!-- Signature squiggle accent -->
         <div class="hero-squiggle">
-          <svg width="90" height="14" viewBox="0 0 90 14" fill="none">
-            <path d="M2 7C9.33333 2 16.6667 2 24 7C31.3333 12 38.6667 12 46 7C53.3333 2 60.6667 2 68 7C75.3333 12 82.6667 12 90 7" stroke="#5b4bf6" stroke-width="3.5" stroke-linecap="round"/>
+          <svg width="180" height="12" viewBox="0 0 180 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 10C35 2 75 12 110 4C145 -4 165 10 178 5" stroke="#5b4bf6" stroke-width="3.5" stroke-linecap="round"/>
           </svg>
         </div>
 
         <p class="hero-description">
-          Plataforma en la nube multi-inquilino diseñada para adaptarse a <strong>cualquier tipo de empresa</strong>. Registra y administra tus <strong>productos, empleados, clientes, inventario y facturación</strong> con contabilización automática inmediata y <strong>aislamiento estricto de datos</strong>: ninguna empresa puede ver la información de otra.
+          Plataforma en la nube multi-inquilino diseñada para adaptarse a cualquier tipo de empresa. Registra y administra tus productos, empleados, clientes, inventario y facturación con contabilización automática inmediata y aislamiento estricto de datos: ninguna empresa puede ver la información de otra.
         </p>
 
-        <!-- CTA Buttons (Dark Navy Pill + White Pill Demo) -->
+        <!-- CTA Action Buttons -->
         <div class="hero-cta-group">
-          <button type="button" class="btn btn-dark hero-btn-dark" (click)="openCreateModal()">
-            <span>Registrar mi Empresa</span>
+          <button type="button" class="btn btn-primary hero-btn-dark" (click)="onLoginClick()">
+            <span>Iniciar Sesión</span>
             <div class="btn-arrow-circle-white">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -112,163 +104,36 @@
                 <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
             </div>
-            <span>Ver Empresas Demo</span>
+            <span>Ver Empresas Registradas</span>
           </button>
         </div>
 
       </div>
 
-      <!-- Right Column: Interactive ERP Simulation Card -->
-      <div class="hero-dashboard-col">
-        <div class="dashboard-preview-card glass-card">
-          
-          <!-- Mock Window Header -->
-          <div class="dashboard-header">
-            <div class="window-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
-            </div>
-            <div class="dashboard-tabs">
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeSimulationTab() === 'comercial'"
-                (click)="activeSimulationTab.set('comercial')"
-              >
-                💼 Tablero Comercial
-              </button>
-              <button
-                type="button"
-                class="tab-btn"
-                [class.active]="activeSimulationTab() === 'contable'"
-                (click)="activeSimulationTab.set('contable')"
-              >
-                📊 Tablero Contable
-              </button>
-            </div>
-            <div class="live-indicator">
-              <span class="pulse-dot"></span> EN VIVO
+      <!-- Right Column: 3D Isometric Tech Illustration -->
+      <div class="hero-image-col">
+        <div class="hero-image-wrapper">
+          <div class="hero-image-backdrop"></div>
+          <img
+            src="hero-rocket.png"
+            alt="NexoERP Plataforma SaaS Comercial y Contable"
+            class="hero-illustration-img"
+          />
+          <!-- Floating Feature Badges -->
+          <div class="floating-hero-pill pill-top">
+            <span class="pill-icon">🚀</span>
+            <div class="pill-text">
+              <strong>Soluciones de Alto Impacto</strong>
+              <span>Comercial & Contabilidad Automatizada</span>
             </div>
           </div>
-
-          <!-- Active Simulation Body -->
-          @if (activeSimulationTab() === 'comercial') {
-            <div class="dashboard-body">
-              
-              <!-- KPI Row -->
-              <div class="kpi-grid">
-                <div class="kpi-box box-blue">
-                  <div class="kpi-label">Ventas del Día</div>
-                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.currency }} 24,850.00</div>
-                  <div class="kpi-sub positive">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
-                    +14.2% vs ayer
-                  </div>
-                </div>
-
-                <div class="kpi-box box-purple">
-                  <div class="kpi-label">Catálogo Activo</div>
-                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.productCatalogCount }} Items</div>
-                  <div class="kpi-sub neutral">Almacén Central</div>
-                </div>
-
-                <div class="kpi-box box-cyan">
-                  <div class="kpi-label">Preventa Móvil</div>
-                  <div class="kpi-value font-mono">28 Pedidos</div>
-                  <div class="kpi-sub accent-cyan-text">Sincronizados en ruta</div>
-                </div>
-              </div>
-
-              <!-- Stream List -->
-              <div class="stream-panel">
-                <div class="stream-panel-title">Operaciones de: {{ companyService.activeCompany()?.name }}</div>
-                
-                <div class="stream-item">
-                  <div class="item-icon commercial-icon">🛒</div>
-                  <div class="item-details">
-                    <div class="item-main">Nota de Venta #1094 - Supermercados Fidalga</div>
-                    <div class="item-meta">15x Unidades • Stock reservado en Almacén Central</div>
-                  </div>
-                  <div class="item-amount font-mono positive">+ {{ companyService.activeCompany()?.currency }} 4,350.00</div>
-                </div>
-
-                <div class="stream-item">
-                  <div class="item-icon commercial-icon">📱</div>
-                  <div class="item-details">
-                    <div class="item-main">Preventa Móvil Android (Ruta 4 - Vendedor 02)</div>
-                    <div class="item-meta">Confirmado y descontado en tiempo real</div>
-                  </div>
-                  <div class="item-amount font-mono positive">+ {{ companyService.activeCompany()?.currency }} 1,890.00</div>
-                </div>
-
-              </div>
-
+          <div class="floating-hero-pill pill-bottom">
+            <span class="pill-icon">📱</span>
+            <div class="pill-text">
+              <strong>Preventa Móvil Android</strong>
+              <span>Sincronización en Ruta y Stock</span>
             </div>
-          } @else {
-            <div class="dashboard-body">
-              
-              <!-- KPI Row Contable -->
-              <div class="kpi-grid">
-                <div class="kpi-box box-emerald">
-                  <div class="kpi-label">Asientos Generados</div>
-                  <div class="kpi-value font-mono">54 Asientos</div>
-                  <div class="kpi-sub positive">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    100% Cuadrados (Debe = Haber)
-                  </div>
-                </div>
-
-                <div class="kpi-box box-peach">
-                  <div class="kpi-label">Débito Fiscal IVA</div>
-                  <div class="kpi-value font-mono">{{ companyService.activeCompany()?.currency }} 3,230.50</div>
-                  <div class="kpi-sub neutral">Régimen General 13%</div>
-                </div>
-
-                <div class="kpi-box box-purple">
-                  <div class="kpi-label">Solvencia Contable</div>
-                  <div class="kpi-value font-mono">3.57</div>
-                  <div class="kpi-sub positive">Activo / Pasivo OK</div>
-                </div>
-              </div>
-
-              <!-- Asientos Stream -->
-              <div class="stream-panel">
-                <div class="stream-panel-title">Generación Automática en Libro Diario</div>
-
-                <div class="stream-item accounting-border">
-                  <div class="item-icon accounting-icon">⚖️</div>
-                  <div class="item-details">
-                    <div class="item-main">Asiento #804 - Venta Contado Factura #1094</div>
-                    <div class="item-meta font-mono">D: Caja Moneda Nacional | H: Ventas (87%) + Débito Fiscal (13%)</div>
-                  </div>
-                  <div class="item-amount font-mono accounting-text">{{ companyService.activeCompany()?.currency }} 4,350.00</div>
-                </div>
-
-                <div class="stream-item accounting-border">
-                  <div class="item-icon accounting-icon">📊</div>
-                  <div class="item-details">
-                    <div class="item-main">Asiento #805 - Costo de Ventas e Inventario</div>
-                    <div class="item-meta font-mono">D: Costo Mercaderías Vendidas | H: Inventario</div>
-                  </div>
-                  <div class="item-amount font-mono text-muted">{{ companyService.activeCompany()?.currency }} 2,820.00</div>
-                </div>
-
-              </div>
-
-            </div>
-          }
-
-          <!-- Dashboard Footer -->
-          <div class="dashboard-footer">
-            <span class="footer-info">
-              Tenant Activo: <strong>{{ companyService.activeCompany()?.name }}</strong> (Aislamiento de Datos)
-            </span>
-            <span class="backend-status-badge">
-              <span class="status-dot"></span> PostgreSQL 16
-            </span>
           </div>
-
         </div>
       </div>
 
@@ -473,10 +338,10 @@
     <div class="container">
       
       <div class="section-header text-center">
-        <div class="badge badge-commercial">ARQUITECTURA SAAS MULTI-INQUILINO</div>
-        <h2 class="section-title">Entorno Privado y Aislado Para Cada Empresa</h2>
+        <div class="badge badge-commercial">EMPRESAS REGISTRADAS</div>
+        <h2 class="section-title">Empresas que Utilizan NexoERP</h2>
         <p class="section-subtitle">
-          Cualquier empresa que contrate nuestro sistema se registra y dispone de su propio espacio exclusivo. Podrá gestionar sus productos, empleados, clientes, inventario y contabilidad con la garantía de que <strong>ninguna empresa puede ver los datos de otra</strong>.
+          Negocios y comercios registrados que actualmente confían en nuestra plataforma para gestionar sus operaciones comerciales y automatizar su contabilidad.
         </p>
       </div>
 
@@ -484,10 +349,7 @@
       <div class="companies-grid">
         
         @for (company of companyService.companies(); track company.id) {
-          <div
-            class="company-card glass-card"
-            [class.selected]="company.id === companyService.activeCompany()?.id"
-          >
+          <div class="company-card glass-card">
             <div class="company-card-header">
               <div class="company-icon-circle">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4bf6" stroke-width="2">
@@ -498,51 +360,30 @@
               </div>
 
               <div class="company-badges">
-                <span class="badge" [class.badge-cyan]="company.currency === 'USD'" [class.badge-commercial]="company.currency === 'BOB'">
+                <span class="badge badge-cyan">
                   {{ company.currency }}
                 </span>
-                @if (company.id === companyService.activeCompany()?.id) {
-                  <span class="badge badge-accounting">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    EMPRESA ACTIVA
-                  </span>
-                }
+                <span class="badge badge-accounting">
+                  <span class="status-dot"></span> REGISTRADA
+                </span>
               </div>
             </div>
 
             <h3 class="company-name">{{ company.name }}</h3>
             <p class="company-activity">{{ company.commercialActivity }}</p>
 
-            <div class="company-specs">
-              <div class="spec-item">
-                <span class="spec-label">NIT / Reg:</span>
-                <span class="spec-value font-mono">{{ company.taxId }}</span>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">Catálogo:</span>
-                <span class="spec-value">{{ company.productCatalogCount }} Artículos</span>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">Sucursales:</span>
-                <span class="spec-value">{{ company.branchesCount }}</span>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">Ubicación:</span>
-                <span class="spec-value truncate">{{ company.address }}</span>
+            <div class="company-status-strip">
+              <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>Operando en la plataforma SaaS</span>
               </div>
             </div>
 
             <div class="company-card-actions">
-              @if (company.id === companyService.activeCompany()?.id) {
-                <button type="button" class="btn btn-accounting w-100" (click)="showNotification('¡Empresa ' + company.name + ' seleccionada! Su espacio de trabajo está activo.')">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Empresa en Uso</span>
-                </button>
-              } @else {
-                <button type="button" class="btn btn-secondary w-100" (click)="selectCompany(company)">
-                  <span>Seleccionar como Activa</span>
-                </button>
-              }
+              <div class="company-registered-badge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Espacio SaaS Habilitado</span>
+              </div>
             </div>
 
           </div>
@@ -740,93 +581,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 7. EQUIPO DE DESARROLLO (SI2 - UAGRM) -->
-  <!-- ========================================================================= -->
-  <section id="equipo" class="section-padding team-section">
-    <div class="container">
-      
-      <div class="section-header text-center">
-        <div class="badge badge-commercial">FACULTAD DE CIENCIAS DE LA COMPUTACIÓN Y TELECOMUNICACIONES</div>
-        <h2 class="section-title">Equipo de Ingeniería y Desarrollo</h2>
-        <p class="section-subtitle">
-          Estudiantes a cargo de la arquitectura, diseño y desarrollo del sistema ERP Comercial y Contable (Sistemas de Información 2 - UAGRM).
-        </p>
-      </div>
-
-      <!-- Team Members Grid (6 Integrantes) -->
-      <div class="team-grid">
-        @for (member of teamMembers(); track member.id) {
-          <div class="team-card glass-card">
-            
-            <div class="team-card-top">
-              <div class="member-avatar" [style.background]="member.avatarGradient">
-                <span>{{ member.initials }}</span>
-              </div>
-              <div class="member-header-info">
-                <h4 class="member-name">{{ member.name }}</h4>
-                <span class="member-role-badge">{{ member.role }}</span>
-              </div>
-            </div>
-
-            <p class="member-desc">{{ member.description }}</p>
-
-            <div class="member-tags">
-              @for (tag of member.tags; track tag) {
-                <span class="tag-pill">{{ tag }}</span>
-              }
-            </div>
-
-            <!-- Social Links Bar (GitHub, LinkedIn, Portafolio, Instagram, WhatsApp) -->
-            <div class="member-social-bar">
-              <!-- GitHub -->
-              <a [href]="member.githubUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-github" title="GitHub">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-                </svg>
-              </a>
-
-              <!-- LinkedIn -->
-              <a [href]="member.linkedinUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-linkedin" title="LinkedIn">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-              </a>
-
-              <!-- Portafolio / Web -->
-              <a [href]="member.portfolioUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-portfolio" title="Portafolio Web">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-              </a>
-
-              <!-- Instagram -->
-              <a [href]="member.instagramUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-instagram" title="Instagram">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                </svg>
-              </a>
-
-              <!-- WhatsApp -->
-              <a [href]="member.whatsappUrl" target="_blank" rel="noopener noreferrer" class="social-icon-btn btn-whatsapp" title="WhatsApp">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                </svg>
-              </a>
-            </div>
-
-          </div>
-        }
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ========================================================================= -->
-  <!-- 8. HIGH-IMPACT DARK CALLOUT BANNER (Exact match to reference bottom banner) -->
+  <!-- 7. HIGH-IMPACT DARK CALLOUT BANNER (Exact match to reference bottom banner) -->
   <!-- ========================================================================= -->
   <section class="callout-banner-section">
     <div class="container">
@@ -909,7 +664,7 @@
     <div class="footer-col-links">
       <h5 class="footer-col-title">Stack Técnico</h5>
       <ul>
-        <li><span>Backend: Spring Boot 3.3.5 (Java 17)</span></li>
+        <li><span>Backend: Spring Boot 3.3.5 (Java 21)</span></li>
         <li><span>Frontend: Angular 22 (SSR)</span></li>
         <li><span>Base de Datos: PostgreSQL 16 (Docker)</span></li>
         <li><span>App Móvil: Flutter (Android)</span></li>
@@ -926,7 +681,7 @@
     </div>
     <div class="contact-item">
       <span class="contact-icon">🏢</span>
-      <span class="contact-text">Empresa Activa: <strong>{{ companyService.activeCompany()?.name }}</strong></span>
+      <span class="contact-text">Plataforma Multi-Empresa: <strong>SaaS Activo</strong></span>
     </div>
     <div class="contact-item">
       <span class="contact-icon">🎓</span>
