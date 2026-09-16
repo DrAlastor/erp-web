@@ -43,12 +43,22 @@
   font-size: 0.9rem;
   padding: 0.2rem;
   margin-left: auto;
-  &:hover { color: #0f172a; }
+
+  &:hover {
+    color: #0f172a;
+  }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ==========================================================================
@@ -272,6 +282,7 @@
 .gradient-text-purple {
   background: linear-gradient(135deg, #5b4bf6 0%, #7c3aed 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -353,6 +364,7 @@
   0% {
     transform: translateY(0px);
   }
+
   100% {
     transform: translateY(-10px);
   }
@@ -445,8 +457,13 @@
 }
 
 @keyframes floatSlow {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-8px); }
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-8px);
+  }
 }
 
 .pulse-dot {
@@ -509,10 +526,21 @@
   justify-content: center;
   margin-bottom: 1.15rem;
 
-  &.circle-blue { background: #eff6ff; }
-  &.circle-purple { background: #f5f3ff; }
-  &.circle-peach { background: #fff7ed; }
-  &.circle-cyan { background: #ecfeff; }
+  &.circle-blue {
+    background: #eff6ff;
+  }
+
+  &.circle-purple {
+    background: #f5f3ff;
+  }
+
+  &.circle-peach {
+    background: #fff7ed;
+  }
+
+  &.circle-cyan {
+    background: #ecfeff;
+  }
 }
 
 .pillar-mini-title {
@@ -595,25 +623,37 @@
   &.card-blue {
     background: #f0f7ff;
     border: 1px solid #dbeafe;
-    &:hover { box-shadow: 0 16px 35px rgba(37, 99, 235, 0.12); }
+
+    &:hover {
+      box-shadow: 0 16px 35px rgba(37, 99, 235, 0.12);
+    }
   }
 
   &.card-purple {
     background: #f5f3ff;
     border: 1px solid #ede9fe;
-    &:hover { box-shadow: 0 16px 35px rgba(124, 58, 237, 0.12); }
+
+    &:hover {
+      box-shadow: 0 16px 35px rgba(124, 58, 237, 0.12);
+    }
   }
 
   &.card-cyan {
     background: #ecfeff;
     border: 1px solid #cffafe;
-    &:hover { box-shadow: 0 16px 35px rgba(8, 145, 178, 0.12); }
+
+    &:hover {
+      box-shadow: 0 16px 35px rgba(8, 145, 178, 0.12);
+    }
   }
 
   &.card-peach {
     background: #fff7ed;
     border: 1px solid #ffedd5;
-    &:hover { box-shadow: 0 16px 35px rgba(234, 88, 12, 0.12); }
+
+    &:hover {
+      box-shadow: 0 16px 35px rgba(234, 88, 12, 0.12);
+    }
   }
 }
 
@@ -664,9 +704,19 @@
   border-radius: 3px;
   background: #e2e8f0;
 
-  &.w-80 { width: 80%; background: #93c5fd; }
-  &.w-50 { width: 50%; }
-  &.w-60 { width: 60%; background: #c4b5fd; }
+  &.w-80 {
+    width: 80%;
+    background: #93c5fd;
+  }
+
+  &.w-50 {
+    width: 50%;
+  }
+
+  &.w-60 {
+    width: 60%;
+    background: #c4b5fd;
+  }
 }
 
 .preview-metric {
@@ -763,10 +813,25 @@
     transform: scale(1.1);
   }
 
-  &.btn-blue { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
-  &.btn-purple { background: #7c3aed; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); }
-  &.btn-cyan { background: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4); }
-  &.btn-peach { background: #ea580c; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4); }
+  &.btn-blue {
+    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  &.btn-purple {
+    background: #7c3aed;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+  }
+
+  &.btn-cyan {
+    background: #0891b2;
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
+  }
+
+  &.btn-peach {
+    background: #ea580c;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+  }
 }
 
 /* ==========================================================================
@@ -1335,7 +1400,9 @@
     cursor: pointer;
     transition: color 0.2s;
 
-    &:hover { color: #5b4bf6; }
+    &:hover {
+      color: #5b4bf6;
+    }
   }
 
   li span {
@@ -1370,5 +1437,3 @@
     color: #0b1329;
   }
 }
-
-
