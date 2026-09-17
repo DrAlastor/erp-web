@@ -159,6 +159,26 @@
   gap: 0.85rem;
 }
 
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: rgba(91, 75, 246, 0.4);
+    color: #5b4bf6;
+  }
+}
+
 .active-company-pill {
   display: flex;
   align-items: center;
@@ -1435,5 +1455,369 @@
 
   strong {
     color: #0b1329;
+  }
+}
+
+/* ==========================================================================
+   Modo Oscuro (toggle global vía ThemeService, clase .dark en <html>)
+   ========================================================================== */
+:host-context(.dark) {
+  .toast-notification {
+    background: #1e293b;
+  }
+
+  .toast-text {
+    color: #f1f5f9;
+  }
+
+  .toast-close {
+    color: #64748b;
+
+    &:hover {
+      color: #f1f5f9;
+    }
+  }
+
+  .navbar-wrapper {
+    background: #0f172a;
+    border-bottom-color: rgba(51, 65, 85, 0.6);
+  }
+
+  .theme-toggle-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+
+    &:hover {
+      border-color: rgba(91, 75, 246, 0.5);
+      color: #a5b4fc;
+    }
+  }
+
+  .brand-name {
+    color: #f1f5f9;
+  }
+
+  .brand-accent {
+    color: #a5b4fc;
+  }
+
+  .brand-domain {
+    color: #94a3b8;
+  }
+
+  .nav-link {
+    color: #cbd5e1;
+
+    &:hover {
+      background: rgba(91, 75, 246, 0.18);
+    }
+  }
+
+  .active-company-pill {
+    background: #1e293b;
+    border-color: #334155;
+
+    &:hover {
+      background: #16213a;
+    }
+  }
+
+  .company-badge-name {
+    color: #f1f5f9;
+  }
+
+  .currency-tag {
+    background: rgba(91, 75, 246, 0.22);
+  }
+
+  .kicker-dot {
+    color: #64748b;
+  }
+
+  .hero-title {
+    color: #f1f5f9;
+  }
+
+  .hero-description {
+    color: #cbd5e1;
+
+    strong {
+      color: #f1f5f9;
+    }
+  }
+
+  .floating-hero-pill {
+    background: rgba(30, 41, 59, 0.94);
+    border-color: rgba(51, 65, 85, 0.7);
+
+    .pill-text {
+      strong {
+        color: #f1f5f9;
+      }
+
+      span {
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .backend-status-badge {
+    color: #34d399;
+  }
+
+  .pillar-mini-card {
+    background: #0f172a;
+    border-color: rgba(51, 65, 85, 0.6);
+  }
+
+  .mini-icon-circle {
+    &.circle-blue {
+      background: rgba(37, 99, 235, 0.15);
+    }
+
+    &.circle-purple {
+      background: rgba(124, 58, 237, 0.15);
+    }
+
+    &.circle-peach {
+      background: rgba(234, 88, 12, 0.15);
+    }
+
+    &.circle-cyan {
+      background: rgba(8, 145, 178, 0.15);
+    }
+  }
+
+  .pillar-mini-title {
+    color: #f1f5f9;
+  }
+
+  .pillar-mini-desc {
+    color: #cbd5e1;
+  }
+
+  .label-text {
+    color: #f1f5f9;
+  }
+
+  .section-subtitle {
+    color: #94a3b8;
+  }
+
+  .pastel-card {
+    &.card-blue {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    &.card-purple {
+      background: rgba(124, 58, 237, 0.1);
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    &.card-cyan {
+      background: rgba(8, 145, 178, 0.1);
+      border-color: rgba(8, 145, 178, 0.3);
+    }
+
+    &.card-peach {
+      background: rgba(234, 88, 12, 0.1);
+      border-color: rgba(234, 88, 12, 0.3);
+    }
+  }
+
+  .mini-screen {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .screen-header-dots span {
+    background: #475569;
+  }
+
+  .preview-bar {
+    background: #334155;
+  }
+
+  .preview-metric {
+    color: #f1f5f9;
+  }
+
+  .mini-phone-screen {
+    background: #1e293b;
+    border-color: #475569;
+  }
+
+  .phone-notch {
+    background: #64748b;
+  }
+
+  .pastel-card-title {
+    color: #f1f5f9;
+  }
+
+  .pastel-card-desc {
+    color: #cbd5e1;
+  }
+
+  .section-title {
+    color: #f1f5f9;
+  }
+
+  .company-card {
+    border-color: rgba(51, 65, 85, 0.6);
+  }
+
+  .company-icon-circle {
+    background: rgba(124, 58, 237, 0.15);
+  }
+
+  .company-name {
+    color: #f1f5f9;
+  }
+
+  .company-activity {
+    color: #94a3b8;
+  }
+
+  .company-status-strip {
+    background: #1e293b;
+    border-color: #334155;
+
+    .status-indicator {
+      color: #cbd5e1;
+    }
+  }
+
+  .company-registered-badge {
+    background: rgba(91, 75, 246, 0.18);
+    border-color: rgba(91, 75, 246, 0.35);
+    color: #a5b4fc;
+  }
+
+  .create-card {
+    background: rgba(91, 75, 246, 0.06);
+
+    &:hover {
+      background: rgba(91, 75, 246, 0.12);
+    }
+  }
+
+  .create-plus-icon {
+    background: rgba(91, 75, 246, 0.15);
+  }
+
+  .create-card-title {
+    color: #f1f5f9;
+  }
+
+  .create-card-desc {
+    color: #94a3b8;
+  }
+
+  .pillar-header {
+    border-bottom-color: #334155;
+  }
+
+  .pillar-title {
+    color: #f1f5f9;
+  }
+
+  .pillar-desc {
+    color: #94a3b8;
+  }
+
+  .feature-item {
+    strong {
+      color: #f1f5f9;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+  }
+
+  .feature-icon {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .mobile-title {
+    color: #f1f5f9;
+  }
+
+  .mobile-description {
+    color: #cbd5e1;
+
+    code {
+      background: rgba(91, 75, 246, 0.18);
+      color: #a5b4fc;
+    }
+  }
+
+  .mobile-feat-item {
+    color: #f1f5f9;
+  }
+
+  .phone-screen {
+    background: #1e293b;
+  }
+
+  .phone-top-bar {
+    color: #94a3b8;
+  }
+
+  .phone-app-header {
+    border-bottom-color: #334155;
+  }
+
+  .phone-app-title {
+    color: #f1f5f9;
+  }
+
+  .phone-order-card {
+    background: #16213a;
+    border-color: #334155;
+  }
+
+  .order-client {
+    color: #f1f5f9;
+  }
+
+  .main-footer {
+    background: #0b0f19;
+    border-top-color: #334155;
+  }
+
+  .footer-bio {
+    color: #94a3b8;
+  }
+
+  .footer-col-title {
+    color: #f1f5f9;
+  }
+
+  .footer-col-links {
+    li a {
+      color: #94a3b8;
+
+      &:hover {
+        color: #a5b4fc;
+      }
+    }
+
+    li span {
+      color: #94a3b8;
+    }
+  }
+
+  .footer-contact-strip {
+    border-top-color: #334155;
+    color: #94a3b8;
+  }
+
+  .contact-item strong {
+    color: #f1f5f9;
   }
 }

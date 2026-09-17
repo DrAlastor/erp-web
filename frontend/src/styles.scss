@@ -3,6 +3,10 @@
    Ámbito Comercial & Contable (Inspirado en Estilo Light Tech Premium)
    ========================================================================== */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Color Palette: Clean Light Tech with Electric Violet & Deep Navy */
   --bg-main: #f8faff;            /* Fondo general sutilmente liláceo/blanco */
@@ -73,6 +77,48 @@
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ==========================================================================
+   Modo Oscuro (toggle vía ThemeService, clase .dark en <html>)
+   ========================================================================== */
+:root.dark {
+  --bg-main: #0b0f19;
+  --bg-surface: #0f172a;
+  --bg-subtle: #1e293b;
+  --bg-card: #0f172a;
+  --bg-card-hover: #16213a;
+  --bg-card-border: rgba(51, 65, 85, 0.6);
+  --bg-card-border-glow: rgba(91, 75, 246, 0.4);
+
+  --primary-light: rgba(91, 75, 246, 0.18);
+
+  --card-blue-bg: rgba(37, 99, 235, 0.12);
+  --card-blue-border: rgba(37, 99, 235, 0.3);
+  --card-blue-text: #93c5fd;
+  --card-blue-btn: #3b82f6;
+
+  --card-purple-bg: rgba(124, 58, 237, 0.12);
+  --card-purple-border: rgba(124, 58, 237, 0.3);
+  --card-purple-text: #c4b5fd;
+  --card-purple-btn: #8b5cf6;
+
+  --card-cyan-bg: rgba(8, 145, 178, 0.12);
+  --card-cyan-border: rgba(8, 145, 178, 0.3);
+  --card-cyan-text: #67e8f9;
+  --card-cyan-btn: #22d3ee;
+
+  --card-peach-bg: rgba(234, 88, 12, 0.12);
+  --card-peach-border: rgba(234, 88, 12, 0.3);
+  --card-peach-text: #fdba74;
+  --card-peach-btn: #fb923c;
+
+  --text-main: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  color-scheme: dark;
+}
+
 *,
 *::before,
 *::after {
@@ -118,6 +164,18 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+:root.dark::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+:root.dark::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+:root.dark::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Container */
@@ -192,6 +250,15 @@ body {
     border-color: rgba(91, 75, 246, 0.4);
     color: var(--primary);
     transform: translateY(-2px);
+  }
+
+  :root.dark & {
+    background: #1e293b;
+    border-color: rgba(51, 65, 85, 0.8);
+
+    &:hover {
+      background: #16213a;
+    }
   }
 }
 
