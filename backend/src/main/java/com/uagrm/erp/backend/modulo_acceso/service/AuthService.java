@@ -39,7 +39,7 @@ public class AuthService {
 
     @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public TokenResponse login(LoginRequest request, String ip, String userAgent) {
-        Usuario usuario = usuarioRepository.findByUsernameOrEmail(request.getUsernameOrEmail())
+        Usuario usuario = usuarioRepository.findForLogin(request.getUsernameOrEmail().trim())
                 .filter(Usuario::getEnable)
                 .orElseThrow(() -> new InvalidCredentialsException("Usuario o contraseña incorrectos"));
 
@@ -49,6 +49,12 @@ public class AuthService {
                             " intentos fallidos. Inténtalo de nuevo en " + BLOQUEO_MINUTOS + " minutos.",
                     usuario.getBloqueadoHasta()
             );
+        }
+
+        // Un bloqueo vencido inicia una nueva ventana de tres intentos.
+        if (usuario.getBloqueadoHasta() != null) {
+            usuario.setIntentosFallidos(0);
+            usuario.setBloqueadoHasta(null);
         }
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
@@ -67,6 +73,10 @@ public class AuthService {
     public TokenResponse refresh(RefreshTokenRequest request) {
         Sesion sesion = buscarSesionActiva(request.getRefreshToken());
         Usuario usuario = sesion.getUsuario();
+
+        if (!Boolean.TRUE.equals(usuario.getEnable())) {
+            throw new InvalidCredentialsException("Refresh token inválido o expirado");
+        }
 
         String accessToken = jwtService.generateAccessToken(usuario.getUsername(), extraerAuthorities(usuario));
 

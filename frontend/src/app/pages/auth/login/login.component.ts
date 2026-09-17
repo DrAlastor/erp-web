@@ -56,9 +56,9 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.accountLocked.set(false);
 
-    const { usernameOrEmail, password } = this.form.getRawValue();
+    const { usernameOrEmail, password, rememberMe } = this.form.getRawValue();
 
-    this.authService.login({ usernameOrEmail, password }).subscribe({
+    this.authService.login({ usernameOrEmail: usernameOrEmail.trim(), password }, rememberMe).subscribe({
       next: () => {
         this.loading.set(false);
         this.router.navigate(['/app']);
@@ -71,7 +71,10 @@ export class LoginComponent {
           this.accountLocked.set(true);
           this.errorMessage.set(body.message);
         } else {
-          this.errorMessage.set(body?.message ?? 'Usuario o contraseña incorrectos');
+          this.errorMessage.set(body?.message ?? (error.status === 0
+            ? 'No se pudo conectar con el servidor. Inténtalo de nuevo.'
+            : error.status >= 500 ? 'El servidor no está disponible. Inténtalo de nuevo.'
+            : 'Usuario o contraseña incorrectos'));
         }
       },
     });

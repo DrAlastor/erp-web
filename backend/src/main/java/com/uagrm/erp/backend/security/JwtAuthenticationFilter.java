@@ -4,6 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.uagrm.erp.backend.modulo_acceso.repository.UsuarioRepository;
+import com.uagrm.erp.backend.modulo_acceso.entity.Permiso;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -35,18 +39,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        if (jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String username = jwtService.extractUsername(token);
-            List<String> authorities = jwtService.extractAuthorities(token);
-            List<GrantedAuthority> grantedAuthorities = authorities == null
-                    ? List.of()
-                    : authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-
-            ApplicationUserPrincipal principal = new ApplicationUserPrincipal(username, grantedAuthorities);
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(principal, null, grantedAuthorities);
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                String username = jwtService.parseClaims(token).getSubject();
+                usuarioRepository.findByUsername(username)
+                        .filter(u -> Boolean.TRUE.equals(u.getEnable()))
+                        .ifPresent(usuario -> {
+                            List<GrantedAuthority> authorities = usuario.getRoles().stream()
+                                    .flatMap(rol -> rol.getPermisos().stream())
+                                    .map(Permiso::toAuthority)
+                                    .distinct()
+                                    .map(p -> (GrantedAuthority) new SimpleGrantedAuthority(p))
+                                    .collect(Collectors.toList());
+                            ApplicationUserPrincipal principal =
+                                    new ApplicationUserPrincipal(username, authorities);
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        });
+            } catch (JwtException | IllegalArgumentException ex) {
+                // Un JWT invalido o vencido queda sin autenticar (401 en rutas protegidas).
+            }
         }
 
         filterChain.doFilter(request, response);
