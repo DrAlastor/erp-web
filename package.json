@@ -1,0 +1,8 @@
+{
+  "name": "erp-development-commands",
+  "private": true,
+  "scripts": {
+    "start:dev": "npm --prefix backend run start:dev",
+    "dev": "npm --prefix frontend run dev --"
+  }
+}

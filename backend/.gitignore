@@ -2,6 +2,7 @@ HELP.md
 
 ### Env ###
 .env
+.env.local
 
 ### Gradle ###
 .gradle/
