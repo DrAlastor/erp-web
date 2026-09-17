@@ -1,0 +1,106 @@
+<div class="min-h-dvh flex flex-col bg-[var(--bg-main)] font-sans">
+  <!-- Topbar -->
+  <header class="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 md:px-8 flex items-center justify-between relative z-20">
+    <a routerLink="/" class="flex items-center gap-2.5">
+      <div
+        class="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0"
+        style="background: linear-gradient(135deg, #5b4bf6 0%, #4838e5 100%);"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18" />
+          <path d="m19 9-5 5-4-4-3 3" />
+        </svg>
+      </div>
+      <span class="text-base font-extrabold tracking-tight text-[var(--text-main)]">Nexo<span class="text-primary">ERP</span></span>
+    </a>
+
+    <div class="flex items-center gap-2">
+      <!-- Toggle de tema claro/oscuro -->
+      <button
+        type="button"
+        (click)="themeService.toggle()"
+        class="w-9 h-9 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+        [attr.aria-label]="themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        [title]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'"
+      >
+        @if (themeService.isDark()) {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </svg>
+        } @else {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+          </svg>
+        }
+      </button>
+
+      <!-- Control de usuario -->
+      <div class="relative">
+      <button
+        type="button"
+        (click)="toggleMenu()"
+        class="flex items-center gap-3 p-1.5 md:pr-3 rounded-full md:rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+      >
+        <span
+          class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+          style="background: linear-gradient(135deg, #5b4bf6 0%, #4838e5 100%);"
+        >
+          {{ iniciales(authService.usuario()?.fullname) || '??' }}
+        </span>
+        <!-- Escritorio: nombre y correo visibles -->
+        <span class="hidden md:flex md:flex-col md:items-start md:leading-tight">
+          <span class="text-sm font-semibold text-[var(--text-main)]">{{ authService.usuario()?.fullname }}</span>
+          <span class="text-xs text-[var(--text-muted)]">{{ authService.usuario()?.email }}</span>
+        </span>
+      </button>
+
+      <!-- Backdrop móvil -->
+      @if (menuOpen()) {
+        <div class="fixed inset-0 bg-black/30 z-30 md:hidden" (click)="closeMenu()"></div>
+      }
+
+      <!-- Menú desplegable / bottom sheet -->
+      @if (menuOpen()) {
+        <div
+          class="fixed inset-x-0 bottom-0 rounded-t-2xl p-4 pb-6 z-40
+                 md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-full md:mt-2 md:w-64 md:rounded-xl md:p-3
+                 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"
+        >
+          <div class="md:hidden w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4"></div>
+
+          <div class="px-2 pb-3 mb-1 border-b border-slate-100 dark:border-slate-700">
+            <p class="text-sm font-semibold text-[var(--text-main)]">{{ authService.usuario()?.fullname }}</p>
+            <p class="text-xs text-[var(--text-muted)]">{{ authService.usuario()?.email }}</p>
+          </div>
+
+          <button
+            type="button"
+            (click)="logout()"
+            class="w-full flex items-center gap-2 text-left text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg px-2 py-2.5 mt-1 transition"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Cerrar Sesión
+          </button>
+        </div>
+      }
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido -->
+  <main class="flex-1 flex items-center justify-center px-4 py-10">
+    <div class="text-center max-w-md">
+      <h1 class="text-2xl font-bold text-[var(--text-main)]">
+        Bienvenido, {{ authService.usuario()?.fullname }}
+      </h1>
+      <p class="text-[var(--text-secondary)] mt-2 text-sm">
+        Sesión iniciada correctamente. Los módulos de Comercial e Inventario se irán habilitando a medida que se completen las siguientes historias de usuario.
+      </p>
+    </div>
+  </main>
+</div>

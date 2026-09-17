@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CompanyService } from '../../core/services/company.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { CompanyModalComponent } from '../../components/company-modal/company-modal.component';
 
 @Component({
@@ -12,6 +14,9 @@ import { CompanyModalComponent } from '../../components/company-modal/company-mo
 })
 export class LandingComponent {
   readonly companyService = inject(CompanyService);
+  readonly themeService = inject(ThemeService);
+
+  private readonly router = inject(Router);
 
   // Modal state
   isCreateModalOpen = signal(false);
@@ -39,7 +44,7 @@ export class LandingComponent {
   }
 
   onLoginClick(): void {
-    this.showNotification('Módulo de autenticación (CU-01): El inicio de sesión seguro estará disponible en el despliegue.');
+    this.router.navigate(['/login']);
   }
 
   scrollToSection(id: string): void {
