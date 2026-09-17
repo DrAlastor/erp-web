@@ -1,4 +1,9 @@
 # Arquitectura del Backend ERP (Fase 1)
+## Ubicación actual de la infraestructura común
+
+El código actual utiliza `src/main/java/comun` para `BackendApplication`, `config` (CORS y seguridad), `controller/HealthController` y `exception` (respuesta de error, recurso no encontrado y manejador global). Spring detecta componentes en `comun` y `modulo`, y entidades y repositorios bajo `modulo`.
+
+El CU01 está en `src/main/java/modulo/seguridad_y_auditoria/acceso_al_sistema`. Sus entidades, repositorios, servicio, DTO, seguridad JWT y excepciones específicas del login permanecen allí. La distribución de entidades compartidas queda pendiente de revisión con el compañero responsable. Los diagramas originales que aparecen más abajo describen la propuesta anterior de paquetes.
 
 El backend está construido bajo el patrón de **monolito modular** en Spring Boot. Cada módulo funcional empaqueta sus propias capas del patrón MVC/Domain (`controller`, `dto`, `entity`, `mapper`, `repository`, `service`), compartiendo únicamente infraestructura transversal (seguridad, excepciones, auditoría y configuración base).
 

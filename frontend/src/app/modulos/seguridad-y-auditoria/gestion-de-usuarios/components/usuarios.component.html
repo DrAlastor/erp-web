@@ -1,0 +1,143 @@
+<div class="users-header">
+  <h2>Administración de cuentas</h2>
+  <p>Consulta usuarios y administra su información y estado.</p>
+</div>
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+@if (!forbidden()) {
+  <form class="filters" (ngSubmit)="load(true)">
+    <label
+      >Buscar<input
+        name="search"
+        [(ngModel)]="search"
+        maxlength="150"
+        placeholder="Nombre, usuario o correo" /></label
+    ><label
+      >Rol<select name="role" [(ngModel)]="role" (change)="load(true)">
+        <option value="">Todos los roles</option>
+        @for (role of roles(); track role.id) {
+          <option [value]="role.id">{{ role.nombre }}</option>
+        }
+      </select></label
+    ><label
+      >Estado<select name="enable" [(ngModel)]="enable" (change)="load(true)">
+        <option value="">Todos los estados</option>
+        <option value="true">Activo</option>
+        <option value="false">Inactivo</option>
+      </select></label
+    ><button class="primary" [disabled]="busy()">Buscar</button>
+  </form>
+  @if (loading()) {
+    <p role="status">Cargando usuarios...</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <caption class="sr-only">
+          Cuentas de usuarios registradas
+        </caption>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td>
+                <strong>{{ user.fullname }}</strong
+                ><small>{{ user.username }}</small>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>{{ roleNames(user) }}</td>
+              <td>
+                <span class="badge" [class.inactive]="!user.enable">{{
+                  user.enable ? 'Activo' : 'Inactivo'
+                }}</span>
+              </td>
+              <td class="actions">
+                <button [disabled]="busy()" (click)="open(user)">Ver detalle</button
+                ><button [disabled]="busy()" (click)="confirmation.set(user)">
+                  {{ user.enable ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No se encontraron usuarios con estos filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} usuarios</span>
+      <div>
+        <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button
+        ><span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span
+        ><button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+      </div>
+    </div>
+  }
+  @if (selected(); as user) {
+    <section class="detail" aria-label="Detalle de usuario">
+      <h3>Detalle de {{ user.username }}</h3>
+      <p>Roles: {{ roleNames(user) }} · Estado: {{ user.enable ? 'Activo' : 'Inactivo' }}</p>
+      <p>
+        Creación:
+        {{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Sin registro' }}
+      </p>
+      <form #edit="ngForm" (ngSubmit)="save()">
+        <label
+          >Nombre completo<input
+            name="fullname"
+            [(ngModel)]="fullname"
+            required
+            maxlength="150" /></label
+        ><label
+          >Correo<input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            email
+            maxlength="100"
+        /></label>
+        <p>El nombre de usuario, la contraseña y los roles no se modifican desde esta pantalla.</p>
+        <div class="actions">
+          <button class="primary" [disabled]="edit.invalid || busy()">
+            {{ busy() ? 'Guardando...' : 'Guardar cambios' }}</button
+          ><button type="button" [disabled]="busy()" (click)="selected.set(null)">Cancelar</button>
+        </div>
+      </form>
+    </section>
+  }
+  @if (confirmation(); as user) {
+    <div class="modal-backdrop">
+      <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h3 id="confirm-title">{{ user.enable ? 'Desactivar' : 'Activar' }} cuenta</h3>
+        <p>
+          ¿Confirmas que deseas {{ user.enable ? 'desactivar' : 'activar' }} la cuenta de
+          {{ user.fullname }}?
+        </p>
+        @if (user.enable) {
+          <p>El usuario perderá el acceso al sistema y se cerrarán sus sesiones de renovación.</p>
+        }
+        <div class="actions">
+          <button type="button" [disabled]="busy()" (click)="confirmation.set(null)">
+            Cancelar</button
+          ><button class="primary" [disabled]="busy()" (click)="changeStatus()">
+            {{ busy() ? 'Procesando...' : 'Confirmar' }}
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+}

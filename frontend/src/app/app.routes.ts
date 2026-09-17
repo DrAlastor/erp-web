@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard } from './modulos/seguridad-y-auditoria/acceso-al-sistema/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -9,7 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () => import('./modulos/seguridad-y-auditoria/acceso-al-sistema/components/login/login.component').then(m => m.LoginComponent),
     title: 'Iniciar Sesión | NexoERP'
   },
   {

@@ -1,0 +1,297 @@
+<div class="login-page">
+  <!-- Toggle de tema claro/oscuro -->
+  <button
+    type="button"
+    (click)="themeService.toggle()"
+    class="fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center bg-white/90 dark:bg-slate-800/90 backdrop-blur border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md text-[var(--text-secondary)] transition"
+    [attr.aria-label]="themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    [title]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'"
+  >
+    @if (themeService.isDark()) {
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="4" />
+        <path
+          d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+        />
+      </svg>
+    } @else {
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+      </svg>
+    }
+  </button>
+
+  <aside class="brand-panel" aria-label="NexoERP comercial y contable">
+    <a routerLink="/" class="login-brand"
+      ><img src="nexo-logo.png" alt="" width="44" height="44" /><span
+        ><strong>Nexo<span>ERP</span></strong
+        ><small>COMERCIAL &amp; CONTABLE</small></span
+      ></a
+    >
+    <div class="brand-content">
+      <p class="brand-eyebrow"><span></span> CONECTA CADA PARTE DE TU NEGOCIO</p>
+      <h1>Todo tu negocio.<br /><span>Un solo lugar.</span></h1>
+      <p class="brand-description">
+        Ventas, inventario y contabilidad conectados para que tu equipo trabaje mejor.
+      </p>
+      <img
+        class="erp-illustration"
+        src="login-erp-illustration.png"
+        alt="Ilustración de una plataforma ERP que conecta clientes, inventario y finanzas"
+        width="1254"
+        height="1254"
+        fetchpriority="high"
+      />
+      <div class="module-tags">
+        <span>Comercial</span><span>Inventario</span><span>Contabilidad</span>
+      </div>
+    </div>
+    <p class="brand-footer">© {{ currentYear }} NexoERP <span>Tu equipo, conectado.</span></p>
+  </aside>
+
+  <!-- Panel Derecho: Formulario -->
+  <div class="form-panel">
+    <div class="form-card">
+      <div class="access-icon" aria-hidden="true">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="5" y="10" width="14" height="11" rx="3" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+        </svg>
+      </div>
+      <p class="form-eyebrow">TU ESPACIO DE TRABAJO</p>
+      <!-- Encabezado -->
+      <div class="mb-8">
+        <h2 class="text-xl md:text-2xl font-bold text-[var(--text-main)]">Iniciar Sesión</h2>
+        <p class="text-sm text-[var(--text-secondary)] mt-1">
+          Ingresa tus credenciales y continúa donde lo dejaste.
+        </p>
+      </div>
+
+      <!-- Alerta: Cuenta bloqueada -->
+      @if (accountLocked()) {
+        <div
+          class="mb-5 flex items-start gap-2 text-sm p-3 rounded-lg bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 text-orange-700 dark:text-orange-300"
+          role="alert"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="shrink-0 mt-0.5"
+          >
+            <path
+              d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"
+            />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Alerta: Error genérico de autenticación -->
+      @if (errorMessage() && !accountLocked()) {
+        <div
+          class="mb-5 flex items-start gap-2 text-sm p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-600 dark:text-red-400"
+          role="alert"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="shrink-0 mt-0.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="space-y-5">
+        <!-- Usuario / Correo -->
+        <div>
+          <label for="usernameOrEmail" class="field-label">Usuario o correo</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--text-dim)]">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21a8 8 0 1 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </span>
+            <input
+              id="usernameOrEmail"
+              [attr.aria-invalid]="isInvalid('usernameOrEmail')"
+              type="text"
+              formControlName="usernameOrEmail"
+              autocomplete="username"
+              placeholder="Tu usuario o correo corporativo"
+              class="h-12 w-full rounded-lg border pl-10 pr-3 text-sm outline-none transition focus:ring-2 bg-white dark:bg-slate-800 text-[var(--text-main)] dark:placeholder-slate-500"
+              [class.border-red-500]="isInvalid('usernameOrEmail')"
+              [class.focus:ring-red-500]="isInvalid('usernameOrEmail')"
+              [class.border-slate-200]="!isInvalid('usernameOrEmail')"
+              [class.focus:ring-primary]="!isInvalid('usernameOrEmail')"
+            />
+          </div>
+          @if (isInvalid('usernameOrEmail')) {
+            <p class="text-xs text-red-500 mt-1">El usuario o correo es obligatorio.</p>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div>
+          <label for="password" class="field-label">Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--text-dim)]">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input
+              id="password"
+              [attr.aria-invalid]="isInvalid('password')"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="h-12 w-full rounded-lg border pl-10 pr-11 text-sm outline-none transition focus:ring-2 bg-white dark:bg-slate-800 text-[var(--text-main)] dark:placeholder-slate-500"
+              [class.border-red-500]="isInvalid('password')"
+              [class.focus:ring-red-500]="isInvalid('password')"
+              [class.border-slate-200]="!isInvalid('password')"
+              [class.focus:ring-primary]="!isInvalid('password')"
+            />
+            <button
+              type="button"
+              (click)="togglePassword()"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 p-2 text-[var(--text-dim)] hover:text-[var(--text-secondary)]"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              @if (showPassword()) {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.8 21.8 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                  />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              } @else {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (isInvalid('password')) {
+            <p class="text-xs text-red-500 mt-1">La contraseña es obligatoria.</p>
+          }
+        </div>
+
+        <!-- Opciones -->
+        <div class="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+          <label
+            class="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] select-none"
+          >
+            <input
+              type="checkbox"
+              formControlName="rememberMe"
+              class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-primary focus:ring-primary"
+            />
+            Mantener sesión activa
+          </label>
+          <span
+            class="text-sm font-medium text-[var(--text-dim)] cursor-not-allowed"
+            title="Próximamente"
+          >
+            ¿Olvidaste tu contraseña?
+          </span>
+        </div>
+
+        <!-- Botón principal -->
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="w-full h-12 rounded-lg bg-primary text-white font-semibold flex items-center justify-center gap-2 transition hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          @if (loading()) {
+            <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"
+              ></path>
+            </svg>
+            <span>Ingresando...</span>
+          } @else {
+            <span>Ingresar al Sistema</span>
+          }
+        </button>
+      </form>
+      <p class="login-help">¿Necesitas una cuenta? Contacta al administrador de tu empresa.</p>
+      <a class="home-link" routerLink="/">← Volver al inicio</a>
+    </div>
+  </div>
+</div>

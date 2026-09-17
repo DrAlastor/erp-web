@@ -91,13 +91,8 @@
 .brand-symbol {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #5b4bf6 0%, #4838e5 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(91, 75, 246, 0.35);
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .brand-text {
