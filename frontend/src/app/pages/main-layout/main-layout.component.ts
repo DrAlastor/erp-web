@@ -4,12 +4,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-sistema/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/gestion-de-usuarios/components/usuarios.component';
+import { MovimientoInventarioComponent } from '../../modulos/inventario-y-existencia/movimiento-inventario/components/movimiento-inventario.component';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterLink, UsuariosComponent],
+  imports: [RouterLink, UsuariosComponent, MovimientoInventarioComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
