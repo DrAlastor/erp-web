@@ -4,10 +4,13 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace/app
 
+# El wrapper de Gradle es un script de bash y Alpine solo trae sh.
+RUN apk add --no-cache bash
+
 # Copiar scripts y configuración de Gradle Wrapper para aprovechar el caché de capas
 COPY gradlew settings.gradle build.gradle ./
 COPY gradle/ ./gradle/
-RUN chmod +x ./gradlew && ./gradlew dependencies --no-daemon
+RUN sed -i 's/\r$//' gradlew && chmod +x ./gradlew && ./gradlew dependencies --no-daemon
 
 # Copiar código fuente y compilar el JAR excluyendo tests
 COPY src ./src
