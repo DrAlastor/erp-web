@@ -2,7 +2,7 @@
 
 Entorno preparado en esta maquina: PostgreSQL 18.6 en el puerto 5433, backend en 8080 y frontend en 4200. Hay un unico backend Spring Boot para todos los modulos y casos de uso implementados del ERP. Los comandos npm son atajos para arrancarlo con Gradle; no convierten el backend a Node.js.
 
-La base local conserva el nombre inicial `erp_cu01_local`, pero no esta restringida a CU-01: las migraciones futuras pueden agregar las tablas de todos los modulos. Actualmente contiene las migraciones existentes del repositorio; no es una copia del esquema completo de AWS. En esta rama la funcionalidad implementada es autenticacion; arrancar el servidor no implementa automaticamente los casos de uso pendientes.
+La base local conserva el nombre inicial `erp_cu01_local`, pero no esta restringida a CU-01: las migraciones futuras pueden agregar las tablas de todos los modulos. Actualmente contiene las migraciones existentes del repositorio; no es una copia del esquema completo de AWS. En esta rama estan implementados CU01 (acceso al sistema), CU02 (gestion de usuarios), CU03 (roles y permisos), CU06 (movimientos de inventario), HU-04 (clientes) y HU-05 (catalogo de articulos); los casos de uso que solo tienen carpeta no se habilitan por arrancar el servidor.
 
 La configuracion privada esta en `backend/.env.local` (ignorada por Git). Spring Boot la carga mediante el perfil `local`; `.env.example` sigue siendo una referencia de AWS.
 

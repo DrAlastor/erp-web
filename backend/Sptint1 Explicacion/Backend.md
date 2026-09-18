@@ -13,11 +13,15 @@ modulo/
 │   ├── acceso_al_sistema/           <-- CU01: inicio de sesión, JWT y sesiones
 │   ├── gestion_de_usuarios/         <-- CU02: administración de cuentas
 │   └── roles_y_permisos/            <-- CU03: roles, permisos y autorización
+├── comercial_y_preventa/
+│   └── gestion_de_clientes/         <-- HU-04: directorio de clientes y portal del cliente
 └── inventario_y_almacenes/
+    ├── compartido/                  <-- Categoria, compartida por los dos casos de uso
+    ├── catalogo_de_articulos/       <-- HU-05: catálogo maestro de artículos
     └── movimientos_de_inventario/   <-- CU06: Kardex y existencias por almacén
 ```
 
-El resto de las carpetas de `modulo` (`caja_y_arqueo`, `comercial_y_preventa`, `contabilidad_e_impuestos`, `inventario_y_existencia` y los demás casos de uso de `inventario_y_almacenes`) están creadas y vacías: son el lugar previsto para los casos de uso que faltan implementar. Al implementarlos deben seguir exactamente las capas y las reglas de la sección 6.
+Las carpetas de `modulo` que todavía están vacías (`caja_y_arqueo`, `compras_y_proveedores`, `contabilidad_e_impuestos`, `inventario_y_existencia`, los demás casos de uso de `comercial_y_preventa` y de `inventario_y_almacenes`) son el lugar previsto para los casos de uso que faltan implementar. Al implementarlos deben seguir exactamente las capas y las reglas de la sección 6.
 
 Las entidades y repositorios que comparten varios casos de uso —`Usuario`, `Rol`, `Permiso`— viven en `seguridad_y_auditoria/compartido`, porque los usan el login (CU01), la administración de cuentas (CU02) y el RBAC (CU03) sobre la misma tabla. El resto de las entidades pertenece al caso de uso que las administra.
 
@@ -105,13 +109,34 @@ src/main/java/
     │       ├── security/      (UsuarioPrincipal, UsuarioActual)
     │       └── service/       (ServicioRoles, ServicioAsignaciones, ServicioAutorizacion, ServicioAprovisionamiento, ArranqueSeguridad)
     │
+    ├── comercial_y_preventa/
+    │   └── gestion_de_clientes/               <-- HU-04 (Javier)
+    │       ├── controller/    (ClienteController, PerfilClienteController)
+    │       ├── dto/           (ClienteRequest, ClienteResponse, ClienteStatusRequest)
+    │       ├── entity/        (Cliente)
+    │       ├── mapper/        (ClienteMapper)
+    │       ├── repository/    (ClienteRepository)
+    │       └── service/       (ClienteService)
+    │
     └── inventario_y_almacenes/
+        ├── compartido/
+        │   ├── entity/        (Categoria, compartida por los dos casos de uso)
+        │   └── repository/    (CategoriaRepository)
+        │
+        ├── catalogo_de_articulos/             <-- HU-05 (Enrique)
+        │   ├── controller/    (ArticuloController)
+        │   ├── dto/           (ArticuloRequest, ArticuloResponse)
+        │   ├── entity/        (Articulo)
+        │   ├── mapper/        (ArticuloMapper)
+        │   ├── repository/    (ArticuloRepository)
+        │   └── service/       (ArticuloService)
+        │
         └── movimientos_de_inventario/         <-- CU06 (Leonardo)
             ├── controller/    (MovimientoInventarioController)
             ├── dto/           (MovimientoInventarioRequest, MovimientoInventarioResponse, StockAlmacenResponse, AlertaStockMinimoResponse, ProductoSimpleResponse, AlmacenSimpleResponse)
-            ├── entity/        (Producto, Categoria, Almacen, StockAlmacen, KardexMovimiento)
+            ├── entity/        (Producto, Almacen, StockAlmacen, KardexMovimiento)
             ├── mapper/        (MovimientoInventarioMapper)
-            ├── repository/    (ProductoRepository, CategoriaRepository, AlmacenRepository, StockAlmacenRepository, KardexMovimientoRepository)
+            ├── repository/    (ProductoRepository, AlmacenRepository, StockAlmacenRepository, KardexMovimientoRepository)
             └── service/       (MovimientoInventarioService)
 ```
 
@@ -129,13 +154,20 @@ Las pruebas se organizan en `src/test/java` espejando esa estructura: las de int
 * **`roles_y_permisos` — HU-03 (Santiago):** Roles y matriz de permisos en `/api/seguridad`. Estructura granular del catálogo (`modulo`, `accion`) con las relaciones `usuario_rol` y `rol_permiso`, resueltas en tiempo de ejecución como permisos efectivos. Aprovisiona los 24 permisos y los 7 roles de sistema en cada empresa y audita en `bitacora_auditoria`. Es la pieza de la que depende la protección de todos los demás casos de uso.
 * **`compartido`:** entidades y repositorios que usan los tres casos de uso anteriores (`Usuario`, `Rol`, `Permiso`).
 
-### 3.2. `inventario_y_almacenes`
+### 3.2. `comercial_y_preventa` (Gestión Comercial Base)
 
+* **`gestion_de_clientes` — HU-04 (Javier):** Directorio de clientes en `/api/clientes`: listado paginado con búsqueda, alta, edición y baja lógica, con NIT/CI único. Incluye el portal del cliente en `/api/perfil`, donde la cuenta externa consulta su propio perfil; el alta desde el login crea la cuenta con el rol legacy CLIENTE.
+
+### 3.3. `inventario_y_almacenes` (Catálogo y Existencias)
+
+* **`catalogo_de_articulos` — HU-05 (Enrique):** Catálogo maestro de artículos en `/api/articulos`, con SKU único, precio, stock, imagen y categoría. La categoría es la entidad compartida del módulo (`compartido/entity/Categoria`), la misma que usan los movimientos.
 * **`movimientos_de_inventario` — HU-06 (Leonardo):** Control de existencias por almacén y Kardex en `/api/inventario`. Registra entradas, salidas y ajustes de forma transaccional sobre `stock_almacen`, deja el movimiento inmutable en el Kardex, calcula saldos valorados y expone las alertas de stock mínimo.
 
-### 3.3. Casos de uso pendientes
+> **Decisión pendiente:** HU-05 y HU-06 modelan el mismo dominio dos veces —`articulos` frente a `productos`— y comparten `categorias`. Antes de conectar ventas o facturación hay que acordar cuál de los dos es el catálogo maestro.
 
-`comercial_y_preventa` (clientes, cotizaciones, pedidos, precios, validación comercial, ventas y facturación), `contabilidad_e_impuestos` (plan de cuentas, asientos, integración contable, cuentas por cobrar, información financiera), `caja_y_arqueo` (caja y cierre diario), `inventario_y_existencia` e `inventario_y_almacenes/catalogo_de_articulos` y `despachos_de_venta` todavía no tienen código: solo la carpeta. Al implementarlos se copia la estructura de las seis capas.
+### 3.4. Casos de uso pendientes
+
+`comercial_y_preventa` (cotizaciones, pedidos, precios, validación comercial, ventas y facturación), `contabilidad_e_impuestos` (plan de cuentas, asientos, integración contable, cuentas por cobrar, información financiera), `caja_y_arqueo` (caja y cierre diario), `compras_y_proveedores`, `inventario_y_existencia` e `inventario_y_almacenes/despachos_de_venta` todavía no tienen código: solo la carpeta. Al implementarlos se copia la estructura de las seis capas.
 
 ---
 
