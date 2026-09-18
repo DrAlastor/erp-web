@@ -105,6 +105,8 @@
         <h1>{{ fn.name }}</h1>
         @if (selectedModule()?.id === 'seguridad-y-auditoria' && fn.id === 'gestion-de-usuarios') {
           <app-usuarios />
+        } @else if ((selectedModule()?.id === 'inventario-y-almacenes' || selectedModule()?.id === 'inventario-y-existencia') && (fn.id === 'movimientos-de-inventario' || fn.id === 'movimiento-inventario')) {
+          <app-movimiento-inventario />
         } @else {
           <section class="module-card function-content">
             @if (fn.id === 'acceso-al-sistema') {
