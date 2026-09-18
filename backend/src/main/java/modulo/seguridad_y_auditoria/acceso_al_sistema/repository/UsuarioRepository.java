@@ -27,6 +27,10 @@ public interface UsuarioRepository
 
     Optional<Usuario> findByUsername(String username);
 
+    boolean existsByUsernameIgnoreCase(String username);
+
+    boolean existsByEmailIgnoreCase(String email);
+
     boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

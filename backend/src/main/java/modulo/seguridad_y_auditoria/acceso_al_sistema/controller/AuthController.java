@@ -1,6 +1,7 @@
 package modulo.seguridad_y_auditoria.acceso_al_sistema.controller;
 
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.LoginRequest;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.ClienteRegisterRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.RefreshTokenRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.TokenResponse;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.service.AuthService;
@@ -25,6 +26,14 @@ public class AuthController {
         String ip = extraerIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         return ResponseEntity.ok(authService.login(request, ip, userAgent));
+    }
+
+    @PostMapping("/register/cliente")
+    public ResponseEntity<TokenResponse> registerCliente(
+            @Valid @RequestBody ClienteRegisterRequest request, HttpServletRequest httpRequest) {
+        String ip = extraerIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        return ResponseEntity.status(201).body(authService.registerCliente(request, ip, userAgent));
     }
 
     @PostMapping("/refresh")

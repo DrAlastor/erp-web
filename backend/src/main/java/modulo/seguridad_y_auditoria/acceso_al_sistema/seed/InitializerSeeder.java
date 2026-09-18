@@ -1,7 +1,9 @@
 package modulo.seguridad_y_auditoria.acceso_al_sistema.seed;
 
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Rol;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Permiso;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Usuario;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.PermisoRepository;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.RolRepository;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class InitializerSeeder implements ApplicationRunner {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PermisoRepository permisoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${seed.admin.email}")
@@ -38,6 +41,18 @@ public class InitializerSeeder implements ApplicationRunner {
         Rol adminRol = rolRepository.findByNombre("ADMIN")
                 .orElseGet(() -> rolRepository.save(crearRolAdmin()));
 
+        Permiso clientesLectura = ensurePermission(
+                "COMERCIAL", "CLIENTES", "LECTURA", "Ver lista de clientes");
+        Permiso clientesEscritura = ensurePermission(
+                "COMERCIAL", "CLIENTES", "ESCRITURA", "Crear y modificar clientes");
+        Permiso perfilCliente = ensurePermission(
+                "CLIENTE", "PERFIL", "LECTURA", "Consultar el perfil personal del cliente");
+        adminRol.getPermisos().add(clientesLectura);
+        adminRol.getPermisos().add(clientesEscritura);
+        adminRol.getPermisos().add(perfilCliente);
+        adminRol.getPermisos().addAll(permisoRepository.findAll());
+        rolRepository.save(adminRol);
+
         if (usuarioRepository.findByUsernameOrEmail(adminEmail).isEmpty()) {
             Usuario admin = new Usuario();
             admin.setUsername("admin");
@@ -49,7 +64,25 @@ public class InitializerSeeder implements ApplicationRunner {
             admin.getRoles().add(adminRol);
             usuarioRepository.save(admin);
             log.info("Usuario administrador semilla creado: {}", adminEmail);
+        } else {
+            Usuario admin = usuarioRepository.findByUsernameOrEmail(adminEmail).orElseThrow();
+            if (!admin.getRoles().contains(adminRol)) {
+                admin.getRoles().add(adminRol);
+                usuarioRepository.save(admin);
+            }
         }
+    }
+
+    private Permiso ensurePermission(String modulo, String pantalla, String accion, String descripcion) {
+        return permisoRepository.findByModuloAndPantallaAndAccion(modulo, pantalla, accion)
+                .orElseGet(() -> {
+                    Permiso permiso = new Permiso();
+                    permiso.setModulo(modulo);
+                    permiso.setPantalla(pantalla);
+                    permiso.setAccion(accion);
+                    permiso.setDescripcion(descripcion);
+                    return permisoRepository.save(permiso);
+                });
     }
 
     private Rol crearRolAdmin() {

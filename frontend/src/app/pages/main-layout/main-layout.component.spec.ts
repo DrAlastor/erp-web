@@ -29,7 +29,15 @@ describe('Panel de control compartido', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: { queryParamMap: params } },
-        { provide: AuthService, useValue: { usuario: user, logout: () => logoutCalls++ } },
+        {
+          provide: AuthService,
+          useValue: {
+            usuario: user,
+            logout: () => logoutCalls++,
+            hasPermission: () => false,
+            isClient: () => false,
+          },
+        },
         { provide: ThemeService, useValue: { isDark: () => false, toggle: () => {} } },
       ],
     }).compileComponents();
@@ -39,7 +47,7 @@ describe('Panel de control compartido', () => {
     fixture.detectChanges();
     const nav = fixture.nativeElement.querySelector('nav') as HTMLElement;
     expect(nav.querySelectorAll('.module-toggle').length).toBe(6);
-    expect(nav.querySelectorAll('.function-list a').length).toBe(20);
+    expect(nav.querySelectorAll('.function-list a').length).toBe(21);
     for (const module of ERP_MODULES) {
       expect(nav.textContent).toContain(module.name);
       for (const fn of module.functions) expect(nav.textContent).toContain(fn.name);
@@ -55,7 +63,9 @@ describe('Panel de control compartido', () => {
     );
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Gestión de Clientes');
-    expect(fixture.nativeElement.querySelector('main').textContent).toContain('En desarrollo');
+    expect(fixture.nativeElement.querySelector('main').textContent).toContain(
+      'Directorio de clientes',
+    );
     expect(fixture.nativeElement.querySelector('nav a[aria-current="page"]').textContent).toBe(
       'Gestión de Clientes',
     );

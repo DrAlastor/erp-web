@@ -21,7 +21,7 @@ const definitions = [
     'comercial-y-preventa',
     'Comercial y Preventa',
     '↗',
-    'Gestión de Clientes|Precios y Descuentos|Cotizaciones|Pedidos de Venta|Validación Comercial|Ventas y Facturación|Anulación y Registro de Ventas',
+    'Gestión de Clientes|Perfil Personal|Precios y Descuentos|Cotizaciones|Pedidos de Venta|Validación Comercial|Ventas y Facturación|Anulación y Registro de Ventas',
   ],
   ['compras-y-proveedores', 'Compras y Proveedores', '⇄', ''],
   [

@@ -23,7 +23,8 @@
       >
       <p class="eyebrow">MÓDULOS</p>
       @for (module of modules; track module.id) {
-        <section class="module-group">
+        @if (!authService.isClient() || module.id === 'comercial-y-preventa') {
+          <section class="module-group">
           <button
             class="module-toggle"
             (click)="toggleModule(module.id)"
@@ -42,25 +43,28 @@
             [hidden]="!expanded().has(module.id)"
           >
             @for (fn of module.functions; track fn.id) {
-              <a
-                routerLink="/app"
-                [queryParams]="{ modulo: module.id, funcion: fn.id }"
-                [class.selected]="
-                  selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
-                "
-                [attr.aria-current]="
-                  selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
-                    ? 'page'
-                    : null
-                "
-                (click)="sidebarOpen.set(false)"
-                >{{ fn.name }}</a
-              >
+              @if (!authService.isClient() || fn.id === 'perfil-personal') {
+                <a
+                  routerLink="/app"
+                  [queryParams]="{ modulo: module.id, funcion: fn.id }"
+                  [class.selected]="
+                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                  "
+                  [attr.aria-current]="
+                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                      ? 'page'
+                      : null
+                  "
+                  (click)="sidebarOpen.set(false)"
+                  >{{ fn.name }}</a
+                >
+              }
             } @empty {
               <span class="future-note">Funciones en próximos ciclos</span>
             }
           </div>
-        </section>
+          </section>
+        }
       }
     </nav>
     <p class="sidebar-footer">ERP comercial y contable</p>
@@ -103,8 +107,12 @@
         <a class="back-link" routerLink="/app">← Volver al dashboard</a>
         <p class="eyebrow">{{ selectedModule()?.name }}</p>
         <h1>{{ fn.name }}</h1>
-        @if (selectedModule()?.id === 'seguridad-y-auditoria' && fn.id === 'gestion-de-usuarios') {
+        @if (authService.isClient() && fn.id === 'perfil-personal') {
+          <app-cliente-portal />
+        } @else if (!authService.isClient() && selectedModule()?.id === 'seguridad-y-auditoria' && fn.id === 'gestion-de-usuarios') {
           <app-usuarios />
+        } @else if (!authService.isClient() && selectedModule()?.id === 'comercial-y-preventa' && fn.id === 'gestion-de-clientes') {
+          <app-clientes />
         } @else {
           <section class="module-card function-content">
             @if (fn.id === 'acceso-al-sistema') {
@@ -157,9 +165,10 @@
           <h2>Explora los módulos</h2>
           <span>Selecciona una función para continuar</span>
         </div>
-        <section class="module-grid" aria-label="Módulos del ERP">
+          <section class="module-grid" aria-label="Módulos del ERP">
           @for (module of modules; track module.id) {
-            <article class="module-card">
+            @if (!authService.isClient() || module.id === 'comercial-y-preventa') {
+              <article class="module-card">
               <div class="card-top">
                 <span class="card-icon" aria-hidden="true">{{ module.icon }}</span
                 ><span class="count">{{ module.functions.length }} funciones</span>
@@ -167,16 +176,19 @@
               <h3>{{ module.name }}</h3>
               <div class="card-functions">
                 @for (fn of module.functions; track fn.id) {
-                  <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }"
-                    >{{ fn.name }}<span aria-hidden="true">↗</span></a
-                  >
+                  @if (!authService.isClient() || fn.id === 'perfil-personal') {
+                    <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }"
+                      >{{ fn.name }}<span aria-hidden="true">↗</span></a
+                    >
+                  }
                 } @empty {
                   <p class="future-note">
                     Integraciones de la cadena de suministro en próximos ciclos.
                   </p>
                 }
               </div>
-            </article>
+              </article>
+            }
           }
         </section>
         <p class="data-note">

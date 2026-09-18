@@ -13,6 +13,11 @@ export const routes: Routes = [
     title: 'Iniciar Sesión | NexoERP'
   },
   {
+    path: 'registro-cliente',
+    loadComponent: () => import('./modulos/seguridad-y-auditoria/acceso-al-sistema/components/registro-cliente/registro-cliente.component').then(m => m.RegistroClienteComponent),
+    title: 'Registro de Cliente | NexoERP'
+  },
+  {
     path: 'app',
     loadComponent: () => import('./pages/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [authGuard],

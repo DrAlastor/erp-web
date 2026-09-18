@@ -19,9 +19,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
+
 
 @SpringBootTest(classes = BackendApplication.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("local")
 @Transactional
 class UsuarioIntegrationTest {
     @Autowired MockMvc mvc;
