@@ -25,48 +25,61 @@
 
 ---
 
-### Tarea 1: Esquema RBAC y semilla de la matriz
+### Tarea 1: Esquema RBAC, catálogo de permisos y matriz de roles
 
 **Archivos:**
 - Crear: `backend/src/main/resources/db/migration/V20260918_1__seguridad_rbac.sql`
-- Crear: `backend/src/main/resources/db/migration/V20260918_2__seguridad_demo.sql`
-- Test: `backend/src/test/java/com/uagrm/erp/backend/seguridad/MatrizSemillaTest.java`
+- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/catalogo/{ModuloErp,AccionErp,DefinicionPermiso,CatalogoPermisos,RolDeSistema,MatrizRolesDeSistema}.java`
+- Test: `backend/src/test/java/com/uagrm/erp/backend/seguridad/catalogo/{CatalogoPermisosTest,MatrizRolesDeSistemaTest}.java`
+
+**Ajuste sobre el spec, decidido al arrancar:** los roles son por empresa y las empresas
+se crean en tiempo de ejecución, así que sembrarlos en SQL solo alcanzaría para la empresa
+demo — una empresa nueva nacería sin ningún rol. El sembrado tiene que ser lógica de la
+aplicación de todos modos, así que **el catálogo de permisos y la matriz de roles viven en
+Java** como definición inmutable y la migración SQL queda solo con las tablas. Beneficio
+extra: los 24 códigos se generan del producto módulo × acción, con lo que un typo es
+imposible, y la matriz se escribe con la notación `C L M A` del documento.
 
 **Interfaces:**
-- Produce: las tablas `empresa`, `usuario`, `permiso`, `rol`, `rol_permiso`, `usuario_rol`, `bitacora_auditoria`; el catálogo de 24 permisos; los 7 roles con su matriz; la empresa demo con los usuarios `admin@demo.bo`, `cajero@demo.bo`, `auditor@demo.bo`.
+- Produce:
+  - `CatalogoPermisos.TODOS : List<DefinicionPermiso>` (24), `CatalogoPermisos.codigos() : Set<String>`, `CatalogoPermisos.codigo(ModuloErp, AccionErp) : String`, `CatalogoPermisos.existe(String) : boolean`
+  - `MatrizRolesDeSistema.ROLES : List<RolDeSistema>` (7), `porCodigo(String) : RolDeSistema`, `codigos() : Set<String>`, `esDeSistema(String) : boolean`
+  - `RolDeSistema.desdeMatriz(codigo, nombre, descripcion, Map<ModuloErp,String>)` — notación del documento
+  - Las tablas `empresa`, `usuario`, `permiso`, `rol`, `rol_permiso`, `usuario_rol`, `bitacora_auditoria`
 
-La semilla es el punto donde un error de tipeo hace que el sistema contradiga el documento entregado, y no hay base de datos en los tests. Por eso el test **lee el archivo SQL de migración desde el classpath** y verifica la matriz contra los totales del documento.
-
-- [ ] **Paso 1: Escribir el test que falla** — `MatrizSemillaTest` lee `db/migration/V20260918_1__seguridad_rbac.sql` y afirma: hay 24 `INSERT` de permisos, uno por cada par módulo×acción; `ADMINISTRADOR` tiene los 24; los totales de los otros 6 roles son los de las restricciones globales; `AUDITOR_INTERNO` solo tiene permisos que terminan en `_CONSULTAR`; `CAJERO` no tiene ningún permiso de `SEGURIDAD`.
-- [ ] **Paso 2: Correr y verificar que falla** — `./gradlew test --tests "*MatrizSemillaTest"` → FALLA porque el archivo no existe.
-- [ ] **Paso 3: Escribir las dos migraciones** — DDL con UUID y claves foráneas, único `(empresa_id, codigo)` en `rol`, PK compuesta en las tablas puente; catálogo de permisos; los 7 roles con `es_sistema = true`; la matriz; y en la segunda migración la empresa demo con tres usuarios (hash BCrypt de contraseñas de desarrollo).
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — 24 permisos, un código por par módulo×acción, códigos únicos, `COMERCIAL_ANULAR` es el `VENTA_ANULAR` del documento; los 7 roles con sus totales exactos (24/5/9/6/5/3/6), conjuntos exactos de cajero, contador y preventista, auditor solo consulta, solo el administrador escribe en seguridad, ningún rol referencia un permiso inexistente, declarar la matriz obliga a los seis módulos y una letra desconocida falla.
+- [x] **Paso 2: Correr y verificar que fallan** — `./gradlew test --tests "*catalogo*"` → no compila, las clases no existen.
+- [x] **Paso 3: Implementar** los enumerados, el catálogo generado y la matriz transcrita del documento.
+- [x] **Paso 4: Correr los tests** — 25 pruebas en verde.
+- [x] **Paso 5: Escribir la migración del esquema** (solo tablas, índices y claves).
+- [x] **Paso 6: Commit.**
 
 ---
 
-### Tarea 2: Entidades JPA y repositorios
+### Tarea 2: Entidades, repositorios y aprovisionamiento de la empresa
 
 **Archivos:**
-- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/dominio/{Empresa,Usuario,Permiso,Rol,UsuarioRol,BitacoraEvento}.java`
-- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/repositorio/{UsuarioRepositorio,RolRepositorio,PermisoRepositorio,UsuarioRolRepositorio,BitacoraRepositorio}.java`
+- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/dominio/{Empresa,Usuario,Permiso,Rol,UsuarioRol,UsuarioRolId,BitacoraEvento}.java`
+- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/repositorio/{EmpresaRepositorio,UsuarioRepositorio,RolRepositorio,PermisoRepositorio,UsuarioRolRepositorio,BitacoraRepositorio}.java`
+- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/ServicioAprovisionamiento.java`
+- Crear: `backend/src/main/resources/db/migration/V20260918_2__seguridad_demo.sql`
+- Test: `backend/src/test/java/com/uagrm/erp/backend/seguridad/ServicioAprovisionamientoTest.java`
 
 **Interfaces:**
-- Consume: el esquema de la Tarea 1.
+- Consume: el esquema y las definiciones de la Tarea 1.
 - Produce:
-  - `PermisoRepositorio.findAllByOrderByModuloAscAccionAsc() : List<Permiso>`
-  - `RolRepositorio.findByEmpresaIdOrderByNombre(UUID empresaId) : List<Rol>`
-  - `RolRepositorio.findByIdAndEmpresaId(UUID id, UUID empresaId) : Optional<Rol>`
-  - `UsuarioRolRepositorio.findPermisosEfectivos(UUID usuarioId) : List<String>` — consulta JPQL que une `usuario_rol → rol → rol_permiso → permiso`, filtrando `rol.activo = true`, y devuelve los **códigos** de permiso.
-  - `UsuarioRolRepositorio.existsByUsuarioIdAndRolId(UUID, UUID) : boolean`
-  - `UsuarioRepositorio.findByEmailAndActivoTrue(String email) : Optional<Usuario>`
+  - `PermisoRepositorio.findAll()`, `findByCodigo(String)`
+  - `RolRepositorio.findByEmpresaIdOrderByNombre(UUID) : List<Rol>`, `findByIdAndEmpresaId(UUID, UUID) : Optional<Rol>`, `findByEmpresaIdAndCodigo(UUID, String) : Optional<Rol>`
+  - `UsuarioRolRepositorio.findCodigosDePermisosEfectivos(UUID usuarioId) : List<String>` — JPQL uniendo `usuario_rol → rol → rol_permiso → permiso` con `rol.activo = true`
+  - `UsuarioRolRepositorio.findUsuarioIdsPorRol(UUID rolId) : List<UUID>`
+  - `UsuarioRepositorio.findByEmailAndActivoTrue(String) : Optional<Usuario>`
+  - `ServicioAprovisionamiento.sincronizarCatalogoDePermisos()` y `aprovisionarEmpresa(UUID empresaId)` — idempotentes, se ejecutan al arrancar
 
-Los tests de repositorio necesitarían base de datos; el contrato de estas consultas queda cubierto por los mocks de la Tarea 3 y por `ddl-auto=validate` más la verificación manual de la Tarea 11.
-
-- [ ] **Paso 1: Escribir las entidades** — mapeo explícito de tablas y columnas, sin `ddl-auto` generando nada. `UsuarioRol` con clave compuesta embebida.
-- [ ] **Paso 2: Escribir los repositorios** con las firmas de arriba.
-- [ ] **Paso 3: Compilar** — `./gradlew compileJava` → sin errores.
-- [ ] **Paso 4: Commit.**
+- [ ] **Paso 1: Escribir los tests que fallan** — con repositorios simulados: sincronizar el catálogo inserta los permisos que faltan y no duplica los existentes; aprovisionar una empresa crea los 7 roles con su matriz; volver a aprovisionar no duplica nada ni pisa la matriz que el administrador ya editó.
+- [ ] **Paso 2: Correr y verificar que fallan.**
+- [ ] **Paso 3: Implementar** entidades, repositorios y el servicio de aprovisionamiento; la migración demo crea la empresa y los tres usuarios (el aprovisionamiento les siembra los roles al arrancar).
+- [ ] **Paso 4: Correr los tests** — pasan.
+- [ ] **Paso 5: Commit.**
 
 ---
 
@@ -77,7 +90,7 @@ Los tests de repositorio necesitarían base de datos; el contrato de estas consu
 - Test: `backend/src/test/java/com/uagrm/erp/backend/seguridad/ServicioAutorizacionTest.java`
 
 **Interfaces:**
-- Consume: `UsuarioRolRepositorio.findPermisosEfectivos`.
+- Consume: `UsuarioRolRepositorio.findCodigosDePermisosEfectivos`.
 - Produce:
   - `Set<String> permisosEfectivos(UUID usuarioId)`
   - `boolean tienePermiso(UUID usuarioId, String codigoPermiso)`
@@ -282,4 +295,4 @@ Estilo: se reutilizan las variables CSS de `styles.scss` (`--primary`, `--bg-sur
 
 **Huecos encontrados y cerrados:** la corrección de `VENTA_ANULAR` → `COMERCIAL_ANULAR` del spec §3 no tenía tarea propia; queda como parte del catálogo de T1, y la corrección del `.docx` y de la Figura 3 se anota como pendiente aparte, fuera del código.
 
-**Consistencia de tipos:** `UsuarioPrincipal` (T5) es lo que consumen `EvaluadorDePermisos` (T4) y `UsuarioActual` (T6). `findPermisosEfectivos` devuelve `List<String>` de códigos (T2) y `permisosEfectivos` devuelve `Set<String>` (T3). En el frontend, `PermisosService.permisos` es `Signal<ReadonlySet<string>>` y es lo que consultan el guard (T8), la directiva (T8) y el menú (T9).
+**Consistencia de tipos:** `UsuarioPrincipal` (T5) es lo que consumen `EvaluadorDePermisos` (T4) y `UsuarioActual` (T6). `findCodigosDePermisosEfectivos` devuelve `List<String>` de códigos (T2) y `permisosEfectivos` devuelve `Set<String>` (T3). En el frontend, `PermisosService.permisos` es `Signal<ReadonlySet<string>>` y es lo que consultan el guard (T8), la directiva (T8) y el menú (T9).
