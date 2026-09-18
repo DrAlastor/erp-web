@@ -39,6 +39,9 @@ public class InitializerSeeder implements ApplicationRunner {
         Rol adminRol = rolRepository.findByNombre("ADMIN")
                 .orElseGet(() -> rolRepository.save(crearRolAdmin()));
 
+        // Los permisos ya no se siembran acá: el catálogo y la matriz de roles son de la CU03
+        // (CatalogoPermisos y ArranqueSeguridad). Este seeder solo deja el rol ADMIN legacy y
+        // el usuario de prueba del login, que es lo que la HU-01 necesita para arrancar.
         if (usuarioRepository.findByUsernameOrEmail(adminEmail).isEmpty()) {
             Usuario admin = new Usuario();
             admin.setUsername("admin");
@@ -50,6 +53,12 @@ public class InitializerSeeder implements ApplicationRunner {
             admin.getRoles().add(adminRol);
             usuarioRepository.save(admin);
             log.info("Usuario administrador semilla creado: {}", adminEmail);
+        } else {
+            Usuario admin = usuarioRepository.findByUsernameOrEmail(adminEmail).orElseThrow();
+            if (!admin.getRoles().contains(adminRol)) {
+                admin.getRoles().add(adminRol);
+                usuarioRepository.save(admin);
+            }
         }
     }
 

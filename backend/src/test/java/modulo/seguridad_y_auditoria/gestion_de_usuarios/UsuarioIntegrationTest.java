@@ -31,6 +31,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
+
 
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ import java.util.UUID;
  */
 @SpringBootTest(classes = BackendApplication.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("local")
 @Transactional
 class UsuarioIntegrationTest {
 

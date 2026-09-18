@@ -4,11 +4,11 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, defer, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { LoginRequest, RefreshTokenRequest, TokenResponse } from '../models/auth.model';
+import { ClienteRegisterRequest, LoginRequest, RefreshTokenRequest, TokenResponse } from '../models/auth.model';
 import { UserSession } from '../models/user-session.model';
 
 const STORAGE_KEY = 'erp_session';
-interface TokenClaims { exp: number; authorities?: string[]; }
+interface TokenClaims { exp: number; authorities?: string[]; roles?: string[]; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,6 +30,15 @@ export class AuthService {
         this.rememberMe = rememberMe;
         this.persistSession(response);
       })
+    );
+  }
+
+  registerCliente(request: ClienteRegisterRequest, rememberMe = false): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${environment.apiUrl}/auth/register/cliente`, request).pipe(
+      tap(response => {
+        this.rememberMe = rememberMe;
+        this.persistSession(response);
+      }),
     );
   }
 
@@ -88,6 +97,11 @@ export class AuthService {
     // Esto controla la interfaz; la autorizacion real se verifica en el backend.
     const authorities = this.tokenClaims()?.authorities;
     return this.isAuthenticated() && Array.isArray(authorities) && authorities.includes(permission);
+  }
+
+  isClient(): boolean {
+    const roles = this.tokenClaims()?.roles;
+    return this.isAuthenticated() && Array.isArray(roles) && roles.includes('CLIENTE');
   }
 
   private tokenClaims(): TokenClaims | null {

@@ -26,4 +26,7 @@ public interface UsuarioRepository
 
     Optional<Usuario> findByUsername(String username);
 
+    boolean existsByUsernameIgnoreCase(String username);
+
+    boolean existsByEmailIgnoreCase(String email);
 }

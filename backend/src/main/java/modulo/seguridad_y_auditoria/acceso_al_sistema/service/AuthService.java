@@ -2,21 +2,31 @@ package modulo.seguridad_y_auditoria.acceso_al_sistema.service;
 
 import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.AccountLockedException;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.InvalidCredentialsException;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.ClienteRegisterRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.LoginRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.RefreshTokenRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.TokenResponse;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.mapper.AuthMapper;
-import modulo.seguridad_y_auditoria.compartido.entity.Permiso;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Sesion;
-import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.mapper.AuthMapper;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.SesionRepository;
-import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.security.JwtService;
+import modulo.seguridad_y_auditoria.compartido.entity.Permiso;
+import modulo.seguridad_y_auditoria.compartido.entity.Rol;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
+import modulo.seguridad_y_auditoria.compartido.repository.PermisoRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.RolRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
+import modulo.comercial_y_preventa.gestion_de_clientes.entity.Cliente;
+import modulo.comercial_y_preventa.gestion_de_clientes.repository.ClienteRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +44,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthMapper authMapper;
+    private final RolRepository rolRepository;
+    private final PermisoRepository permisoRepository;
+    private final ClienteRepository clienteRepository;
 
     @Value("${jwt.refresh-expiration-days}")
     private long refreshExpirationDays;
@@ -71,6 +84,42 @@ public class AuthService {
     }
 
     @Transactional
+    public TokenResponse registerCliente(ClienteRegisterRequest request, String ip, String userAgent) {
+        String username = request.username().trim();
+        String email = request.email().trim().toLowerCase();
+        String nitCi = request.nitCi().trim();
+        if (usuarioRepository.existsByUsernameIgnoreCase(username)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario ya está registrado");
+        }
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El correo ya está registrado");
+        }
+        if (clienteRepository.existsByNitCi(nitCi)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El NIT/CI ya está registrado");
+        }
+
+        Rol clienteRol = clienteRole();
+        Usuario usuario = new Usuario();
+        usuario.setUsername(username);
+        usuario.setEmail(email);
+        usuario.setPassword(passwordEncoder.encode(request.password()));
+        usuario.setFullname(request.razonSocial().trim());
+        usuario.setEnable(true);
+        usuario.getRoles().add(clienteRol);
+        usuario = usuarioRepository.saveAndFlush(usuario);
+
+        Cliente cliente = new Cliente();
+        cliente.setUsuario(usuario);
+        cliente.setRazonSocial(request.razonSocial().trim());
+        cliente.setNitCi(nitCi);
+        cliente.setTelefono(cleanOptional(request.telefono()));
+        cliente.setDireccion(cleanOptional(request.direccion()));
+        cliente.setActivo(true);
+        clienteRepository.save(cliente);
+        return emitirTokens(usuario, ip, userAgent);
+    }
+
+    @Transactional
     public TokenResponse refresh(RefreshTokenRequest request) {
         Sesion sesion = buscarSesionActiva(request.getRefreshToken());
         Usuario usuario = sesion.getUsuario();
@@ -79,7 +128,8 @@ public class AuthService {
             throw new InvalidCredentialsException("Refresh token inválido o expirado");
         }
 
-        String accessToken = jwtService.generateAccessToken(usuario.getUsername(), extraerAuthorities(usuario));
+        String accessToken = jwtService.generateAccessToken(
+                usuario.getUsername(), extraerAuthorities(usuario), extraerRoles(usuario));
 
         return authMapper.toTokenResponse(accessToken, request.getRefreshToken(),
                 jwtService.getAccessExpirationSeconds(), usuario);
@@ -115,7 +165,8 @@ public class AuthService {
 
     private TokenResponse emitirTokens(Usuario usuario, String ip, String userAgent) {
         List<String> authorities = extraerAuthorities(usuario);
-        String accessToken = jwtService.generateAccessToken(usuario.getUsername(), authorities);
+        String accessToken = jwtService.generateAccessToken(
+                usuario.getUsername(), authorities, extraerRoles(usuario));
         String refreshTokenPlain = jwtService.generateRefreshToken();
 
         Sesion sesion = new Sesion();
@@ -136,5 +187,47 @@ public class AuthService {
                 .map(Permiso::toAuthority)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Rol CLIENTE del portal externo, con el permiso de consultar su propio perfil.
+     *
+     * <p>Es un rol de la tabla legacy de CU01 y no uno del catálogo de la CU03: el cliente
+     * no es un empleado de la empresa y no forma parte de la matriz de 7 roles por empresa.
+     */
+    private Rol clienteRole() {
+        Rol role = rolRepository.findByNombre("CLIENTE").orElseGet(() -> {
+            Rol created = new Rol();
+            created.setNombre("CLIENTE");
+            created.setDescripcion("Cliente externo con acceso al portal");
+            return rolRepository.save(created);
+        });
+        Permiso portal = permisoRepository
+                .findByModuloAndPantallaAndAccion("CLIENTE", "PERFIL", "LECTURA")
+                .orElseGet(() -> {
+                    Permiso created = new Permiso();
+                    created.setModulo("CLIENTE");
+                    created.setPantalla("PERFIL");
+                    created.setAccion("LECTURA");
+                    created.setDescripcion("Consultar el perfil personal del cliente");
+                    return permisoRepository.save(created);
+                });
+        role.getPermisos().add(portal);
+        return rolRepository.save(role);
+    }
+
+    private String cleanOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String cleaned = value.trim();
+        return cleaned.isEmpty() ? null : cleaned;
+    }
+
+    private List<String> extraerRoles(Usuario usuario) {
+        return usuario.getRoles().stream()
+                .map(Rol::getNombre)
+                .distinct()
+                .toList();
     }
 }

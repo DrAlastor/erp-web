@@ -1,0 +1,28 @@
+:host { display: block; margin-top: 24px; }
+.portal-card {
+  max-width: 820px;
+  padding: 30px;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 16px;
+  background: var(--bg-surface);
+}
+.eyebrow, .profile-grid span {
+  font-size: 10px;
+  letter-spacing: .12em;
+  font-weight: 750;
+  color: var(--primary);
+}
+h2 { margin: 8px 0; font-size: 24px; }
+h3 { margin: 12px 0 4px; font-size: 16px; }
+p { color: var(--text-secondary); line-height: 1.6; }
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+.profile-grid div { padding: 16px; border-radius: 10px; background: var(--bg-subtle); }
+.profile-grid span, .profile-grid strong { display: block; }
+.profile-grid strong { margin-top: 7px; font-size: 13px; }
+.error { padding: 12px 16px; border-radius: 8px; background: #fce8e8; color: #922828; }
+@media (max-width: 650px) { .profile-grid { grid-template-columns: 1fr; } .portal-card { padding: 22px; } }

@@ -9,6 +9,9 @@ import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.*;
 import modulo.seguridad_y_auditoria.compartido.repository.*;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.security.JwtService;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.mapper.AuthMapper;
+import modulo.seguridad_y_auditoria.compartido.repository.PermisoRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.RolRepository;
+import modulo.comercial_y_preventa.gestion_de_clientes.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,13 +29,17 @@ class AuthServiceTest {
     @Mock UsuarioRepository usuarios;
     @Mock SesionRepository sesiones;
     @Mock PasswordEncoder encoder;
+    @Mock RolRepository roles;
+    @Mock PermisoRepository permisos;
+    @Mock ClienteRepository clientes;
     private AuthService service;
     private JwtService jwt;
     private Usuario usuario;
 
     @BeforeEach void setup() {
         jwt = new JwtService("test_only_secret_at_least_32_bytes_long", 900000);
-        service = new AuthService(usuarios, sesiones, encoder, jwt, new AuthMapper());
+        service = new AuthService(usuarios, sesiones, encoder, jwt, new AuthMapper(),
+                roles, permisos, clientes);
         ReflectionTestUtils.setField(service, "refreshExpirationDays", 7L);
         usuario = new Usuario();
         usuario.setId(1L);

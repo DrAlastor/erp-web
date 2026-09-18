@@ -3,6 +3,16 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ClienteRegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  razonSocial: string;
+  nitCi: string;
+  telefono: string;
+  direccion: string;
+}
+
 export interface RefreshTokenRequest {
   refreshToken: string;
 }

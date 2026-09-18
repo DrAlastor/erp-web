@@ -7,12 +7,15 @@ import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-siste
 import { ThemeService } from '../../core/services/theme.service';
 import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/gestion-de-usuarios/components/usuarios.component';
 import { MovimientoInventarioComponent } from '../../modulos/inventario-y-almacenes/movimientos-de-inventario/components/movimiento-inventario.component';
+import { ClientesComponent } from '../../modulos/comercial-y-preventa/gestion-de-clientes/components/clientes.component';
+import { ClientePortalComponent } from '../../modulos/comercial-y-preventa/gestion-de-clientes/components/cliente-portal.component';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent],
+  imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
+    ClientesComponent, ClientePortalComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,7 +37,10 @@ export class MainLayoutComponent {
     this.modules.find((module) => module.id === this.params()?.get('modulo')),
   );
   readonly selectedFunction = computed(() =>
-    this.selectedModule()?.functions.find((fn) => fn.id === this.params()?.get('funcion')),
+    this.selectedModule()?.functions.find((fn) => {
+      const selected = fn.id === this.params()?.get('funcion');
+      return selected && (!this.authService.isClient() || fn.id === 'perfil-personal');
+    }),
   );
   readonly hasSelection = computed(
     () => !!this.params()?.get('modulo') || !!this.params()?.get('funcion'),
