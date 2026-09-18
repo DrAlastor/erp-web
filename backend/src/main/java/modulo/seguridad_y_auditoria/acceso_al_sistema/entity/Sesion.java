@@ -1,6 +1,7 @@
 package modulo.seguridad_y_auditoria.acceso_al_sistema.entity;
 
 import jakarta.persistence.*;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import lombok.*;
 
 import java.time.LocalDateTime;

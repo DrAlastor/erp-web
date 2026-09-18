@@ -1,7 +1,8 @@
 package modulo.seguridad_y_auditoria.acceso_al_sistema.security;
 
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.*;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.compartido.entity.*;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.*;

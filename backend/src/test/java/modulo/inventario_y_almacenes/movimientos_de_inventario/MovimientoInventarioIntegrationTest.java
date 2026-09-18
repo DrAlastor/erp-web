@@ -10,6 +10,10 @@ import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.Almace
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.KardexMovimientoRepository;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.ProductoRepository;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.StockAlmacenRepository;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.security.ApplicationUserPrincipal;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,13 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -43,17 +48,37 @@ class MovimientoInventarioIntegrationTest {
     @Autowired private AlmacenRepository almacenRepository;
     @Autowired private StockAlmacenRepository stockRepository;
     @Autowired private KardexMovimientoRepository kardexRepository;
+    @Autowired private UsuarioRepository usuarios;
+    @Autowired private JdbcTemplate jdbc;
 
     private Producto producto;
     private Almacen almacen;
 
+    /**
+     * Identidad de un almacenero real: cuenta con el rol ENCARGADO_ALMACEN de la CU-03, que
+     * es el que otorga INVENTARIO_CONSULTAR y INVENTARIO_CREAR. El permiso no viaja en las
+     * authorities, lo resuelve el evaluador del RBAC contra la base.
+     */
     private RequestPostProcessor almaceneroAuth() {
-        return user("leonardo")
-                .authorities(
-                        new SimpleGrantedAuthority("INVENTARIO:MOVIMIENTOS:ESCRITURA"),
-                        new SimpleGrantedAuthority("INVENTARIO:MOVIMIENTOS:LECTURA"),
-                        new SimpleGrantedAuthority("ROLE_ALMACENERO")
-                );
+        Usuario cuenta = usuarios.findByUsername("inv_almacenero").orElseGet(() -> {
+            Usuario nueva = new Usuario();
+            nueva.setUsername("inv_almacenero");
+            nueva.setEmail("inv_almacenero@test.local");
+            nueva.setFullname("Almacenero de prueba");
+            nueva.setPassword("no-usada-en-la-prueba");
+            return usuarios.saveAndFlush(nueva);
+        });
+
+        jdbc.update("""
+                INSERT INTO usuario_rol (usuario_id, rol_id)
+                SELECT ?, r.id FROM rol r
+                WHERE r.codigo = 'ENCARGADO_ALMACEN' AND r.empresa_id = ?
+                ON CONFLICT DO NOTHING
+                """, cuenta.getId(), cuenta.getEmpresaId());
+
+        UsuarioPrincipal identidad = new UsuarioPrincipal(cuenta.getId(), cuenta.getEmpresaId(),
+                cuenta.getFullname(), cuenta.getEmail());
+        return user(new ApplicationUserPrincipal(cuenta.getUsername(), List.of(), identidad));
     }
 
     @BeforeEach

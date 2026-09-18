@@ -7,6 +7,7 @@ import modulo.inventario_y_almacenes.movimientos_de_inventario.entity.Almacen;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.entity.KardexMovimiento;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.entity.Producto;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.entity.StockAlmacen;
+import modulo.inventario_y_almacenes.movimientos_de_inventario.mapper.MovimientoInventarioMapper;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.AlmacenRepository;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.KardexMovimientoRepository;
 import modulo.inventario_y_almacenes.movimientos_de_inventario.repository.ProductoRepository;
@@ -32,6 +33,7 @@ public class MovimientoInventarioService {
     private final StockAlmacenRepository stockRepository;
     private final ProductoRepository productoRepository;
     private final AlmacenRepository almacenRepository;
+    private final MovimientoInventarioMapper mapper;
 
     /**
      * HU-06: Registra de forma atómica e inmutable un movimiento de inventario (Kardex)
@@ -137,7 +139,7 @@ public class MovimientoInventarioService {
         KardexMovimiento guardado = kardexRepository.save(movimiento);
         log.info("Movimiento Kardex #{} registrado con éxito. Nuevo stock: {}", guardado.getId(), nuevoStock);
 
-        return toMovimientoResponse(guardado);
+        return mapper.toMovimientoResponse(guardado);
     }
 
     /**
@@ -156,7 +158,7 @@ public class MovimientoInventarioService {
         Pageable pageable = PageRequest.of(page, size);
         String tipoFiltrado = (tipoMovimiento != null && !tipoMovimiento.isBlank()) ? tipoMovimiento.trim().toUpperCase() : null;
         return kardexRepository.buscarMovimientos(productoId, almacenId, tipoFiltrado, fechaInicio, fechaFin, pageable)
-                .map(this::toMovimientoResponse);
+                .map(mapper::toMovimientoResponse);
     }
 
     /**
@@ -166,7 +168,7 @@ public class MovimientoInventarioService {
     public MovimientoInventarioResponse obtenerMovimientoPorId(Long id) {
         KardexMovimiento m = kardexRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movimiento #" + id + " no encontrado."));
-        return toMovimientoResponse(m);
+        return mapper.toMovimientoResponse(m);
     }
 
     /**
@@ -176,7 +178,7 @@ public class MovimientoInventarioService {
     public Page<StockAlmacenResponse> listarStock(Integer almacenId, Long productoId, String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return stockRepository.buscarStock(almacenId, productoId, search, pageable)
-                .map(this::toStockResponse);
+                .map(mapper::toStockResponse);
     }
 
     /**
@@ -186,7 +188,7 @@ public class MovimientoInventarioService {
     public Page<StockAlmacenResponse> listarStockPorAlmacen(Integer almacenId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return stockRepository.findByAlmacenId(almacenId, pageable)
-                .map(this::toStockResponse);
+                .map(mapper::toStockResponse);
     }
 
     /**
@@ -197,34 +199,7 @@ public class MovimientoInventarioService {
     @Transactional(readOnly = true)
     public List<AlertaStockMinimoResponse> listarAlertasStockMinimo(Integer almacenId) {
         return stockRepository.findAlertasStockMinimo(almacenId).stream()
-                .map(s -> {
-                    BigDecimal actual = s.getCantidadActual() != null ? s.getCantidadActual() : BigDecimal.ZERO;
-                    int minimo = s.getProducto().getStockMinimo() != null ? s.getProducto().getStockMinimo() : 0;
-                    BigDecimal minDecimal = BigDecimal.valueOf(minimo);
-                    BigDecimal deficit = minDecimal.subtract(actual);
-
-                    String criticidad;
-                    if (actual.compareTo(BigDecimal.ZERO) <= 0) {
-                        criticidad = "AGOTADO";
-                    } else if (actual.compareTo(minDecimal.divide(BigDecimal.valueOf(2), 2, java.math.RoundingMode.HALF_UP)) <= 0) {
-                        criticidad = "CRITICO";
-                    } else {
-                        criticidad = "ALERTA";
-                    }
-
-                    return AlertaStockMinimoResponse.builder()
-                            .productoId(s.getProducto().getId())
-                            .productoNombre(s.getProducto().getNombre())
-                            .productoSku(s.getProducto().getCodigoSku())
-                            .unidadMedida(s.getProducto().getUnidadMedida())
-                            .almacenId(s.getAlmacen().getId())
-                            .almacenNombre(s.getAlmacen().getNombre())
-                            .cantidadActual(actual)
-                            .stockMinimo(minimo)
-                            .deficit(deficit.max(BigDecimal.ZERO))
-                            .nivelCriticidad(criticidad)
-                            .build();
-                })
+                .map(mapper::toAlertaResponse)
                 .toList();
     }
 
@@ -253,16 +228,7 @@ public class MovimientoInventarioService {
     @Transactional(readOnly = true)
     public List<ProductoSimpleResponse> listarProductosActivos() {
         return productoRepository.findByActivoTrue().stream()
-                .map(p -> ProductoSimpleResponse.builder()
-                        .id(p.getId())
-                        .nombre(p.getNombre())
-                        .codigoSku(p.getCodigoSku())
-                        .codigoBarra(p.getCodigoBarra())
-                        .unidadMedida(p.getUnidadMedida())
-                        .costoPromedio(p.getCostoPromedio())
-                        .stockMinimo(p.getStockMinimo())
-                        .categoriaNombre(p.getCategoria() != null ? p.getCategoria().getNombre() : "Sin Categoría")
-                        .build())
+                .map(mapper::toProductoSimpleResponse)
                 .toList();
     }
 
@@ -272,12 +238,7 @@ public class MovimientoInventarioService {
     @Transactional(readOnly = true)
     public List<AlmacenSimpleResponse> listarAlmacenesActivos() {
         return almacenRepository.findByActivoTrue().stream()
-                .map(a -> AlmacenSimpleResponse.builder()
-                        .id(a.getId())
-                        .nombre(a.getNombre())
-                        .direccion(a.getDireccion())
-                        .esPrincipal(a.getEsPrincipal())
-                        .build())
+                .map(mapper::toAlmacenSimpleResponse)
                 .toList();
     }
 
@@ -287,48 +248,5 @@ public class MovimientoInventarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Tipo de movimiento no válido: '" + tipo + "'. Los tipos permitidos son: ENTRADA, SALIDA, AJUSTE_POSITIVO, AJUSTE_NEGATIVO, AJUSTE.");
         }
-    }
-
-    private MovimientoInventarioResponse toMovimientoResponse(KardexMovimiento m) {
-        return MovimientoInventarioResponse.builder()
-                .id(m.getId())
-                .productoId(m.getProducto().getId())
-                .productoNombre(m.getProducto().getNombre())
-                .productoSku(m.getProducto().getCodigoSku())
-                .unidadMedida(m.getProducto().getUnidadMedida())
-                .almacenId(m.getAlmacen().getId())
-                .almacenNombre(m.getAlmacen().getNombre())
-                .tipoMovimiento(m.getTipoMovimiento())
-                .cantidad(m.getCantidad())
-                .costoUnitario(m.getCostoUnitario())
-                .saldoCantidad(m.getSaldoCantidad())
-                .saldoValorado(m.getSaldoValorado())
-                .referenciaDoc(m.getReferenciaDoc())
-                .motivo(m.getMotivo())
-                .fecha(m.getFecha())
-                .creadoPor(m.getCreadoPor())
-                .build();
-    }
-
-    private StockAlmacenResponse toStockResponse(StockAlmacen s) {
-        BigDecimal actual = s.getCantidadActual() != null ? s.getCantidadActual() : BigDecimal.ZERO;
-        int minimo = s.getProducto().getStockMinimo() != null ? s.getProducto().getStockMinimo() : 0;
-        boolean bajoStock = actual.compareTo(BigDecimal.valueOf(minimo)) <= 0;
-
-        return StockAlmacenResponse.builder()
-                .id(s.getId())
-                .productoId(s.getProducto().getId())
-                .productoNombre(s.getProducto().getNombre())
-                .productoSku(s.getProducto().getCodigoSku())
-                .codigoBarra(s.getProducto().getCodigoBarra())
-                .unidadMedida(s.getProducto().getUnidadMedida())
-                .precioVenta(s.getProducto().getPrecioVenta())
-                .costoPromedio(s.getProducto().getCostoPromedio())
-                .stockMinimo(minimo)
-                .almacenId(s.getAlmacen().getId())
-                .almacenNombre(s.getAlmacen().getNombre())
-                .cantidadActual(actual)
-                .bajoStockMinimo(bajoStock)
-                .build();
     }
 }

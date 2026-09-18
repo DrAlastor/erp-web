@@ -2,9 +2,10 @@ package modulo.seguridad_y_auditoria.roles_y_permisos;
 
 import comun.BackendApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Usuario;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
-import modulo.seguridad_y_auditoria.roles_y_permisos.repositorio.RolRepositorio;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.roles_y_permisos.repository.RolRepositorio;
+import modulo.seguridad_y_auditoria.roles_y_permisos.service.ServicioAutorizacion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ class RbacIntegrationTest {
 
     @Test void cu02MuestraYFiltraLosRolesAsignadosEnCu03() throws Exception {
         var admin = usuarios.findByUsername("admin").orElseThrow();
-        var identidad = new modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal(
+        var identidad = new modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioPrincipal(
                 admin.getId(), admin.getEmpresaId(), admin.getFullname(), admin.getEmail());
         var principal = new modulo.seguridad_y_auditoria.acceso_al_sistema.security.ApplicationUserPrincipal(
                 "admin", java.util.List.of(), identidad);

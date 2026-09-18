@@ -1,9 +1,9 @@
 package modulo.seguridad_y_auditoria.acceso_al_sistema.seed;
 
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Rol;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Usuario;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.RolRepository;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.compartido.entity.Rol;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
+import modulo.seguridad_y_auditoria.compartido.repository.RolRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

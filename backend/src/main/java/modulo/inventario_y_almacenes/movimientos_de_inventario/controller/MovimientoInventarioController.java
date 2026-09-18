@@ -24,7 +24,7 @@ import java.util.Map;
 @RequestMapping("/api/inventario")
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("@inventarioAuthorization.canAccess(authentication)")
+@PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
 public class MovimientoInventarioController {
 
     private final MovimientoInventarioService service;
@@ -34,7 +34,7 @@ public class MovimientoInventarioController {
      * Genera el movimiento inmutable en el Kardex y actualiza las existencias disponibles.
      */
     @PostMapping("/movimientos")
-    @PreAuthorize("@inventarioAuthorization.canRegister(authentication)")
+    @PreAuthorize("hasPermission('INVENTARIO','CREAR')")
     public ResponseEntity<MovimientoInventarioResponse> registrarMovimiento(
             @Valid @RequestBody MovimientoInventarioRequest request,
             Principal principal

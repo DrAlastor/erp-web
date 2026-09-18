@@ -5,12 +5,12 @@ import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.InvalidCredentia
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.LoginRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.RefreshTokenRequest;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.TokenResponse;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.UsuarioPerfilResponse;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Permiso;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.mapper.AuthMapper;
+import modulo.seguridad_y_auditoria.compartido.entity.Permiso;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Sesion;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Usuario;
+import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.SesionRepository;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +33,7 @@ public class AuthService {
     private final SesionRepository sesionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthMapper authMapper;
 
     @Value("${jwt.refresh-expiration-days}")
     private long refreshExpirationDays;
@@ -80,13 +81,8 @@ public class AuthService {
 
         String accessToken = jwtService.generateAccessToken(usuario.getUsername(), extraerAuthorities(usuario));
 
-        return new TokenResponse(
-                accessToken,
-                request.getRefreshToken(),
-                "Bearer",
-                jwtService.getAccessExpirationSeconds(),
-                toPerfil(usuario)
-        );
+        return authMapper.toTokenResponse(accessToken, request.getRefreshToken(),
+                jwtService.getAccessExpirationSeconds(), usuario);
     }
 
     @Transactional
@@ -130,13 +126,8 @@ public class AuthService {
         sesion.setFechaExpiracion(LocalDateTime.now().plusDays(refreshExpirationDays));
         sesionRepository.save(sesion);
 
-        return new TokenResponse(
-                accessToken,
-                refreshTokenPlain,
-                "Bearer",
-                jwtService.getAccessExpirationSeconds(),
-                toPerfil(usuario)
-        );
+        return authMapper.toTokenResponse(accessToken, refreshTokenPlain,
+                jwtService.getAccessExpirationSeconds(), usuario);
     }
 
     private List<String> extraerAuthorities(Usuario usuario) {
@@ -145,9 +136,5 @@ public class AuthService {
                 .map(Permiso::toAuthority)
                 .distinct()
                 .collect(Collectors.toList());
-    }
-
-    private UsuarioPerfilResponse toPerfil(Usuario usuario) {
-        return new UsuarioPerfilResponse(usuario.getId(), usuario.getUsername(), usuario.getEmail(), usuario.getFullname());
     }
 }

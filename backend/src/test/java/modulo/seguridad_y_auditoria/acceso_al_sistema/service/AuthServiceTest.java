@@ -4,8 +4,11 @@ import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.AccountLockedExc
 import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.InvalidCredentialsException;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.*;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.*;
+import modulo.seguridad_y_auditoria.compartido.entity.*;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.*;
+import modulo.seguridad_y_auditoria.compartido.repository.*;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.security.JwtService;
+import modulo.seguridad_y_auditoria.acceso_al_sistema.mapper.AuthMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +32,7 @@ class AuthServiceTest {
 
     @BeforeEach void setup() {
         jwt = new JwtService("test_only_secret_at_least_32_bytes_long", 900000);
-        service = new AuthService(usuarios, sesiones, encoder, jwt);
+        service = new AuthService(usuarios, sesiones, encoder, jwt, new AuthMapper());
         ReflectionTestUtils.setField(service, "refreshExpirationDays", 7L);
         usuario = new Usuario();
         usuario.setId(1L);

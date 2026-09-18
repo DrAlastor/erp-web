@@ -5,7 +5,7 @@ import comun.BackendApplication;
 import comun.exception.GlobalExceptionHandler;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.*;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.dto.auth.*;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.service.AuthService;
 import modulo.seguridad_y_auditoria.acceso_al_sistema.security.*;
 import org.junit.jupiter.api.Test;

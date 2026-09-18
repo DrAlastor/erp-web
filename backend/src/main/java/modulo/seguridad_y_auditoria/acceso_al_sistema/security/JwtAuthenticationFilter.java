@@ -4,8 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.repository.UsuarioRepository;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.entity.Permiso;
+import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
+import modulo.seguridad_y_auditoria.compartido.entity.Permiso;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .collect(Collectors.toList());
                             ApplicationUserPrincipal principal =
                                     new ApplicationUserPrincipal(username, authorities,
-                                        new modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal(
+                                        new modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioPrincipal(
                                             usuario.getId(), usuario.getEmpresaId(), usuario.getFullname(), usuario.getEmail()));
                             UsernamePasswordAuthenticationToken authToken =
                                     new UsernamePasswordAuthenticationToken(principal, null, authorities);
