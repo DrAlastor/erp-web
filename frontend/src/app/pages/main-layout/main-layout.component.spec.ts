@@ -58,6 +58,11 @@ describe('Panel de control compartido', () => {
   it('permite navegar entre funciones y volver al dashboard sin perder el panel', () => {
     const fixture = TestBed.createComponent(MainLayoutComponent);
     fixture.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${environment.apiUrl}/seguridad/mis-permisos`).flush({
+      usuarioId: 1, empresaId: 'erp', nombre: 'Empleado',
+      permisos: ['COMERCIAL_CONSULTAR'], roles: [],
+    });
     params.next(
       convertToParamMap({ modulo: 'comercial-y-preventa', funcion: 'gestion-de-clientes' }),
     );
@@ -155,6 +160,10 @@ describe('Panel de control compartido', () => {
     params.next(convertToParamMap({ modulo: 'inventario-y-almacenes', funcion: 'movimientos-de-inventario' }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-movimiento-inventario')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('main').textContent).toContain('No tienes permiso');
+    params.next(convertToParamMap({ modulo: 'inventario-y-almacenes', funcion: 'catalogo-de-articulos' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-catalogo')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('main').textContent).toContain('No tienes permiso');
     http.verify();
   });
