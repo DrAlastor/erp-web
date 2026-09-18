@@ -1,0 +1,63 @@
+<section class="catalogo">
+  <header class="catalogo__header">
+    <div>
+      <p class="catalogo__eyebrow">HU-05 · Inventario</p>
+      <h1>Catálogo de artículos</h1>
+      <p class="catalogo__subtitle">Consulta SKU, precios en Bs. y disponibilidad de stock.</p>
+    </div>
+
+    <label class="catalogo__search">
+      <span class="sr-only">Buscar por nombre</span>
+      <input
+        type="search"
+        placeholder="Buscar por nombre..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="onBusquedaChange($event)"
+      />
+    </label>
+  </header>
+
+  @if (cargando()) {
+    <p class="catalogo__state">Cargando catálogo...</p>
+  } @else if (error()) {
+    <div class="catalogo__state catalogo__state--error">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="cargarArticulos()">Reintentar</button>
+    </div>
+  } @else if (articulosFiltrados().length === 0) {
+    <p class="catalogo__state">No hay artículos para mostrar.</p>
+  } @else {
+    <div class="catalogo__grid">
+      @for (articulo of articulosFiltrados(); track articulo.id) {
+        <article class="card">
+          <div class="card__media">
+            <img [src]="imagenSrc(articulo)" [alt]="articulo.nombre" loading="lazy" />
+            <span
+              class="badge"
+              [class.badge--activo]="articulo.activo"
+              [class.badge--inactivo]="!articulo.activo"
+            >
+              {{ articulo.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+
+          <div class="card__body">
+            <h2>{{ articulo.nombre }}</h2>
+            <p class="card__sku">SKU: {{ articulo.sku }}</p>
+            <p class="card__categoria">
+              {{ articulo.categoria?.nombre || 'Sin categoría' }}
+            </p>
+            <div class="card__meta">
+              <span class="card__precio">
+                {{ articulo.precio | number: '1.2-2' }} Bs.
+              </span>
+              <span class="card__stock" [class]="stockClass(articulo.stock)">
+                Stock: {{ articulo.stock ?? 0 }}
+              </span>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

@@ -1,6 +1,6 @@
-package modulo.inventario_y_almacenes.movimientos_de_inventario.repository;
+package modulo.inventario_y_almacenes.compartido.repository;
 
-import modulo.inventario_y_almacenes.movimientos_de_inventario.entity.Categoria;
+import modulo.inventario_y_almacenes.compartido.entity.Categoria;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

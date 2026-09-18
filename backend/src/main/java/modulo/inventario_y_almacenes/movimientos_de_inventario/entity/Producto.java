@@ -1,5 +1,6 @@
 package modulo.inventario_y_almacenes.movimientos_de_inventario.entity;
 
+import modulo.inventario_y_almacenes.compartido.entity.Categoria;
 import jakarta.persistence.*;
 import lombok.*;
 

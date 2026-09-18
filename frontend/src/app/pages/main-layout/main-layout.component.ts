@@ -7,6 +7,7 @@ import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-siste
 import { ThemeService } from '../../core/services/theme.service';
 import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/gestion-de-usuarios/components/usuarios.component';
 import { MovimientoInventarioComponent } from '../../modulos/inventario-y-almacenes/movimientos-de-inventario/components/movimiento-inventario.component';
+import { CatalogoComponent } from '../../modulos/inventario-y-almacenes/catalogo-de-articulos/components/catalogo.component';
 import { ClientesComponent } from '../../modulos/comercial-y-preventa/gestion-de-clientes/components/clientes.component';
 import { ClientePortalComponent } from '../../modulos/comercial-y-preventa/gestion-de-clientes/components/cliente-portal.component';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
@@ -15,7 +16,7 @@ import { ERP_MODULES } from '../../core/models/erp-navigation';
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
-    ClientesComponent, ClientePortalComponent],
+    CatalogoComponent, ClientesComponent, ClientePortalComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

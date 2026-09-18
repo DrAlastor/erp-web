@@ -115,6 +115,10 @@
           @if (!permisos.cargado()) { <p>Cargando permisos...</p> }
           @else if (permisos.tiene('SEGURIDAD_CONSULTAR')) { <app-roles /> }
           @else { <p>No tienes permiso para consultar roles y permisos.</p> }
+        } @else if (selectedModule()?.id === 'inventario-y-almacenes' && fn.id === 'catalogo-de-articulos') {
+          @if (!permisos.cargado()) { <p>Cargando permisos...</p> }
+          @else if (permisos.tiene('INVENTARIO_CONSULTAR')) { <app-catalogo /> }
+          @else { <p>No tienes permiso para consultar el catálogo.</p> }
         } @else if (selectedModule()?.id === 'inventario-y-almacenes' && fn.id === 'movimientos-de-inventario') {
           @if (!permisos.cargado()) { <p>Cargando permisos...</p> }
           @else if (permisos.tiene('INVENTARIO_CONSULTAR')) { <app-movimiento-inventario /> }
