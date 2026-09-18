@@ -108,10 +108,10 @@ Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
   - después de `invalidarCache`, la siguiente llamada vuelve a consultar
   - `invalidarCacheDeRol` invalida a todos los usuarios que tienen ese rol
   - el conjunto devuelto es inmutable
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** con caché en `ConcurrentHashMap`.
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar** con caché en `ConcurrentHashMap`.
+- [x] **Paso 4: Correr los tests** — pasan.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -129,11 +129,11 @@ Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
 - Produce: la expresión `hasPermission('MODULO','ACCION')` utilizable en `@PreAuthorize`, y un cuerpo JSON único de acceso denegado: `{"error":"ACCESO_DENEGADO","mensaje":"No tiene permiso para realizar esta operación","permisoRequerido":"<CODIGO>"}` con estado 403.
 - `SecurityConfig` pasa de `permitAll()` a **denegar por defecto**: solo `/api/auth/login`, `/api/health/**`, `/api/public/**` y `/error` quedan abiertos.
 
-- [ ] **Paso 1: Escribir los tests que fallan** — el evaluador compone `MODULO_ACCION` y delega en `ServicioAutorizacion`; devuelve `false` si no hay usuario autenticado; devuelve `false` (nunca excepción) si la expresión trae basura.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** el evaluador, registrarlo en el `MethodSecurityExpressionHandler`, escribir el manejador de acceso denegado y cerrar `SecurityConfig`.
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — el evaluador compone `MODULO_ACCION` y delega en `ServicioAutorizacion`; devuelve `false` si no hay usuario autenticado; devuelve `false` (nunca excepción) si la expresión trae basura.
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar** el evaluador, registrarlo en el `MethodSecurityExpressionHandler`, escribir el manejador de acceso denegado y cerrar `SecurityConfig`.
+- [x] **Paso 4: Correr los tests** — pasan.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -152,11 +152,11 @@ Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
   - `POST /api/auth/login` con cuerpo `{email, password}` → `200 {token, nombre, empresaId}` o `401 {"error":"CREDENCIALES_INVALIDAS"}`
   - Un ayudante estático `UsuarioActual.obtener() : UsuarioPrincipal` para que los controladores tomen el usuario y la empresa del contexto.
 
-- [ ] **Paso 1: Escribir los tests que fallan** — ida y vuelta del token conservando los cuatro campos; token con firma inválida → vacío; token expirado → vacío; basura → vacío (sin excepción); login correcto → 200 con token; contraseña mala → 401; usuario inactivo → 401.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** con BCrypt y JJWT HS256; el filtro deja el `UsuarioPrincipal` autenticado en el contexto.
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — ida y vuelta del token conservando los cuatro campos; token con firma inválida → vacío; token expirado → vacío; basura → vacío (sin excepción); login correcto → 200 con token; contraseña mala → 401; usuario inactivo → 401.
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar** con BCrypt y JJWT HS256; el filtro deja el `UsuarioPrincipal` autenticado en el contexto.
+- [x] **Paso 4: Correr los tests** — pasan.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -175,7 +175,7 @@ Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
 
 Reglas que los tests fijan: rol inactivo no otorga permisos; no se asigna dos veces el mismo rol; no se asigna un rol de otra empresa; todo cambio de asignación escribe en `bitacora_auditoria`; guardar la matriz de un rol invalida la caché de sus usuarios.
 
-- [ ] **Paso 1: Escribir los tests que fallan** (`@WebMvcTest` con servicios simulados y `spring-security-test`):
+- [x] **Paso 1: Escribir los tests que fallan** (`@WebMvcTest` con servicios simulados y `spring-security-test`):
   - `GET /api/seguridad/roles` con `SEGURIDAD_CONSULTAR` → 200 con los 7 roles
   - el mismo endpoint sin ese permiso → **403** con cuerpo `ACCESO_DENEGADO`
   - sin token → 401
@@ -184,10 +184,10 @@ Reglas que los tests fijan: rol inactivo no otorga permisos; no se asigna dos ve
   - asignar un rol de otra empresa → 404 `ROL_NO_ENCONTRADO`
   - asignar correctamente → 201 y se escribe el evento en la bitácora
   - `GET /api/seguridad/mis-permisos` autenticado sin permisos especiales → 200
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** controladores, servicios, DTOs y el manejador de excepciones.
-- [ ] **Paso 4: Correr toda la batería del backend** — `./gradlew test` en verde.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar** controladores, servicios, DTOs y el manejador de excepciones.
+- [x] **Paso 4: Correr toda la batería del backend** — `./gradlew test` en verde.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -207,11 +207,11 @@ Reglas que los tests fijan: rol inactivo no otorga permisos; no se asigna dos ve
   - `PermisosService`: `cargar() : Observable<void>`, `permisos : Signal<ReadonlySet<string>>`, `tiene(codigo: string) : boolean`, `limpiar()`
   - `authInterceptor` — agrega `Authorization: Bearer <token>` cuando hay token
 
-- [ ] **Paso 1: Escribir los tests que fallan** — sin `localStorage` (render de servidor) el servicio no explota y `estaAutenticado` es `false`; el login guarda el token y deja `estaAutenticado` en `true`; `logout` lo borra y limpia los permisos; el interceptor agrega la cabecera solo si hay token; `tiene()` es `false` antes de cargar.
-- [ ] **Paso 2: Correr y verificar que fallan** — `npm test`.
-- [ ] **Paso 3: Implementar** con guardas de `isPlatformBrowser`.
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — sin `localStorage` (render de servidor) el servicio no explota y `estaAutenticado` es `false`; el login guarda el token y deja `estaAutenticado` en `true`; `logout` lo borra y limpia los permisos; el interceptor agrega la cabecera solo si hay token; `tiene()` es `false` antes de cargar.
+- [x] **Paso 2: Correr y verificar que fallan** — `npm test`.
+- [x] **Paso 3: Implementar** con guardas de `isPlatformBrowser`.
+- [x] **Paso 4: Correr los tests** — pasan.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -225,11 +225,11 @@ Reglas que los tests fijan: rol inactivo no otorga permisos; no se asigna dos ve
 **Interfaces:**
 - Produce: `authGuard : CanActivateFn`; `permisoGuard(codigo: string) : CanActivateFn`; directiva `*siPermiso="'CODIGO'"`.
 
-- [ ] **Paso 1: Escribir los tests que fallan** — sin sesión, `authGuard` redirige a `/login`; con el permiso, `permisoGuard` deja pasar; sin el permiso, redirige a `/app/sin-acceso`; la directiva no renderiza el contenido sin el permiso y sí lo renderiza con él.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar.**
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — sin sesión, `authGuard` redirige a `/login`; con el permiso, `permisoGuard` deja pasar; sin el permiso, redirige a `/app/sin-acceso`; la directiva no renderiza el contenido sin el permiso y sí lo renderiza con él.
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar.**
+- [x] **Paso 4: Correr los tests** — pasan.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -249,11 +249,11 @@ Reglas que los tests fijan: rol inactivo no otorga permisos; no se asigna dos ve
 
 Estilo: se reutilizan las variables CSS de `styles.scss` (`--primary`, `--bg-surface`, `--text-main`, `--font-sans`). No se introduce un lenguaje visual nuevo.
 
-- [ ] **Paso 1: Escribir los tests que fallan** — con solo permisos de comercial, el menú **no** muestra "Seguridad"; como administrador sí lo muestra; el login con credenciales malas muestra el mensaje de error y no navega.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** las pantallas, el menú y las rutas.
-- [ ] **Paso 4: Correr los tests** — pasan. Y `npm run build` sin errores de SSR.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — con solo permisos de comercial, el menú **no** muestra "Seguridad"; como administrador sí lo muestra; el login con credenciales malas muestra el mensaje de error y no navega.
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar** las pantallas, el menú y las rutas.
+- [x] **Paso 4: Correr los tests** — pasan. Y `npm run build` sin errores de SSR.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -269,11 +269,11 @@ Estilo: se reutilizan las variables CSS de `styles.scss` (`--primary`, `--bg-sur
 - Consume: los endpoints de la Tarea 6.
 - Produce: `RolesService` con `listar()`, `catalogoPermisos()`, `guardarMatriz(rolId, codigos)`, `cambiarEstado(rolId, activo)`, `asignarRol(usuarioId, rolId)`.
 
-- [ ] **Paso 1: Escribir los tests que fallan** — se dibuja la matriz con 6 módulos × 4 acciones; al marcar una casilla y guardar, el servicio recibe exactamente los códigos marcados; sin `SEGURIDAD_MODIFICAR` las casillas están deshabilitadas y el botón de guardar no aparece (`*siPermiso`); un 403 del backend se muestra como mensaje de acceso denegado.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar.**
-- [ ] **Paso 4: Correr toda la batería del frontend** — `npm test` en verde, `npm run build` sin errores.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — se dibuja la matriz con 6 módulos × 4 acciones; al marcar una casilla y guardar, el servicio recibe exactamente los códigos marcados; sin `SEGURIDAD_MODIFICAR` las casillas están deshabilitadas y el botón de guardar no aparece (`*siPermiso`); un 403 del backend se muestra como mensaje de acceso denegado.
+- [x] **Paso 2: Correr y verificar que fallan.**
+- [x] **Paso 3: Implementar.**
+- [x] **Paso 4: Correr toda la batería del frontend** — `npm test` en verde, `npm run build` sin errores.
+- [x] **Paso 5: Commit.**
 
 ---
 
@@ -283,13 +283,13 @@ Estilo: se reutilizan las variables CSS de `styles.scss` (`--primary`, `--bg-sur
 - Crear: `docs/seguridad/HU-03-verificacion.md` — qué se probó, con qué usuarios y qué se vio
 - Crear: `docs/seguridad/HU-03-aviso-al-grupo.md` — territorio compartido con CU-01, CU-02 y CU-04
 
-- [ ] **Paso 1:** `docker compose up -d postgres`, `./gradlew bootRun` — las migraciones aplican y `ddl-auto=validate` no protesta (esto valida el mapeo de la Tarea 2 contra el esquema real).
-- [ ] **Paso 2:** `npm run dev` y entrar como **administrador** — menú completo, matriz con las 24 casillas.
-- [ ] **Paso 3:** Editar la matriz de un rol y comprobar que el cambio se refleja **sin reiniciar ni volver a entrar** (la caché se invalidó).
-- [ ] **Paso 4:** Entrar como **cajero** — menú recortado, sin la sección de Seguridad.
-- [ ] **Paso 5:** Pedir a mano un endpoint restringido con el token del cajero — **403** con el cuerpo de acceso denegado.
-- [ ] **Paso 6:** Asignar un rol y verificar el evento en `bitacora_auditoria`.
-- [ ] **Paso 7:** Escribir los dos documentos y commitear. **No se sube nada al remoto.**
+- [x] **Paso 1:** `docker compose up -d postgres`, `./gradlew bootRun` — las migraciones aplican y `ddl-auto=validate` no protesta (esto valida el mapeo de la Tarea 2 contra el esquema real).
+- [x] **Paso 2:** `npm run dev` y entrar como **administrador** — menú completo, matriz con las 24 casillas.
+- [x] **Paso 3:** Editar la matriz de un rol y comprobar que el cambio se refleja **sin reiniciar ni volver a entrar** (la caché se invalidó).
+- [x] **Paso 4:** Entrar como **cajero** — menú recortado, sin la sección de Seguridad.
+- [x] **Paso 5:** Pedir a mano un endpoint restringido con el token del cajero — **403** con el cuerpo de acceso denegado.
+- [x] **Paso 6:** Asignar un rol y verificar el evento en `bitacora_auditoria`.
+- [x] **Paso 7:** Escribir los dos documentos y commitear. **No se sube nada al remoto.**
 
 ---
 
