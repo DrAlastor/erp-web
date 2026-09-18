@@ -100,7 +100,7 @@ Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
   - `boolean tienePermiso(UUID usuarioId, String codigoPermiso)`
   - `void invalidarCache(UUID usuarioId)` y `void invalidarCacheDeRol(UUID rolId)`
 
-- [ ] **Paso 1: Escribir los tests que fallan** (repositorio simulado con Mockito):
+- [x] **Paso 1: Escribir los tests que fallan** (repositorio simulado con Mockito):
   - la unión de dos roles devuelve los permisos de ambos, sin duplicados
   - `tienePermiso` es `false` para un código que no está
   - un rol inactivo no aporta permisos (el repositorio ya lo filtra: el test fija esa expectativa)
