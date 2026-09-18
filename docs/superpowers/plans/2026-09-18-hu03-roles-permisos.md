@@ -61,25 +61,29 @@ imposible, y la matriz se escribe con la notación `C L M A` del documento.
 **Archivos:**
 - Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/dominio/{Empresa,Usuario,Permiso,Rol,UsuarioRol,UsuarioRolId,BitacoraEvento}.java`
 - Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/repositorio/{EmpresaRepositorio,UsuarioRepositorio,RolRepositorio,PermisoRepositorio,UsuarioRolRepositorio,BitacoraRepositorio}.java`
-- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/ServicioAprovisionamiento.java`
-- Crear: `backend/src/main/resources/db/migration/V20260918_2__seguridad_demo.sql`
+- Crear: `backend/src/main/java/com/uagrm/erp/backend/seguridad/{ServicioAprovisionamiento,ArranqueSeguridad}.java`
 - Test: `backend/src/test/java/com/uagrm/erp/backend/seguridad/ServicioAprovisionamientoTest.java`
+
+**Ajuste:** los usuarios demo pasan a la Tarea 5 en lugar de una migración `V20260918_2__`,
+porque necesitan un hash BCrypt y el codificador de contraseñas se configura recién ahí.
+Sembrarlos desde Java evita dejar hashes escritos a mano en una migración.
 
 **Interfaces:**
 - Consume: el esquema y las definiciones de la Tarea 1.
 - Produce:
-  - `PermisoRepositorio.findAll()`, `findByCodigo(String)`
-  - `RolRepositorio.findByEmpresaIdOrderByNombre(UUID) : List<Rol>`, `findByIdAndEmpresaId(UUID, UUID) : Optional<Rol>`, `findByEmpresaIdAndCodigo(UUID, String) : Optional<Rol>`
-  - `UsuarioRolRepositorio.findCodigosDePermisosEfectivos(UUID usuarioId) : List<String>` — JPQL uniendo `usuario_rol → rol → rol_permiso → permiso` con `rol.activo = true`
-  - `UsuarioRolRepositorio.findUsuarioIdsPorRol(UUID rolId) : List<UUID>`
-  - `UsuarioRepositorio.findByEmailAndActivoTrue(String) : Optional<Usuario>`
-  - `ServicioAprovisionamiento.sincronizarCatalogoDePermisos()` y `aprovisionarEmpresa(UUID empresaId)` — idempotentes, se ejecutan al arrancar
+  - `PermisoRepositorio.findByCodigo(String)`, `findByCodigoIn(Collection<String>)`, `findAllByOrderByModuloAscAccionAsc()`
+  - `RolRepositorio.findByEmpresaIdOrderByNombre(UUID)`, `findByIdAndEmpresaId(UUID, UUID)`, `findByEmpresaIdAndCodigo(UUID, String)`
+  - `UsuarioRolRepositorio.findCodigosDePermisosEfectivos(UUID) : List<String>` — JPQL uniendo `UsuarioRol → Rol → permisos` con `r.activo = true`
+  - `UsuarioRolRepositorio.findUsuarioIdsPorRol(UUID) : List<UUID>`, `findByIdUsuarioId(UUID) : List<UsuarioRol>`
+  - `UsuarioRepositorio.findByEmailAndActivoTrue(String)`, `findByIdAndEmpresaId(UUID, UUID)`, `findByEmpresaIdOrderByNombre(UUID)`
+  - `ServicioAprovisionamiento.sincronizarCatalogoDePermisos() : int` y `aprovisionarEmpresa(UUID) : int` — idempotentes; `ArranqueSeguridad` las corre al arrancar
+  - Constantes de la bitácora en `BitacoraEvento`: `ROL_ASIGNADO`, `ROL_QUITADO`, `MATRIZ_MODIFICADA`, `ROL_ESTADO_CAMBIADO`
 
-- [ ] **Paso 1: Escribir los tests que fallan** — con repositorios simulados: sincronizar el catálogo inserta los permisos que faltan y no duplica los existentes; aprovisionar una empresa crea los 7 roles con su matriz; volver a aprovisionar no duplica nada ni pisa la matriz que el administrador ya editó.
-- [ ] **Paso 2: Correr y verificar que fallan.**
-- [ ] **Paso 3: Implementar** entidades, repositorios y el servicio de aprovisionamiento; la migración demo crea la empresa y los tres usuarios (el aprovisionamiento les siembra los roles al arrancar).
-- [ ] **Paso 4: Correr los tests** — pasan.
-- [ ] **Paso 5: Commit.**
+- [x] **Paso 1: Escribir los tests que fallan** — sincronizar siembra los 24 con la base vacía, no duplica si ya están, inserta solo los faltantes; aprovisionar crea los 7 roles con `esSistema` y `activo`; el administrador queda con 24 permisos y el preventista con 3; aprovisionar dos veces no duplica ni pisa la matriz editada; si al catálogo de la base le falta un permiso, el error lo nombra.
+- [x] **Paso 2: Escribir entidades, repositorios y el servicio.** (Nota de proceso: acá corrí el test recién después de implementar, no antes; la falla previa quedó sin observar.)
+- [x] **Paso 3: Correr los tests** — 9 pruebas del aprovisionamiento en verde, 34 propias en total.
+- [x] **Paso 4: Verificar contra la base real** — `docker compose up -d postgres` y `./gradlew test`: Flyway aplicó `20260918.1`, `ddl-auto=validate` aprobó el mapeo de las 7 entidades y el arranque sembró los 24 permisos (4 por módulo, comprobado por consulta).
+- [x] **Paso 5: Commit.**
 
 ---
 
