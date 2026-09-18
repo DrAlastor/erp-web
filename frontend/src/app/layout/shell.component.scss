@@ -1,0 +1,217 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--bg-main);
+}
+
+.marco {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- Menú lateral ---------- */
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1.5rem 1.15rem;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--bg-card-border);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--text-main);
+}
+
+.marca-signo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.marca-nombre {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-subtle);
+    color: var(--text-main);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.item-activo {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+
+  &:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+}
+
+.item-pendiente {
+  color: var(--text-dim);
+  cursor: default;
+
+  &:hover {
+    background: transparent;
+    color: var(--text-dim);
+  }
+}
+
+.sprint {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+.pie-lateral {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bg-card-border);
+}
+
+.pie-dato {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pie-roles {
+  margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  word-break: break-word;
+}
+
+/* ---------- Contenido ---------- */
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.75rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+.quien-nombre {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.salir {
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--accent-rose);
+    color: var(--accent-rose);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.lienzo {
+  flex: 1;
+  padding: 1.75rem;
+  min-width: 0;
+}
+
+/* ---------- Angosto ---------- */
+
+@media (max-width: 860px) {
+  .marco {
+    grid-template-columns: 1fr;
+  }
+
+  .lateral {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid var(--bg-card-border);
+  }
+
+  .navegacion {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .pie-lateral {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .pie-roles {
+    display: none;
+  }
+
+  .lienzo {
+    padding: 1.1rem;
+  }
+}

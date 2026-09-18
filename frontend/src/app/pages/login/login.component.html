@@ -1,0 +1,63 @@
+<div class="pantalla">
+  <section class="tarjeta">
+    <a class="marca" href="/">
+      <span class="marca-signo">N</span>
+      <span class="marca-nombre">NexoERP</span>
+    </a>
+
+    <h1 class="titulo">Ingresá al sistema</h1>
+    <p class="bajada">El acceso a cada módulo depende de los roles que tengas asignados.</p>
+
+    <form class="formulario" (ngSubmit)="entrar()">
+      <label class="campo">
+        <span class="etiqueta">Email</span>
+        <input
+          type="email"
+          name="email"
+          autocomplete="username"
+          required
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+        />
+      </label>
+
+      <label class="campo">
+        <span class="etiqueta">Contraseña</span>
+        <input
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          required
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+        />
+      </label>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <button type="submit" class="entrar" [disabled]="enviando()">
+        {{ enviando() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    @if (mostrarDemo) {
+      <div class="demo">
+        <p class="demo-titulo">Usuarios de demostración</p>
+        <button type="button" class="demo-fila" (click)="usar('admin@demo.bo', 'Admin123*')">
+          <span class="demo-rol">Administrador</span>
+          <span class="demo-correo">admin&#64;demo.bo</span>
+        </button>
+        <button type="button" class="demo-fila" (click)="usar('cajero@demo.bo', 'Cajero123*')">
+          <span class="demo-rol">Cajero</span>
+          <span class="demo-correo">cajero&#64;demo.bo</span>
+        </button>
+        <button type="button" class="demo-fila" (click)="usar('auditor@demo.bo', 'Auditor123*')">
+          <span class="demo-rol">Auditor interno</span>
+          <span class="demo-correo">auditor&#64;demo.bo</span>
+        </button>
+      </div>
+    }
+  </section>
+</div>

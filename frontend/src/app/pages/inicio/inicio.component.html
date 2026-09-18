@@ -1,0 +1,26 @@
+<header class="encabezado">
+  <h1>Hola, {{ nombre() }}</h1>
+  <p class="resumen">
+    @if (roles().length > 0) {
+      Entraste como <strong>{{ roles().join(', ') }}</strong>. El sistema te habilita
+      {{ cantidad() }} de las 24 operaciones del ERP.
+    } @else {
+      Todavía no tenés ningún rol asignado, así que no podés operar ningún módulo. Pedile al
+      administrador que te asigne uno.
+    }
+  </p>
+</header>
+
+@if (filas().length > 0) {
+  <section class="permisos">
+    <h2>Lo que podés hacer</h2>
+    <ul class="lista">
+      @for (fila of filas(); track fila.modulo) {
+        <li class="fila">
+          <span class="modulo">{{ fila.modulo }}</span>
+          <span class="acciones">{{ fila.acciones.join(' · ') }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+}

@@ -1,0 +1,151 @@
+<header class="encabezado">
+  <div>
+    <h1>Roles y permisos</h1>
+    <p class="bajada">
+      Cada rol habilita un conjunto de operaciones. El sistema verifica estos permisos en cada
+      petición, así que un cambio acá tiene efecto inmediato para todos los usuarios del rol.
+    </p>
+  </div>
+
+  <button type="button" class="boton-principal" *siPermiso="'SEGURIDAD_CREAR'" (click)="abrirAsignacion()">
+    Asignar un rol
+  </button>
+</header>
+
+@if (cargando()) {
+  <p class="estado">Cargando roles…</p>
+} @else {
+  <div class="tablero">
+    <!-- Lista de roles -->
+    <nav class="roles" aria-label="Roles de la empresa">
+      @for (rol of roles(); track rol.id) {
+        <button
+          type="button"
+          class="rol"
+          [class.rol-elegido]="seleccionado()?.id === rol.id"
+          [class.rol-inactivo]="!rol.activo"
+          (click)="seleccionar(rol)"
+        >
+          <span class="rol-nombre">{{ rol.nombre }}</span>
+          <span class="rol-cuenta">{{ rol.permisos.length }}</span>
+          @if (!rol.activo) {
+            <span class="rol-estado">Desactivado</span>
+          }
+        </button>
+      }
+    </nav>
+
+    <!-- Matriz del rol elegido -->
+    @if (seleccionado(); as rol) {
+      <section class="matriz">
+        <header class="matriz-encabezado">
+          <div>
+            <h2>{{ rol.nombre }}</h2>
+            <p class="matriz-descripcion">{{ rol.descripcion }}</p>
+            <code class="matriz-codigo">{{ rol.codigo }}</code>
+          </div>
+
+          <div class="matriz-acciones">
+            <button
+              type="button"
+              class="boton-secundario"
+              *siPermiso="'SEGURIDAD_MODIFICAR'"
+              [disabled]="guardando()"
+              (click)="cambiarEstado()"
+            >
+              {{ rol.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+          </div>
+        </header>
+
+        @if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        }
+        @if (aviso()) {
+          <p class="aviso" role="status">{{ aviso() }}</p>
+        }
+
+        <div class="rejilla-contenedor">
+          <table class="rejilla">
+            <caption class="rejilla-pie">
+              {{ marcadosCuenta() }} de 24 operaciones habilitadas
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col" class="cabecera-modulo">Módulo</th>
+                @for (accion of acciones(); track accion.accion) {
+                  <th scope="col" class="cabecera-accion">
+                    <span class="letra">{{ accion.letra }}</span>
+                    <span class="palabra">{{ accion.etiqueta }}</span>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of filas(); track fila.modulo) {
+                <tr>
+                  <th scope="row" class="celda-modulo">
+                    <button
+                      type="button"
+                      class="modulo-todo"
+                      [disabled]="!puedeEditar()"
+                      [title]="moduloCompleto(fila) ? 'Quitar todas las acciones de este módulo' : 'Habilitar todas las acciones de este módulo'"
+                      (click)="alternarModulo(fila)"
+                    >
+                      {{ fila.etiqueta }}
+                    </button>
+                  </th>
+
+                  @for (celda of fila.celdas; track celda.codigo) {
+                    <td class="celda">
+                      <label class="casilla" [title]="celda.codigo">
+                        <input
+                          type="checkbox"
+                          [checked]="estaMarcado(celda.codigo)"
+                          [disabled]="!puedeEditar() || guardando()"
+                          (change)="alternar(celda.codigo)"
+                        />
+                        <span class="visor" aria-hidden="true"></span>
+                        <span class="oculto">{{ celda.codigo }}</span>
+                      </label>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="matriz-pie" *siPermiso="'SEGURIDAD_MODIFICAR'">
+          <button
+            type="button"
+            class="boton-principal"
+            [disabled]="!hayCambios() || guardando()"
+            (click)="guardar()"
+          >
+            {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+          </button>
+          <button
+            type="button"
+            class="boton-texto"
+            [disabled]="!hayCambios() || guardando()"
+            (click)="descartar()"
+          >
+            Descartar
+          </button>
+        </footer>
+
+        @if (!puedeEditar()) {
+          <p class="solo-lectura">
+            Estás viendo la matriz en modo consulta. Para editarla necesitás el permiso
+            <code>SEGURIDAD_MODIFICAR</code>.
+          </p>
+        }
+      </section>
+    }
+  </div>
+}
+
+@if (asignando()) {
+  <app-asignar-rol [roles]="roles()" (cerrado)="cerrarAsignacion($event)" />
+}

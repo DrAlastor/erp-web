@@ -1,0 +1,50 @@
+<div class="marco">
+  <aside class="lateral">
+    <a class="marca" routerLink="/">
+      <span class="marca-signo">N</span>
+      <span class="marca-nombre">NexoERP</span>
+    </a>
+
+    <nav class="navegacion" aria-label="Módulos del sistema">
+      @for (item of items(); track item.etiqueta) {
+        @if (item.ruta !== null) {
+          <a
+            class="item"
+            [routerLink]="['/app', item.ruta]"
+            routerLinkActive="item-activo"
+            [routerLinkActiveOptions]="{ exact: item.ruta === '' }"
+          >
+            {{ item.etiqueta }}
+          </a>
+        } @else {
+          <span class="item item-pendiente">
+            {{ item.etiqueta }}
+            <span class="sprint">Sprint {{ item.sprint }}</span>
+          </span>
+        }
+      }
+    </nav>
+
+    <div class="pie-lateral">
+      <p class="pie-dato">
+        {{ cantidadDePermisos() }} permisos activos
+      </p>
+      @if (roles().length > 0) {
+        <p class="pie-roles">{{ roles().join(' · ') }}</p>
+      }
+    </div>
+  </aside>
+
+  <div class="contenido">
+    <header class="barra">
+      <div class="quien">
+        <p class="quien-nombre">{{ nombre() }}</p>
+      </div>
+      <button type="button" class="salir" (click)="salir()">Cerrar sesión</button>
+    </header>
+
+    <main class="lienzo">
+      <router-outlet />
+    </main>
+  </div>
+</div>

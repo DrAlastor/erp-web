@@ -1,0 +1,78 @@
+.encabezado {
+  max-width: 44rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.resumen {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+
+  strong {
+    color: var(--text-main);
+    font-weight: 600;
+  }
+}
+
+.permisos {
+  margin-top: 1.75rem;
+  max-width: 44rem;
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 16px;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.lista {
+  margin-top: 0.85rem;
+  list-style: none;
+}
+
+.fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--bg-subtle);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.modulo {
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.acciones {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .fila {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .acciones {
+    text-align: left;
+  }
+}
