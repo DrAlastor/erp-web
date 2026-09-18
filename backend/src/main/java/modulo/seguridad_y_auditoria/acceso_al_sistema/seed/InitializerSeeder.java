@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Siembra el rol ADMIN y un usuario administrador de prueba para poder ejercitar
  * el flujo de login (HU-01) sin depender de HU-02 (todavía no implementada).
  */
+@org.springframework.core.annotation.Order(0)
 @Component
 @RequiredArgsConstructor
 @Slf4j

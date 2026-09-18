@@ -6,7 +6,7 @@ Disponible desde Seguridad y Auditoria > Gestion de Usuarios en el panel de cont
 
 Listado paginado (15 cuentas), busqueda por nombre/usuario/correo, filtros por rol y estado, detalle, edicion de nombre completo y correo, activacion y desactivacion con confirmacion. No incluye crear cuentas, cambiar contrasenas o asignar roles. Los campos protegidos enviados a los endpoints se rechazan con 400; las respuestas no incluyen hashes, tokens ni contrasenas.
 
-El backend exige un rol ADMIN o ADMINISTRADOR y permiso SEGURIDAD:USUARIOS:ESCRITURA o ACCESO:USUARIOS:ESCRITURA en cada operacion. Todos los empleados siguen viendo el dashboard; la administracion de usuarios devuelve 403 si no cumple estas condiciones. No se permite desactivar la propia cuenta.
+El backend exige el permiso efectivo SEGURIDAD_MODIFICAR de CU03 en cada operacion. Los roles del listado y los filtros provienen de CU03; el parametro role usa el UUID del rol. Todos los empleados siguen viendo el dashboard; la administracion de usuarios devuelve 403 si no cumple estas condiciones. No se permite desactivar la propia cuenta.
 
 ## API
 
@@ -24,4 +24,4 @@ No se ha conectado ni modificado AWS. Antes de desplegar, comparar este contrato
 
 ## Prueba local
 
-Reiniciar el backend con npm.cmd run start:dev. Mantener el frontend con npm.cmd run dev. Cerrar sesion e iniciar nuevamente con el administrador para obtener los permisos actualizados en el JWT. Los usuarios disponibles son los que existan en la base local; CU02 no crea cuentas de ejemplo.
+Reiniciar el backend con npm.cmd run start:dev. Mantener el frontend con npm.cmd run dev. Los permisos efectivos de CU03 se consultan contra la base de datos y los cambios de roles no requieren renovar el JWT. Los usuarios disponibles son los que existan en la base local; CU02 no crea cuentas de ejemplo.

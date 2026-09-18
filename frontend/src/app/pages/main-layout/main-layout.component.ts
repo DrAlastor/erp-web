@@ -1,22 +1,26 @@
+import { RolesComponent } from '../../modulos/seguridad-y-auditoria/roles-y-permisos/components/roles.component';
+import { PermisosService } from '../../modulos/seguridad-y-auditoria/roles-y-permisos/services/permisos.service';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-sistema/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/gestion-de-usuarios/components/usuarios.component';
-import { MovimientoInventarioComponent } from '../../modulos/inventario-y-existencia/movimiento-inventario/components/movimiento-inventario.component';
+import { MovimientoInventarioComponent } from '../../modulos/inventario-y-almacenes/movimientos-de-inventario/components/movimiento-inventario.component';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterLink, UsuariosComponent, MovimientoInventarioComponent],
+  imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {
+  readonly permisos = inject(PermisosService);
   readonly modules = ERP_MODULES;
+  constructor() { this.permisos.cargar().subscribe({ error: () => this.permisos.limpiar() }); }
   readonly functionCount = ERP_MODULES.reduce(
     (count, module) => count + module.functions.length,
     0,

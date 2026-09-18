@@ -23,6 +23,7 @@ class JwtAuthenticationFilterTest {
     }
     @Test void usesCurrentPermissionsInsteadOfStaleTokenPermissions() throws Exception {
         Usuario usuario = new Usuario();
+        usuario.setId(1L);
         Rol rol = new Rol();
         rol.getPermisos().add(new Permiso(1, "INVENTARIO", "PRODUCTOS", "LECTURA", null));
         usuario.getRoles().add(rol);
@@ -34,6 +35,7 @@ class JwtAuthenticationFilterTest {
     }
     @Test void disabledUserIsNotAuthenticated() throws Exception {
         Usuario usuario = new Usuario();
+        usuario.setId(1L);
         usuario.setEnable(false);
         when(usuarios.findByUsername("admin")).thenReturn(Optional.of(usuario));
         request(jwt.generateAccessToken("admin", List.of()));

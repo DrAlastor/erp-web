@@ -28,7 +28,7 @@ public class UsuarioController {
     @GetMapping
     public Page<UsuarioResponse> list(
             @RequestParam(defaultValue = "") @Size(max = 150) String search,
-            @RequestParam(required = false) Integer role,
+            @RequestParam(required = false) java.util.UUID role,
             @RequestParam(required = false) Boolean enable,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "15") @Min(1) @Max(100) int size) {

@@ -105,8 +105,14 @@
         <h1>{{ fn.name }}</h1>
         @if (selectedModule()?.id === 'seguridad-y-auditoria' && fn.id === 'gestion-de-usuarios') {
           <app-usuarios />
-        } @else if ((selectedModule()?.id === 'inventario-y-almacenes' || selectedModule()?.id === 'inventario-y-existencia') && (fn.id === 'movimientos-de-inventario' || fn.id === 'movimiento-inventario')) {
-          <app-movimiento-inventario />
+        } @else if (selectedModule()?.id === 'seguridad-y-auditoria' && fn.id === 'roles-y-permisos') {
+          @if (!permisos.cargado()) { <p>Cargando permisos...</p> }
+          @else if (permisos.tiene('SEGURIDAD_CONSULTAR')) { <app-roles /> }
+          @else { <p>No tienes permiso para consultar roles y permisos.</p> }
+        } @else if (selectedModule()?.id === 'inventario-y-almacenes' && fn.id === 'movimientos-de-inventario') {
+          @if (!permisos.cargado()) { <p>Cargando permisos...</p> }
+          @else if (permisos.tiene('INVENTARIO_CONSULTAR')) { <app-movimiento-inventario /> }
+          @else { <p>No tienes permiso para consultar inventario.</p> }
         } @else {
           <section class="module-card function-content">
             @if (fn.id === 'acceso-al-sistema') {

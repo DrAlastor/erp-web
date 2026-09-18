@@ -1,0 +1,435 @@
+.encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.bajada {
+  margin-top: 0.4rem;
+  max-width: 52ch;
+  font-size: 0.925rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.estado {
+  font-size: 0.925rem;
+  color: var(--text-muted);
+}
+
+.tablero {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ---------- Lista de roles ---------- */
+
+.roles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 14px;
+}
+
+.rol {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+}
+
+.rol-elegido {
+  background: var(--primary-light);
+  border-color: rgba(91, 75, 246, 0.2);
+
+  &:hover {
+    background: var(--primary-light);
+  }
+
+  .rol-nombre {
+    color: var(--primary);
+  }
+}
+
+.rol-nombre {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.rol-cuenta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.rol-estado {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-amber);
+}
+
+.rol-inactivo .rol-nombre {
+  color: var(--text-muted);
+}
+
+/* ---------- Matriz ---------- */
+
+.matriz {
+  min-width: 0;
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 16px;
+}
+
+.matriz-encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.matriz-descripcion {
+  margin-top: 0.25rem;
+  max-width: 48ch;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.matriz-codigo {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.error,
+.aviso {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.error {
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  background: rgba(244, 63, 94, 0.07);
+  color: #be123c;
+}
+
+.aviso {
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--accounting-green-light);
+  color: #047857;
+}
+
+.rejilla-contenedor {
+  overflow-x: auto;
+}
+
+.rejilla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rejilla-pie {
+  caption-side: bottom;
+  padding-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.cabecera-modulo {
+  padding: 0 0.5rem 0.6rem 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.cabecera-accion {
+  padding: 0 0.35rem 0.6rem;
+  min-width: 68px;
+}
+
+.letra {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.palabra {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.celda-modulo {
+  padding: 0.35rem 0.75rem 0.35rem 0;
+  border-top: 1px solid var(--bg-subtle);
+  text-align: left;
+  font-weight: 500;
+}
+
+.modulo-todo {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.celda {
+  padding: 0.35rem;
+  border-top: 1px solid var(--bg-subtle);
+  text-align: center;
+}
+
+.casilla {
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  input:disabled {
+    cursor: default;
+  }
+
+  .visor {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--bg-card-border);
+    border-radius: 6px;
+    background: var(--bg-surface);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  input:checked + .visor {
+    background: var(--primary);
+    border-color: var(--primary);
+    /* La tilde se dibuja con un borde rotado: no hace falta ningún icono externo. */
+    background-image: linear-gradient(45deg, transparent 46%, #fff 46%, #fff 54%, transparent 54%),
+      linear-gradient(-45deg, transparent 46%, #fff 46%, #fff 54%, transparent 54%);
+    background-size: 12px 2px, 12px 2px;
+    background-position: 3px 12px, 8px 12px;
+    background-repeat: no-repeat;
+  }
+
+  input:focus-visible + .visor {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  input:disabled + .visor {
+    background-color: var(--bg-subtle);
+    border-color: var(--bg-subtle);
+  }
+
+  input:disabled:checked + .visor {
+    background-color: var(--text-dim);
+    border-color: var(--text-dim);
+  }
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.matriz-pie {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--bg-card-border);
+}
+
+.solo-lectura {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+}
+
+/* ---------- Botones ---------- */
+
+.boton-principal {
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--dark-navy);
+    outline-offset: 2px;
+  }
+}
+
+.boton-secundario {
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.boton-texto {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--text-main);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+/* ---------- Angosto ---------- */
+
+@media (max-width: 900px) {
+  .tablero {
+    grid-template-columns: 1fr;
+  }
+
+  .roles {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .rol {
+    width: auto;
+  }
+
+  .encabezado {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .matriz {
+    padding: 1.1rem;
+  }
+}

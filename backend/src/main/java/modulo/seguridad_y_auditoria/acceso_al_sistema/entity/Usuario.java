@@ -19,6 +19,9 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "empresa_id", nullable = false)
+    private java.util.UUID empresaId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 

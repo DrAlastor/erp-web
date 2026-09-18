@@ -8,11 +8,22 @@ import java.util.Collection;
 public class ApplicationUserPrincipal implements UserDetails {
 
     private final String username;
+    private modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal identidad;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public ApplicationUserPrincipal(String username, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.authorities = authorities;
+    }
+
+    public ApplicationUserPrincipal(String username, Collection<? extends GrantedAuthority> authorities,
+            modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal identidad) {
+        this(username, authorities);
+        this.identidad = identidad;
+    }
+
+    public modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal identidad() {
+        return identidad;
     }
 
     @Override

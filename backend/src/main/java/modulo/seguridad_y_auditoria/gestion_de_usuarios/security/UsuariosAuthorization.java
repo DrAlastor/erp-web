@@ -11,9 +11,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UsuariosAuthorization {
     private final UsuarioRepository usuarios;
+    private final modulo.seguridad_y_auditoria.roles_y_permisos.ServicioAutorizacion permisos;
 
     public boolean canManage(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
+        var identidad = modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioActual.desde(auth);
+        if (identidad.isPresent()) return permisos.tienePermiso(identidad.get().usuarioId(), "SEGURIDAD_MODIFICAR")
+                && usuarios.findByUsername(auth.getName()).filter(u -> Boolean.TRUE.equals(u.getEnable())).isPresent();
         boolean permission =
                 auth.getAuthorities().stream()
                         .anyMatch(

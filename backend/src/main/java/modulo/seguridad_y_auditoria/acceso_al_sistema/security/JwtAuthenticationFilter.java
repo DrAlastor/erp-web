@@ -52,7 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .map(p -> (GrantedAuthority) new SimpleGrantedAuthority(p))
                                     .collect(Collectors.toList());
                             ApplicationUserPrincipal principal =
-                                    new ApplicationUserPrincipal(username, authorities);
+                                    new ApplicationUserPrincipal(username, authorities,
+                                        new modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal(
+                                            usuario.getId(), usuario.getEmpresaId(), usuario.getFullname(), usuario.getEmail()));
                             UsernamePasswordAuthenticationToken authToken =
                                     new UsernamePasswordAuthenticationToken(principal, null, authorities);
                             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

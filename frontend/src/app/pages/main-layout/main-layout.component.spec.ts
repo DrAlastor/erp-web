@@ -106,6 +106,7 @@ describe('Panel de control compartido', () => {
     expect(main.querySelector('app-usuarios table')).not.toBeNull();
     expect(main.textContent).toContain('admin@erp.com');
     expect(main.textContent).not.toContain('En desarrollo');
+    http.expectOne(`${environment.apiUrl}/seguridad/mis-permisos`).flush({ usuarioId: 1, empresaId: 'erp', nombre: 'Admin', permisos: [], roles: [] });
     http.verify();
   });
   it('rechaza selecciones que no pertenecen al catálogo', () => {
@@ -114,4 +115,38 @@ describe('Panel de control compartido', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Función no encontrada');
   });
+  it('integra CU03 en el panel y carga roles con los permisos de CU01', () => {
+    params.next(convertToParamMap({ modulo: 'seguridad-y-auditoria', funcion: 'roles-y-permisos' }));
+    const fixture = TestBed.createComponent(MainLayoutComponent);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${environment.apiUrl}/seguridad/mis-permisos`).flush({
+      usuarioId: 1, empresaId: 'erp', nombre: 'Admin',
+      permisos: ['SEGURIDAD_CONSULTAR', 'SEGURIDAD_MODIFICAR'], roles: ['ADMINISTRADOR'],
+    });
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/seguridad/roles`).flush([]);
+    http.expectOne(`${environment.apiUrl}/seguridad/permisos`).flush([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-roles')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('nav')).toBeTruthy();
+    http.verify();
+  });
+
+  it('deniega CU03 y CU06 cuando la cuenta no tiene permisos efectivos', () => {
+    params.next(convertToParamMap({ modulo: 'seguridad-y-auditoria', funcion: 'roles-y-permisos' }));
+    const fixture = TestBed.createComponent(MainLayoutComponent);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${environment.apiUrl}/seguridad/mis-permisos`).flush({
+      usuarioId: 1, empresaId: 'erp', nombre: 'Empleado', permisos: [], roles: [],
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-roles')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('main').textContent).toContain('No tienes permiso');
+    params.next(convertToParamMap({ modulo: 'inventario-y-almacenes', funcion: 'movimientos-de-inventario' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-movimiento-inventario')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('main').textContent).toContain('No tienes permiso');
+    http.verify();
+  });
+
 });

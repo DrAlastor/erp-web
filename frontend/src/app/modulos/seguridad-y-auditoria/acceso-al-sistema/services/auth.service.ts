@@ -1,4 +1,5 @@
-﻿import { Injectable, computed, signal } from '@angular/core';
+import { PermisosService } from '../../roles-y-permisos/services/permisos.service';
+﻿import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, defer, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
@@ -11,6 +12,7 @@ interface TokenClaims { exp: number; authorities?: string[]; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly permisos = inject(PermisosService);
   private rememberMe = false;
   private readonly sessionSignal = signal<UserSession | null>(this.readStoredSession());
   private refreshRequest?: Observable<TokenResponse>;
@@ -101,6 +103,7 @@ export class AuthService {
   }
 
   private persistSession(response: TokenResponse): void {
+    this.permisos.limpiar();
     const session: UserSession = {
       accessToken: response.accessToken, refreshToken: response.refreshToken, usuario: response.usuario
     };
@@ -113,6 +116,7 @@ export class AuthService {
   }
 
   private clearSession(): void {
+    this.permisos.limpiar();
     this.sessionSignal.set(null);
     this.refreshRequest = undefined;
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* Almacenamiento no disponible. */ }

@@ -12,5 +12,5 @@ public record UsuarioResponse(
         List<RolResponse> roles,
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
-    public record RolResponse(Integer id, String nombre) {}
+    public record RolResponse(java.util.UUID id, String nombre) {}
 }

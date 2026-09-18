@@ -24,11 +24,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class UsuarioService {
     private final UsuarioRepository usuarios;
-    private final RolRepository roles;
     private final JdbcTemplate jdbc;
 
     public Page<UsuarioResponse> list(
-            String search, Integer role, Boolean enable, int page, int size) {
+            String search, java.util.UUID role, Boolean enable, int page, int size) {
+        List<Long> roleUsers = role == null ? List.of() : jdbc.queryForList(
+                "SELECT ur.usuario_id FROM usuario_rol ur JOIN rol r ON r.id=ur.rol_id WHERE r.id=? AND r.empresa_id=?",
+                Long.class, role, empresaActual());
         Specification<Usuario> filters =
                 (root, query, cb) -> {
                     query.distinct(true);
@@ -49,7 +51,8 @@ public class UsuarioService {
                                         cb.like(cb.lower(root.get("email")), term, '!'),
                                         cb.like(cb.lower(root.get("fullname")), term, '!')));
                     }
-                    if (role != null) conditions.add(cb.equal(root.join("roles").get("id"), role));
+                    conditions.add(cb.equal(root.get("empresaId"), empresaActual()));
+                    if (role != null) conditions.add(root.get("id").in(roleUsers));
                     if (enable != null) conditions.add(cb.equal(root.get("enable"), enable));
                     return cb.and(
                             conditions.toArray(jakarta.persistence.criteria.Predicate[]::new));
@@ -59,14 +62,13 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse.RolResponse> roles() {
-        return roles.findAll(Sort.by("nombre")).stream()
-                .map(r -> new UsuarioResponse.RolResponse(r.getId(), r.getNombre()))
-                .toList();
+        return jdbc.query("SELECT id, nombre FROM rol WHERE empresa_id=? ORDER BY nombre",
+                (rs, row) -> new UsuarioResponse.RolResponse(rs.getObject("id", java.util.UUID.class), rs.getString("nombre")), empresaActual());
     }
 
     public UsuarioResponse detail(Long id) {
         return response(
-                usuarios.findById(id)
+                usuarios.findById(id).filter(u -> empresaActual().equals(u.getEmpresaId()))
                         .orElseThrow(() -> new ResourceNotFoundException("Usuario inexistente")));
     }
 
@@ -112,7 +114,7 @@ public class UsuarioService {
     }
 
     private Usuario locked(Long id) {
-        return usuarios.findForAdministration(id)
+        return usuarios.findForAdministration(id).filter(u -> empresaActual().equals(u.getEmpresaId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario inexistente"));
     }
 
@@ -134,11 +136,15 @@ public class UsuarioService {
                 u.getEmail(),
                 u.getFullname(),
                 u.getEnable(),
-                u.getRoles().stream()
-                        .sorted(java.util.Comparator.comparing(r -> r.getNombre()))
-                        .map(r -> new UsuarioResponse.RolResponse(r.getId(), r.getNombre()))
-                        .toList(),
+                jdbc.query("SELECT r.id, r.nombre FROM usuario_rol ur JOIN rol r ON r.id=ur.rol_id WHERE ur.usuario_id=? AND r.empresa_id=? ORDER BY r.nombre",
+                        (rs, row) -> new UsuarioResponse.RolResponse(rs.getObject("id", java.util.UUID.class), rs.getString("nombre")), u.getId(), empresaActual()),
                 u.getCreatedAt(),
                 u.getUpdatedAt());
     }
+    private java.util.UUID empresaActual() {
+        return modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioActual.buscar()
+                .map(modulo.seguridad_y_auditoria.roles_y_permisos.auth.UsuarioPrincipal::empresaId)
+                .orElse(java.util.UUID.fromString("00000000-0000-0000-0000-000000000001"));
+    }
+
 }

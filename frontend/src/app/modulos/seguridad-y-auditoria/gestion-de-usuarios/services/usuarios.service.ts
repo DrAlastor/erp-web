@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 
 export interface Role {
-  id: number;
+  id: string;
   nombre: string;
 }
 
