@@ -6,7 +6,7 @@ import comun.exception.ErrorResponse;
 
 import lombok.RequiredArgsConstructor;
 
-import modulo.seguridad_y_auditoria.acceso_al_sistema.security.JwtAuthenticationFilter;
+import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.security.JwtAuthenticationFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -73,6 +73,8 @@ public class SecurityConfig {
                                                 "/api/auth/**",
                                                 "/api/public/**",
                                                 "/api/health/**",
+                                                "/api/pagos/webhook/**",
+                                                "/api/pagos/stripe/config",
                                                 "/error")
                                         .permitAll()
                                         .anyRequest()

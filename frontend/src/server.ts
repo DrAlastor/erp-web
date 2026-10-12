@@ -36,6 +36,52 @@ app.use(
 );
 
 /**
+ * Proxy inverso para peticiones de API hacia el backend
+ */
+app.use('/api', async (req, res) => {
+  const backendUrl = process.env['BACKEND_URL'] || 'http://backend:8080';
+  const targetUrl = `${backendUrl}${req.originalUrl}`;
+  try {
+    const skipHeaders = ['host', 'expect', 'connection', 'content-length'];
+    const headers = new Headers();
+    for (const [k, v] of Object.entries(req.headers)) {
+      if (!skipHeaders.includes(k.toLowerCase()) && v) {
+        if (Array.isArray(v)) v.forEach((item) => headers.append(k, item));
+        else headers.set(k, v);
+      }
+    }
+
+    const isBody = req.method !== 'GET' && req.method !== 'HEAD';
+    let bodyData: Buffer | undefined = undefined;
+    if (isBody) {
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) {
+        chunks.push(chunk as Buffer);
+      }
+      bodyData = Buffer.concat(chunks);
+    }
+
+    const response = await fetch(targetUrl, {
+      method: req.method,
+      headers,
+      body: bodyData as any,
+    });
+
+    res.status(response.status);
+    response.headers.forEach((v, k) => {
+      if (k.toLowerCase() !== 'transfer-encoding') {
+        res.setHeader(k, v);
+      }
+    });
+    const data = await response.arrayBuffer();
+    res.send(Buffer.from(data));
+  } catch (err) {
+    console.error('API proxy error:', err);
+    res.status(502).json({ error: 'BAD_GATEWAY', message: 'Error comunicando con el backend' });
+  }
+});
+
+/**
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {

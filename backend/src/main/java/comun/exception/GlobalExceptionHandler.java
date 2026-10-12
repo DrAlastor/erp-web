@@ -2,8 +2,8 @@ package comun.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.AccountLockedException;
-import modulo.seguridad_y_auditoria.acceso_al_sistema.exception.InvalidCredentialsException;
+import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.exception.AccountLockedException;
+import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.exception.InvalidCredentialsException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

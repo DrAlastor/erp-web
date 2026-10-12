@@ -1,0 +1,538 @@
+<div class="onboarding-page-wrapper">
+  <!-- Minimalist Brand Header -->
+  <header class="onboarding-nav">
+    <div class="container nav-container">
+      <a routerLink="/" class="nav-brand">
+        <img src="erp-logo.png" alt="NexoERP" width="36" height="36" class="brand-img" />
+        <div class="brand-info">
+          <span class="brand-title">Nexo<span class="text-accent">ERP</span></span>
+          <span class="brand-subtitle">Onboarding de Suscripción</span>
+        </div>
+      </a>
+
+      <div class="nav-right">
+        <button
+          type="button"
+          class="theme-toggle"
+          (click)="themeService.toggle()"
+          [attr.aria-label]="themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        >
+          @if (themeService.isDark()) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+            </svg>
+          }
+        </button>
+
+        <a routerLink="/login" class="nav-link-login">
+          ¿Ya tienes cuenta? <strong>Iniciar sesión</strong>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container onboarding-main">
+    
+    <!-- Step Indicator (Apple Style Progress) -->
+    @if (currentStep() < 4) {
+      <div class="stepper-wrapper">
+        <div class="stepper-item" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1">
+          <div class="step-circle" (click)="irAlPaso(1)">
+            @if (currentStep() > 1) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            } @else {
+              1
+            }
+          </div>
+          <span class="step-label">1. Plan</span>
+        </div>
+
+        <div class="stepper-divider" [class.filled]="currentStep() > 1"></div>
+
+        <div class="stepper-item" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2">
+          <div class="step-circle" (click)="irAlPaso(2)">
+            @if (currentStep() > 2) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            } @else {
+              2
+            }
+          </div>
+          <span class="step-label">2. Empresa</span>
+        </div>
+
+        <div class="stepper-divider" [class.filled]="currentStep() > 2"></div>
+
+        <div class="stepper-item" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3">
+          <div class="step-circle">3</div>
+          <span class="step-label">3. Administrador</span>
+        </div>
+      </div>
+    }
+
+    <!-- Error Alert Banner -->
+    @if (errorMessage()) {
+      <div class="alert-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- PASO 1: SELECCIÓN DE PLAN DE SUSCRIPCIÓN -->
+    <!-- ========================================================================= -->
+    @if (currentStep() === 1) {
+      <section class="step-content animate-fade">
+        <div class="step-heading">
+          <span class="step-kicker">MODELO SAAS • NEXOERP</span>
+          <h1 class="step-title">Elige el plan para tu empresa</h1>
+          <p class="step-desc">
+            Cada suscripción aprovisiona un espacio de base de datos PostgreSQL aislado y configurable.
+          </p>
+
+          <!-- Cycle Toggle -->
+          <div class="billing-toggle-container">
+            <div class="toggle-pill">
+              <button
+                type="button"
+                class="pill-btn"
+                [class.active]="cicloFacturacion() === 'mensual'"
+                (click)="setPeriodo('mensual')"
+              >
+                Facturación Mensual
+              </button>
+              <button
+                type="button"
+                class="pill-btn"
+                [class.active]="cicloFacturacion() === 'anual'"
+                (click)="setPeriodo('anual')"
+              >
+                Facturación Anual
+                <span class="badge-discount">-17% Ahorro</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plans Grid -->
+        <div class="plans-grid">
+          @for (plan of planes; track plan.codigo) {
+            <div
+              class="plan-card"
+              [class.selected]="planSeleccionado() === plan.codigo"
+              [class.highlight]="plan.destacado"
+              (click)="seleccionarPlan(plan.codigo)"
+            >
+              @if (plan.destacado) {
+                <div class="popular-tag">Más Elegido</div>
+              }
+
+              <div class="card-header">
+                <h3 class="plan-name">{{ plan.nombre }}</h3>
+                <p class="plan-tagline">{{ plan.tagline }}</p>
+              </div>
+
+              <div class="card-price">
+                <span class="price-currency">Bs</span>
+                <span class="price-value">
+                  {{ (cicloFacturacion() === 'anual' ? plan.precioAnual : plan.precioMensual) | number }}
+                </span>
+                <span class="price-period">/ {{ cicloFacturacion() === 'anual' ? 'año' : 'mes' }}</span>
+              </div>
+
+              <div class="card-limits">
+                <div class="limit-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span><strong>{{ plan.limiteUsuarios }}</strong> usuarios</span>
+                </div>
+                <div class="limit-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                  <span><strong>{{ plan.limiteSucursales }}</strong> sucursales</span>
+                </div>
+                <div class="limit-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                  <span><strong>{{ plan.limiteAlmacenes }}</strong> almacenes</span>
+                </div>
+              </div>
+
+              <ul class="features-list">
+                @for (feat of plan.caracteristicas; track feat) {
+                  <li>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="check-icon">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <span>{{ feat }}</span>
+                  </li>
+                }
+              </ul>
+
+              <button
+                type="button"
+                class="btn-select-plan"
+                [class.btn-active]="planSeleccionado() === plan.codigo"
+              >
+                {{ planSeleccionado() === plan.codigo ? '✓ Seleccionado' : 'Elegir ' + plan.nombre }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="step-footer">
+          <button type="button" class="btn btn-primary btn-large" (click)="irAlPaso(2)">
+            <span>Continuar con {{ planActual.nombre }}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- PASO 2: DATOS DE LA EMPRESA (TENANT) -->
+    <!-- ========================================================================= -->
+    @if (currentStep() === 2) {
+      <section class="step-content animate-fade">
+        <div class="step-heading">
+          <span class="step-kicker">PASO 2 DE 3 • IDENTIFICACIÓN TRIBUTARIA</span>
+          <h2 class="step-title">Datos de tu Empresa</h2>
+          <p class="step-desc">
+            Configura la información legal y operativa para la facturación y la estructura contable.
+          </p>
+        </div>
+
+        <form [formGroup]="onboardingForm" class="form-container">
+          <div class="form-grid">
+            
+            <!-- Razón Social -->
+            <div class="form-group col-12">
+              <label for="razonSocial">Razón Social Legal *</label>
+              <input
+                id="razonSocial"
+                type="text"
+                formControlName="razonSocial"
+                placeholder="Ej. ASUS BOLIVIA TECH SOLUTIONS S.R.L."
+                class="form-input"
+              />
+              <span class="field-hint">Nombre legal registrado ante Impuestos Nacionales.</span>
+            </div>
+
+            <!-- Nombre Comercial -->
+            <div class="form-group col-6">
+              <label for="nombreComercial">Nombre Comercial / Marca</label>
+              <input
+                id="nombreComercial"
+                type="text"
+                formControlName="nombreComercial"
+                placeholder="Ej. ASUS Tech Bolivia"
+                class="form-input"
+              />
+            </div>
+
+            <!-- NIT -->
+            <div class="form-group col-6">
+              <label for="nit">NIT (Número de Identificación Tributaria) *</label>
+              <input
+                id="nit"
+                type="text"
+                formControlName="nit"
+                placeholder="Ej. 3049182019"
+                class="form-input font-mono"
+              />
+            </div>
+
+            <!-- Ciudad -->
+            <div class="form-group col-6">
+              <label for="ciudad">Ciudad de Sede Principal *</label>
+              <select id="ciudad" formControlName="ciudad" class="form-input form-select">
+                <option value="Santa Cruz de la Sierra">Santa Cruz de la Sierra</option>
+                <option value="La Paz">La Paz</option>
+                <option value="Cochabamba">Cochabamba</option>
+                <option value="Sucre">Sucre</option>
+                <option value="Tarija">Tarija</option>
+                <option value="Oruro">Oruro</option>
+                <option value="Potosí">Potosí</option>
+                <option value="Trinidad">Trinidad</option>
+                <option value="Cobija">Cobija</option>
+              </select>
+            </div>
+
+            <!-- Moneda Principal -->
+            <div class="form-group col-6">
+              <label for="monedaPrincipal">Moneda Principal Contable</label>
+              <select id="monedaPrincipal" formControlName="monedaPrincipal" class="form-input form-select">
+                <option value="BOB">Bolivianos (BOB) — Moneda Nacional</option>
+                <option value="USD">Dólares Americanos (USD) — Bimonetaria</option>
+              </select>
+            </div>
+
+            <!-- Dirección -->
+            <div class="form-group col-12">
+              <label for="direccion">Dirección de la Casa Matriz</label>
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                placeholder="Ej. Av. San Martín esq. Calle 4 Oeste, Equipetrol"
+                class="form-input"
+              />
+            </div>
+
+            <!-- Teléfono Corporativo -->
+            <div class="form-group col-6">
+              <label for="telefonoEmpresa">Teléfono / PBX de la Empresa</label>
+              <input
+                id="telefonoEmpresa"
+                type="text"
+                formControlName="telefonoEmpresa"
+                placeholder="Ej. 33458900"
+                class="form-input"
+              />
+            </div>
+
+          </div>
+
+          <!-- Isolation Notice Box -->
+          <div class="info-card">
+            <div class="info-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div class="info-text">
+              <strong>Aislamiento Multi-Inquilino Garantizado:</strong>
+              Se provisionará un esquema o base de datos aislada con el nombre comercial de tu entidad para que ningún otro cliente comparta tus tablas ni tu catálogo comercial.
+            </div>
+          </div>
+
+          <div class="step-footer split-buttons">
+            <button type="button" class="btn btn-secondary" (click)="irAlPaso(1)">
+              ← Volver a Planes
+            </button>
+            <button type="button" class="btn btn-primary" (click)="irAlPaso(3)">
+              <span>Siguiente: Asignar Administrador</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- PASO 3: ASIGNACIÓN DEL ADMINISTRADOR DEL TENANT -->
+    <!-- ========================================================================= -->
+    @if (currentStep() === 3) {
+      <section class="step-content animate-fade">
+        <div class="step-heading">
+          <span class="step-kicker">PASO 3 DE 3 • SEGURIDAD Y ACCESO</span>
+          <h2 class="step-title">Asignación del Administrador</h2>
+          <p class="step-desc">
+            Este usuario será el Administrador General (Tenant Owner) con permisos completos para gestionar usuarios, sucursales y contabilidad.
+          </p>
+        </div>
+
+        <form [formGroup]="onboardingForm" class="form-container">
+          <div class="form-grid">
+
+            <!-- Nombre Completo -->
+            <div class="form-group col-12">
+              <label for="adminNombre">Nombre Completo del Administrador *</label>
+              <input
+                id="adminNombre"
+                type="text"
+                formControlName="adminNombre"
+                placeholder="Ej. Ing. Carlos Mendoza Vaca"
+                class="form-input"
+              />
+            </div>
+
+            <!-- Email Corporativo -->
+            <div class="form-group col-6">
+              <label for="adminEmail">Correo Electrónico de Acceso *</label>
+              <input
+                id="adminEmail"
+                type="email"
+                formControlName="adminEmail"
+                placeholder="admin@tuempresa.bo"
+                class="form-input"
+              />
+              <span class="field-hint">Se utilizará para iniciar sesión en el sistema.</span>
+            </div>
+
+            <!-- Teléfono Admin -->
+            <div class="form-group col-6">
+              <label for="adminTelefono">Celular / Teléfono de Recuperación</label>
+              <input
+                id="adminTelefono"
+                type="text"
+                formControlName="adminTelefono"
+                placeholder="Ej. +591 76012345"
+                class="form-input"
+              />
+            </div>
+
+            <!-- Password -->
+            <div class="form-group col-12">
+              <label for="adminPassword">Contraseña de Administrador *</label>
+              <div class="password-input-wrapper">
+                <input
+                  id="adminPassword"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="adminPassword"
+                  placeholder="Mínimo 8 caracteres alfanuméricos"
+                  class="form-input font-mono"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-eye"
+                  (click)="togglePassword()"
+                  aria-label="Ver u ocultar contraseña"
+                >
+                  @if (showPassword()) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="col-12">
+              <div class="summary-card">
+                <div class="summary-row">
+                  <span class="summary-label">Plan a Aprovisionar:</span>
+                  <span class="summary-value"><strong>{{ planActual.nombre }}</strong> ({{ cicloFacturacion() | uppercase }})</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Total a Facturar:</span>
+                  <span class="summary-value highlight-price">Bs {{ precioCalculado | number }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Rol Asignado Automáticamente:</span>
+                  <span class="summary-value badge-role">ADMINISTRADOR (Acceso Total de Edición)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="step-footer split-buttons">
+            <button type="button" class="btn btn-secondary" (click)="irAlPaso(2)">
+              ← Volver a Empresa
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-large"
+              [disabled]="loading()"
+              (click)="finalizarOnboarding()"
+            >
+              @if (loading()) {
+                <span class="spinner"></span>
+                <span>Aprovisionando base de datos y administrador...</span>
+              } @else {
+                <span>Confirmar y Activar Empresa</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              }
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- ========================================================================= -->
+    <!-- PASO 4: CONFIRMACIÓN Y APROVISIONAMIENTO EXITOSO -->
+    <!-- ========================================================================= -->
+    @if (currentStep() === 4 && provisionedResult()) {
+      <section class="success-screen animate-scale">
+        <div class="success-icon-wrapper">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+
+        <h2 class="success-title">¡Espacio Aprovisionado con Éxito!</h2>
+        <p class="success-desc">
+          Tu empresa ha sido registrada en la base de datos central y se le ha asignado la cuenta de Administrador.
+        </p>
+
+        <!-- Credentials summary card -->
+        <div class="credentials-card">
+          <div class="cred-row">
+            <span class="cred-label">Empresa Registrada:</span>
+            <span class="cred-val">{{ provisionedResult()?.empresaNombre }}</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">NIT:</span>
+            <span class="cred-val font-mono">{{ provisionedResult()?.nit }}</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Base de Datos Asignada:</span>
+            <span class="cred-val font-mono tag-db">{{ provisionedResult()?.dbName }}</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Plan Activo:</span>
+            <span class="cred-val">{{ provisionedResult()?.planNombre }}</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Usuario Administrador:</span>
+            <span class="cred-val font-mono font-bold">{{ provisionedResult()?.adminEmail }}</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">Rol y Privilegios:</span>
+            <span class="cred-val badge-role">ADMINISTRADOR (Control Total)</span>
+          </div>
+        </div>
+
+        <div class="success-actions">
+          <button type="button" class="btn btn-primary btn-large" (click)="irAlLogin()">
+            <span>Ingresar al Sistema (Iniciar Sesión)</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+          <a routerLink="/" class="btn btn-secondary">
+            Volver a la Página Principal
+          </a>
+        </div>
+      </section>
+    }
+
+  </main>
+</div>

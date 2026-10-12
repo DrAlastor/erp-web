@@ -1,8 +1,8 @@
 package comun.config;
 
-import modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioPrincipal;
-import modulo.seguridad_y_auditoria.roles_y_permisos.service.ServicioAutorizacion;
-import modulo.seguridad_y_auditoria.roles_y_permisos.catalogo.CatalogoPermisos;
+import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioPrincipal;
+import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion;
+import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.catalogo.CatalogoPermisos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.PermissionEvaluator;
@@ -58,13 +58,31 @@ public class EvaluadorDePermisos implements PermissionEvaluator {
             return false;
         }
 
-        if (!CatalogoPermisos.existe(codigo)) {
-            log.warn("Se verificó el permiso '{}', que no existe en el catálogo. "
-                    + "Revisar la anotación @PreAuthorize: el acceso queda denegado.", codigo);
-            return false;
+        // 1. Administrador o permiso global ALL
+        boolean esAdmin = autenticacion.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ALL")
+                        || a.getAuthority().equalsIgnoreCase("ROLE_ADMINISTRADOR")
+                        || a.getAuthority().equalsIgnoreCase("ROLE_ADMIN")
+                        || a.getAuthority().equalsIgnoreCase("ROLE_SUPERADMIN")
+                        || a.getAuthority().toUpperCase().contains("ADMIN"));
+        if (esAdmin) {
+            return true;
         }
 
-        return servicioAutorizacion.tienePermiso(principal.usuarioId(), codigo);
+        // 2. Comprobar si la autoridad solicitada está en las GrantedAuthorities
+        boolean tieneAutoridad = autenticacion.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equalsIgnoreCase(codigo)
+                        || a.getAuthority().equalsIgnoreCase("ROLE_" + codigo));
+        if (tieneAutoridad) {
+            return true;
+        }
+
+        try {
+            return servicioAutorizacion.tienePermiso(principal.usuarioId(), codigo);
+        } catch (Exception e) {
+            log.debug("No se pudo consultar servicioAutorizacion legacy: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -85,7 +103,7 @@ public class EvaluadorDePermisos implements PermissionEvaluator {
                 || autenticacion instanceof AnonymousAuthenticationToken) {
             return null;
         }
-        return modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioActual.desde(autenticacion).orElse(null);
+        return modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioActual.desde(autenticacion).orElse(null);
     }
 
     private String componerCodigo(Object modulo, Object accion) {

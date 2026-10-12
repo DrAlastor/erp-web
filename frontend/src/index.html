@@ -1,18 +1,36 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>NexoERP | Sistema ERP Comercial y Contable</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Plataforma ERP integral para el ámbito comercial y contable con sincronización en tiempo real y app móvil de preventa.">
-  <link rel="icon" type="image/png" href="nexo-logo.png">
-  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <meta name="description"
+    content="Plataforma ERP integral para el ámbito comercial y contable con sincronización en tiempo real y app móvil de preventa.">
+  <link rel="icon" type="image/png" href="erp-logo.png">
+  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('erp_theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) { }
+    })();
+  </script>
 </head>
+
 <body>
   <app-root></app-root>
 </body>
+
 </html>

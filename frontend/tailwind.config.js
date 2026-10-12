@@ -8,15 +8,23 @@ module.exports = {
         primary: {
           DEFAULT: 'var(--primary)',
           hover: 'var(--primary-hover)',
+          active: 'var(--primary-active)',
+          light: 'var(--primary-light)',
         },
-        'dark-navy': {
-          DEFAULT: 'var(--dark-navy)',
-          hover: 'var(--dark-navy-hover)',
-          surface: 'var(--dark-navy-surface)',
+        apple: {
+          blue: '#007AFF',
+          dark: '#1D1D1F',
+          gray: '#F5F5F7',
+          silver: '#86868B',
+          muted: '#AAAAAA',
+          red: '#FF3B30',
+          green: '#34C759',
         },
+        surface: 'var(--bg-surface)',
+        subtle: 'var(--bg-subtle)',
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       minHeight: {

@@ -234,9 +234,9 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: #f5f3ff;
-      color: #5b4bf6;
-      border: 1px solid #ede9fe;
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      border: 1px solid rgba(0, 122, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -268,11 +268,15 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background-color 150ms var(--ease-spring), color 150ms var(--ease-spring), transform 150ms var(--ease-spring);
 
       &:hover {
         background: #e2e8f0;
         color: #0b1329;
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
     }
 
@@ -311,11 +315,11 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       font-size: 0.9rem;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 150ms var(--ease-spring), box-shadow 150ms var(--ease-spring);
 
       &:focus {
-        border-color: #5b4bf6;
-        box-shadow: 0 0 0 3px rgba(91, 75, 246, 0.15);
+        border-color: #007aff;
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
       }
 
       &::placeholder {
@@ -349,12 +353,16 @@ import { CreateCompanyDto } from '../../core/models/company.model';
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: background-color 150ms var(--ease-spring), border-color 150ms var(--ease-spring), color 150ms var(--ease-spring), transform 150ms var(--ease-spring);
+
+      &:active {
+        transform: scale(0.97);
+      }
 
       &.active {
-        background: #f5f3ff;
-        border-color: #5b4bf6;
-        color: #5b4bf6;
+        background: rgba(0, 122, 255, 0.08);
+        border-color: #007aff;
+        color: #007aff;
         font-weight: 700;
       }
     }

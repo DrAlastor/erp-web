@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "rol")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,17 +18,23 @@ public class Rol {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 100)
     private String nombre;
 
-    @Column(length = 255)
-    private String descripcion;
+    @Column(length = 100)
+    private String permiso;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "rol_permisos",
-        joinColumns = @JoinColumn(name = "rol_id"),
-        inverseJoinColumns = @JoinColumn(name = "permiso_id")
-    )
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @Transient
     private Set<Permiso> permisos = new HashSet<>();
+
+    public String getDescripcion() {
+        return this.permiso != null ? this.permiso : this.nombre;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.permiso = descripcion;
+    }
 }

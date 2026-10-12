@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,60 +18,122 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="rbac_inicializado", nullable=false)
-    private Boolean rbacInicializado = false;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "rol_id", nullable = false)
+    private Rol rol;
 
-    @Column(name = "empresa_id", nullable = false)
-    private java.util.UUID empresaId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
-
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    @Column(name = "empleado_id")
+    private Long empleadoId;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false)
+    @org.hibernate.annotations.Formula("email")
+    private String username;
+
+    @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(name = "fullname", nullable = false, length = 150)
-    private String fullname;
+    @Column(name = "nivel_usuario", length = 30)
+    private String nivelUsuario = "GERENCIA";
 
-    @Column(nullable = false)
-    private Boolean enable = true;
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    @Column(name = "intentos_fallidos", nullable = false)
+    @Column(name = "activo", nullable = false)
+    private Boolean activo = true;
+
+    // Campos transitorios para el servicio de seguridad (bloqueo / reintentos / compatibilidad)
+    @Transient
     private Integer intentosFallidos = 0;
 
-    @Column(name = "bloqueado_hasta")
+    @Transient
     private LocalDateTime bloqueadoHasta;
 
-    @Column(name = "created_by", length = 50)
+    @Transient
+    private java.util.UUID empresaId;
+
+    @Transient
     private String createdBy;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_by", length = 50)
+    @Transient
     private String updatedBy;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Transient
+    private Boolean rbacInicializado = true;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "usuario_roles",
-        joinColumns = @JoinColumn(name = "usuario_id"),
-        inverseJoinColumns = @JoinColumn(name = "rol_id")
-    )
-    private Set<Rol> roles = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+    // Métodos de compatibilidad requeridos por el servicio de autenticación y JWT
+    public String getUsername() {
+        return this.email != null ? this.email : "";
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    public void setUsername(String username) {
+        if (this.email == null || this.email.isBlank()) {
+            this.email = username;
+        }
+    }
+
+    public String getFullname() {
+        if (this.email != null && this.email.contains("@")) {
+            String prefix = this.email.split("@")[0];
+            return Character.toUpperCase(prefix.charAt(0)) + prefix.substring(1);
+        }
+        return "Usuario del Sistema";
+    }
+
+    public void setFullname(String fullname) {
+        // Compatibilidad
+    }
+
+    public Boolean getEnable() {
+        return Boolean.TRUE.equals(this.activo);
+    }
+
+    public void setEnable(Boolean enable) {
+        this.activo = enable;
+    }
+
+    public Set<Rol> getRoles() {
+        return this.rol != null ? Set.of(this.rol) : Set.of();
+    }
+
+    public java.util.UUID getEmpresaId() {
+        return this.empresaId;
+    }
+
+    public void setEmpresaId(java.util.UUID empresaId) {
+        this.empresaId = empresaId;
+    }
+
+    public String getCreatedBy() {
+        return this.createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return this.updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public Boolean getRbacInicializado() {
+        return this.rbacInicializado;
+    }
+
+    public void setRbacInicializado(Boolean rbacInicializado) {
+        this.rbacInicializado = rbacInicializado;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return this.fechaCreacion != null ? this.fechaCreacion : LocalDateTime.now();
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return this.fechaCreacion != null ? this.fechaCreacion : LocalDateTime.now();
     }
 }

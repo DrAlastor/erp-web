@@ -5,7 +5,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject } from 'rxjs';
 import { signal } from '@angular/core';
 import { MainLayoutComponent } from './main-layout.component';
-import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-sistema/services/auth.service';
+import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
 import { environment } from '../../../environments/environment';

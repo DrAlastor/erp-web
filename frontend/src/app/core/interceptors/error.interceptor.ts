@@ -1,8 +1,8 @@
 ﻿import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
-import { AuthService } from '../../modulos/seguridad-y-auditoria/acceso-al-sistema/services/auth.service';
-import { isApiRequest, isAuthRequest } from '../../modulos/seguridad-y-auditoria/acceso-al-sistema/interceptors/auth.interceptor';
+import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
+import { isApiRequest, isAuthRequest } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/interceptors/auth.interceptor';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
