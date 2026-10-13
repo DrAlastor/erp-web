@@ -1,0 +1,17 @@
+@if (loading()) {
+  <p role="status">Cargando tu perfil...</p>
+} @else if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+} @else if (cliente(); as cliente) {
+  <section class="portal-card" aria-label="Perfil de cliente">
+    <p class="eyebrow">PORTAL DE CLIENTE</p>
+    <h2>{{ cliente.razonSocial }}</h2>
+    <p>Consulta aquí tus datos personales registrados en NexoERP.</p>
+    <div class="profile-grid">
+      <div><span>NIT/CI</span><strong>{{ cliente.nitCi }}</strong></div>
+      <div><span>Teléfono</span><strong>{{ cliente.telefono || 'Sin registrar' }}</strong></div>
+      <div><span>Dirección</span><strong>{{ cliente.direccion || 'Sin registrar' }}</strong></div>
+      <div><span>Estado</span><strong>{{ cliente.activo ? 'Activo' : 'Inactivo' }}</strong></div>
+    </div>
+  </section>
+}

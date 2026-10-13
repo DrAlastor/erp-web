@@ -1,0 +1,263 @@
+<div class="auth-split-layout">
+  <!-- Panel Izquierdo (50%): Imagen new-cuenta.jpg + Overlay + Volver al inicio -->
+  <aside class="hero-panel" aria-label="NexoERP">
+    <img
+      src="new-cuenta.jpg"
+      alt="NexoERP Registro Comercial y Contable"
+      class="hero-image"
+      fetchpriority="high"
+    />
+    <div class="hero-overlay">
+      <a routerLink="/" class="back-link" title="Volver al inicio" aria-label="Volver al inicio">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Volver al inicio</span>
+      </a>
+
+      <div class="hero-content">
+        <h2 class="hero-title">Únete a NexoERP</h2>
+        <p class="hero-subtitle">Descubre el control inteligente de tu empresa comercial y contable.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Panel Derecho (50%): Formulario Crear Cuenta -->
+  <main class="form-panel">
+    <!-- Toggle de tema claro/oscuro -->
+    <button
+      type="button"
+      (click)="themeService.toggle()"
+      class="theme-toggle-btn"
+      [attr.aria-label]="themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      [title]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'"
+    >
+      @if (themeService.isDark()) {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+      } @else {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+        </svg>
+      }
+    </button>
+
+    <div class="form-container">
+      <!-- Encabezado con estética Apple -->
+      <header class="form-header">
+        <h1 class="auth-title">Crear Cuenta</h1>
+        <p class="auth-subtitle">Únete a la mejor experiencia en gestión comercial y contable.</p>
+      </header>
+
+      <!-- Mensaje de error si falla el registro -->
+      @if (error()) {
+        <div class="alert-box alert-error" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth-form">
+        <!-- Fila 2 Columnas: Usuario & NIT/CI -->
+        <div class="grid-2">
+          <div class="field-group">
+            <label for="username" class="field-label">Usuario</label>
+            <div class="input-wrapper" [class.is-invalid]="isInvalid('username')">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21a8 8 0 1 0-16 0" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+                placeholder="Tu usuario"
+                [attr.aria-invalid]="isInvalid('username')"
+              />
+            </div>
+            @if (isInvalid('username')) {
+              <p class="field-error">Usuario requerido.</p>
+            }
+          </div>
+
+          <div class="field-group">
+            <label for="nitCi" class="field-label">NIT / CI</label>
+            <div class="input-wrapper" [class.is-invalid]="isInvalid('nitCi')">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="16" rx="3" />
+                  <line x1="7" y1="8" x2="17" y2="8" />
+                  <line x1="7" y1="12" x2="13" y2="12" />
+                </svg>
+              </span>
+              <input
+                id="nitCi"
+                type="text"
+                formControlName="nitCi"
+                placeholder="ej. 10293847"
+                [attr.aria-invalid]="isInvalid('nitCi')"
+              />
+            </div>
+            @if (isInvalid('nitCi')) {
+              <p class="field-error">NIT o CI requerido.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Razón Social o Empresa -->
+        <div class="field-group">
+          <label for="razonSocial" class="field-label">Razón Social o Nombre</label>
+          <div class="input-wrapper" [class.is-invalid]="isInvalid('razonSocial')">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="2" width="16" height="20" rx="2" />
+                <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01" />
+              </svg>
+            </span>
+            <input
+              id="razonSocial"
+              type="text"
+              formControlName="razonSocial"
+              placeholder="Nombre comercial o empresa"
+              [attr.aria-invalid]="isInvalid('razonSocial')"
+            />
+          </div>
+          @if (isInvalid('razonSocial')) {
+            <p class="field-error">Razón social requerida.</p>
+          }
+        </div>
+
+        <!-- Correo Electrónico -->
+        <div class="field-group">
+          <label for="email" class="field-label">Correo Electrónico</label>
+          <div class="input-wrapper" [class.is-invalid]="isInvalid('email')">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="tu@correo.com"
+              [attr.aria-invalid]="isInvalid('email')"
+            />
+          </div>
+          @if (isInvalid('email')) {
+            <p class="field-error">Ingresa un correo electrónico válido.</p>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="field-group">
+          <label for="password" class="field-label">Contraseña</label>
+          <div class="input-wrapper" [class.is-invalid]="isInvalid('password')">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              placeholder="Mínimo 8 caracteres"
+              [attr.aria-invalid]="isInvalid('password')"
+            />
+            <button
+              type="button"
+              (click)="togglePassword()"
+              class="eye-btn"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              @if (showPassword()) {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.8 21.8 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (isInvalid('password')) {
+            <p class="field-error">La contraseña debe tener al menos 8 caracteres.</p>
+          }
+        </div>
+
+        <!-- Fila 2 Columnas: Teléfono & Dirección -->
+        <div class="grid-2">
+          <div class="field-group">
+            <label for="telefono" class="field-label">Teléfono <span class="label-hint">(Opcional)</span></label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              </span>
+              <input
+                id="telefono"
+                type="tel"
+                formControlName="telefono"
+                placeholder="+591 70000000"
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="direccion" class="field-label">Dirección <span class="label-hint">(Opcional)</span></label>
+            <div class="input-wrapper">
+              <span class="input-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                placeholder="ej. Av. Central #123"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón principal de registro -->
+        <button type="submit" [disabled]="loading()" class="submit-btn">
+          @if (loading()) {
+            <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+            </svg>
+            <span>Creando cuenta...</span>
+          } @else {
+            <span>Registrarse</span>
+          }
+        </button>
+      </form>
+
+      <!-- Pie del formulario -->
+      <footer class="form-footer">
+        <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+      </footer>
+    </div>
+  </main>
+</div>

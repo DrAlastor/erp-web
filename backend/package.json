@@ -1,0 +1,7 @@
+{
+  "name": "erp-backend-commands",
+  "private": true,
+  "scripts": {
+    "start:dev": "gradlew.bat bootRun --args=\"--spring.profiles.active=local\""
+  }
+}

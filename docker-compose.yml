@@ -1,22 +1,39 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: erp_postgres
+  # Base de datos local comentada: el sistema se conecta directamente a AWS RDS (ERP_Asus)
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: erp_postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: erp_db
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     TZ: America/La_Paz
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - pg_erp_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres -d erp_db"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - erp_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: erp-backend:latest
+    container_name: erp_backend
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: erp_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      TZ: America/La_Paz
     ports:
-      - "5433:5432"
-    volumes:
-      - pg_erp_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d erp_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - CORS_ORIGIN=http://localhost:4200
+      # Conecta directamente a AWS RDS (ERP_Asus) usando application.properties
     networks:
       - erp_network
 
@@ -27,6 +44,8 @@ services:
     image: erp-frontend:latest
     container_name: erp_frontend
     restart: unless-stopped
+    depends_on:
+      - backend
     ports:
       - "80:4000"
     environment:
@@ -34,9 +53,10 @@ services:
       - NODE_ENV=production
     networks:
       - erp_network
-volumes:
-  pg_erp_data:
-    name: erp_postgres_data
+
+# volumes:
+#   pg_erp_data:
+#     name: erp_postgres_data
 
 networks:
   erp_network:

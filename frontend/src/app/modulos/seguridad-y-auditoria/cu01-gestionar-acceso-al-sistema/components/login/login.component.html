@@ -1,0 +1,173 @@
+<div class="auth-split-layout">
+  <!-- Panel Izquierdo (50%): Imagen de alta resolución + Overlay + Volver al inicio -->
+  <aside class="hero-panel" aria-label="NexoERP">
+    <img
+      src="login-page.jpg"
+      alt="NexoERP Gestión Comercial y Contable"
+      class="hero-image"
+      fetchpriority="high"
+    />
+    <div class="hero-overlay">
+      <a routerLink="/" class="back-link" title="Volver al inicio" aria-label="Volver al inicio">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Volver al inicio</span>
+      </a>
+
+      <div class="hero-content">
+        <h2 class="hero-title">Únete a NexoERP</h2>
+        <p class="hero-subtitle">Todo tu negocio comercial y contable en un solo lugar.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Panel Derecho (50%): Formulario Iniciar Sesión con Apple Design -->
+  <main class="form-panel">
+    <!-- Toggle tema claro/oscuro en la esquina superior derecha -->
+    <button
+      type="button"
+      (click)="themeService.toggle()"
+      class="theme-toggle-btn"
+      [attr.aria-label]="themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      [title]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'"
+    >
+      @if (themeService.isDark()) {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+      } @else {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+        </svg>
+      }
+    </button>
+
+    <div class="form-container">
+      <!-- Encabezado -->
+      <header class="form-header">
+        <h1 class="auth-title">Iniciar Sesión</h1>
+        <p class="auth-subtitle">Ingresa tus credenciales para acceder a tu plataforma.</p>
+      </header>
+
+      <!-- Alerta: Cuenta bloqueada -->
+      @if (accountLocked()) {
+        <div class="alert-box alert-warning" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5">
+            <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a1 1 0 0 0 .86 1.5h18.64a1 1 0 0 0 .86-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Alerta: Error genérico de autenticación -->
+      @if (errorMessage() && !accountLocked()) {
+        <div class="alert-box alert-error" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Formulario -->
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth-form">
+        <!-- Usuario o Correo -->
+        <div class="field-group">
+          <label for="usernameOrEmail" class="field-label">Usuario o Correo Electrónico</label>
+          <div class="input-wrapper" [class.is-invalid]="isInvalid('usernameOrEmail')">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21a8 8 0 1 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </span>
+            <input
+              id="usernameOrEmail"
+              type="text"
+              formControlName="usernameOrEmail"
+              autocomplete="username"
+              placeholder="tu@correo.com o usuario"
+              [attr.aria-invalid]="isInvalid('usernameOrEmail')"
+            />
+          </div>
+          @if (isInvalid('usernameOrEmail')) {
+            <p class="field-error">El usuario o correo es obligatorio.</p>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="field-group">
+          <label for="password" class="field-label">Contraseña</label>
+          <div class="input-wrapper" [class.is-invalid]="isInvalid('password')">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Mínimo 8 caracteres"
+              [attr.aria-invalid]="isInvalid('password')"
+            />
+            <button
+              type="button"
+              (click)="togglePassword()"
+              class="eye-btn"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              @if (showPassword()) {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.8 21.8 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (isInvalid('password')) {
+            <p class="field-error">La contraseña es obligatoria.</p>
+          }
+        </div>
+
+        <!-- Opciones -->
+        <div class="form-options">
+          <label class="remember-label">
+            <input type="checkbox" formControlName="rememberMe" />
+            <span>Mantener sesión activa</span>
+          </label>
+          <a routerLink="/recuperar-contrasena" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <!-- Botón principal -->
+        <button type="submit" [disabled]="loading()" class="submit-btn">
+          @if (loading()) {
+            <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+            </svg>
+            <span>Ingresando al sistema...</span>
+          } @else {
+            <span>Iniciar Sesión</span>
+          }
+        </button>
+      </form>
+
+      <!-- Pie del formulario -->
+      <footer class="form-footer">
+        <p>¿No tienes cuenta? <a routerLink="/registro-cliente">Crear Cuenta</a></p>
+      </footer>
+    </div>
+  </main>
+</div>

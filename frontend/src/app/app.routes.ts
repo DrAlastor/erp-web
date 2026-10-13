@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
-import { permisoGuard } from './core/guards/permiso.guard';
+import { authGuard } from './modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,32 +9,33 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
-    title: 'Ingresar | NexoERP'
+    loadComponent: () => import('./modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/components/login/login.component').then(m => m.LoginComponent),
+    title: 'Iniciar Sesión | NexoERP'
   },
   {
-    // Área logueada. El authGuard exige sesión y deja los permisos cargados antes de dibujar.
+    path: 'registro-cliente',
+    loadComponent: () => import('./modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/components/registro-cliente/registro-cliente.component').then(m => m.RegistroClienteComponent),
+    title: 'Registro de Cliente | NexoERP'
+  },
+  {
+    path: 'registro-suscripcion',
+    loadComponent: () => import('./pages/registro-suscripcion/registro-suscripcion.component').then(m => m.RegistroSuscripcionComponent),
+    title: 'Suscripción & Onboarding de Empresa | NexoERP'
+  },
+  {
+    path: 'recuperar-contrasena',
+    loadComponent: () => import('./modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/components/recuperar-contrasena/recuperar-contrasena.component').then(m => m.RecuperarContrasenaComponent),
+    title: 'Recuperar Contraseña | NexoERP'
+  },
+  {
+    path: 'reset-password',
+    redirectTo: 'recuperar-contrasena'
+  },
+  {
     path: 'app',
-    loadComponent: () => import('./layout/shell.component').then(m => m.ShellComponent),
+    loadComponent: () => import('./pages/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [authGuard],
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('./pages/inicio/inicio.component').then(m => m.InicioComponent),
-        title: 'Inicio | NexoERP'
-      },
-      {
-        path: 'sin-acceso',
-        loadComponent: () => import('./pages/sin-acceso/sin-acceso.component').then(m => m.SinAccesoComponent),
-        title: 'Sin acceso | NexoERP'
-      },
-      {
-        path: 'seguridad/roles',
-        loadComponent: () => import('./pages/seguridad/roles/roles.component').then(m => m.RolesComponent),
-        canActivate: [permisoGuard('SEGURIDAD_CONSULTAR')],
-        title: 'Roles y permisos | NexoERP'
-      }
-    ]
+    title: 'Panel | NexoERP'
   },
   {
     path: '**',

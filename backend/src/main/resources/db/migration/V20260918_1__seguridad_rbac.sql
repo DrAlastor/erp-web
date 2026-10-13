@@ -30,18 +30,10 @@ CREATE TABLE empresa (
 -- El email es único en todo el sistema porque el login no pide empresa:
 -- la empresa se deduce del usuario.
 -- -------------------------------------------------------------------
-CREATE TABLE usuario (
-    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    empresa_id    UUID         NOT NULL REFERENCES empresa (id),
-    email         VARCHAR(160) NOT NULL,
-    password_hash VARCHAR(100) NOT NULL,
-    nombre        VARCHAR(160) NOT NULL,
-    activo        BOOLEAN      NOT NULL DEFAULT TRUE,
-    creado_en     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_usuario_email UNIQUE (email)
-);
+INSERT INTO empresa (id, nombre, nit) VALUES ('00000000-0000-0000-0000-000000000001', 'Empresa ERP', 'ERP-LOCAL');
+ALTER TABLE usuarios ADD COLUMN empresa_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001' REFERENCES empresa(id);
 
-CREATE INDEX idx_usuario_empresa ON usuario (empresa_id);
+CREATE INDEX idx_usuario_empresa ON usuarios (empresa_id);
 
 -- -------------------------------------------------------------------
 -- Permiso — catálogo global, igual para todas las empresas.
@@ -92,9 +84,9 @@ CREATE INDEX idx_rol_permiso_permiso ON rol_permiso (permiso_id);
 -- mismo rol al mismo usuario.
 -- -------------------------------------------------------------------
 CREATE TABLE usuario_rol (
-    usuario_id   UUID NOT NULL REFERENCES usuario (id) ON DELETE CASCADE,
+    usuario_id   BIGINT NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
     rol_id       UUID NOT NULL REFERENCES rol (id) ON DELETE CASCADE,
-    asignado_por UUID REFERENCES usuario (id),
+    asignado_por BIGINT REFERENCES usuarios (id),
     asignado_en  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_usuario_rol PRIMARY KEY (usuario_id, rol_id)
 );
@@ -109,10 +101,12 @@ CREATE INDEX idx_usuario_rol_rol ON usuario_rol (rol_id);
 CREATE TABLE bitacora_auditoria (
     id            BIGSERIAL PRIMARY KEY,
     empresa_id    UUID         NOT NULL REFERENCES empresa (id),
-    usuario_id    UUID REFERENCES usuario (id),
+    usuario_id    BIGINT REFERENCES usuarios (id),
     accion        VARCHAR(60)  NOT NULL,
     detalle       VARCHAR(500),
     registrado_en TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_bitacora_empresa_fecha ON bitacora_auditoria (empresa_id, registrado_en DESC);
+
+ALTER TABLE usuarios ADD COLUMN rbac_inicializado BOOLEAN NOT NULL DEFAULT false;

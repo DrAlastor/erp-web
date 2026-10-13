@@ -1,0 +1,159 @@
+<div class="workspace" (keydown.escape)="sidebarOpen.set(false)">
+  @if (sidebarOpen()) {
+  <button class="scrim" aria-label="Cerrar menú" (click)="sidebarOpen.set(false)"></button>
+  }
+  <aside id="module-sidebar" class="sidebar" [class.open]="sidebarOpen()" aria-label="Panel de control">
+    <a class="brand" routerLink="/app" (click)="sidebarOpen.set(false)"><img class="brand-mark" src="erp-logo.png"
+        alt="" width="38" height="38"> Nexo<span class="accent">ERP</span></a>
+    <p class="eyebrow">PANEL DE CONTROL</p>
+    <nav aria-label="Módulos y funciones">
+      <a class="dashboard-link" routerLink="/app" [class.selected]="!hasSelection()"
+        [attr.aria-current]="!hasSelection() ? 'page' : null" (click)="sidebarOpen.set(false)">◫ &nbsp; Dashboard</a>
+      <p class="eyebrow">MÓDULOS DEL SISTEMA</p>
+      @for (module of visibleModules(); track module.id) {
+      @if (!authService.isClient() || module.id === 'comercial-y-preventa') {
+      <section class="module-group">
+        <button class="module-toggle" (click)="toggleModule(module.id)" [attr.aria-expanded]="expanded().has(module.id)"
+          [attr.aria-controls]="'functions-' + module.id">
+          <span class="icon" aria-hidden="true">{{ module.icon }}</span><span>{{ module.name }}</span><span
+            class="chevron" aria-hidden="true">{{
+            expanded().has(module.id) ? '−' : '+'
+            }}</span>
+        </button>
+        <div class="function-list" [id]="'functions-' + module.id" [hidden]="!expanded().has(module.id)">
+          @for (fn of module.functions; track fn.id) {
+          @if (!authService.isClient() || fn.id === 'perfil-personal') {
+          <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }" [class.selected]="
+                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                  " [attr.aria-current]="
+                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                      ? 'page'
+                      : null
+                  " (click)="sidebarOpen.set(false)">{{ fn.name }}</a>
+          }
+          } @empty {
+          <span class="future-note">Sin funciones asignadas</span>
+          }
+        </div>
+      </section>
+      }
+      }
+    </nav>
+    <p class="sidebar-footer">ERP Comercial y Contable</p>
+  </aside>
+  <div class="main-column">
+    <header class="topbar">
+      <div class="header-title">
+        <button class="mobile-toggle" aria-label="Abrir menú de módulos" aria-controls="module-sidebar"
+          [attr.aria-expanded]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())">
+          ☰</button><span>Espacio de trabajo</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="theme-button" (click)="themeService.toggle()" [attr.aria-label]="
+            themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
+          ">
+          {{ themeService.isDark() ? '☀' : '☾' }}
+        </button>
+        <span class="avatar" aria-hidden="true">{{
+          iniciales(authService.usuario()?.fullname)
+          }}</span>
+        <div class="user-details">
+          <strong>{{ authService.usuario()?.fullname }}</strong><span class="mono-label">{{ authService.usuario()?.email }}</span>
+        </div>
+        <button class="logout-button btn-outlined" (click)="authService.logout()">Cerrar sesión</button>
+      </div>
+    </header>
+    <main>
+      @if (selectedFunction(); as fn) {
+      <a class="back-link" routerLink="/app">← Volver al dashboard</a>
+      <p class="eyebrow">{{ selectedModule()?.name }}</p>
+      <h1>{{ fn.name }}</h1>
+      @if (authService.isClient() && (fn.id === 'perfil-personal' || fn.id === 'cu13-gestionar-clientes')) {
+      <app-cliente-portal />
+      } @else if (!authService.isClient() && (fn.id === 'cu02-gestionar-usuarios' || fn.id === 'gestion-de-usuarios')) {
+      <app-usuarios />
+      } @else if (fn.id === 'cu03-gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos') {
+      <app-roles />
+      } @else if (fn.id === 'cu04-gestionar-empleados' || fn.id === 'gestionar-empleados') {
+      <app-empleados />
+      } @else if (fn.id === 'cu09-datos-maestros-inventario' || fn.id === 'datos-maestros-inventario') {
+      <app-datos-maestros-inventario />
+      } @else if (fn.id === 'cu10-catalogo-de-articulos' || fn.id === 'catalogo-de-articulos') {
+      <app-catalogo />
+      } @else if (fn.id === 'cu11-movimientos-de-inventario' || fn.id === 'movimientos-de-inventario') {
+      <app-movimiento-inventario />
+      } @else if (!authService.isClient() && (fn.id === 'cu13-gestionar-clientes' || fn.id === 'gestion-de-clientes')) {
+      <app-clientes />
+      } @else {
+      <section class="module-card function-content">
+        <span class="count">En desarrollo</span>
+        <h2>{{ fn.name }}</h2>
+        <p>Módulo de gestión y operaciones comerciales en línea.</p>
+      </section>
+      }
+      } @else if (hasSelection()) {
+      <h1>Función no encontrada</h1>
+      <p>Selecciona una función desde el panel de control.</p>
+      <a class="back-link" routerLink="/app">Volver al dashboard</a>
+      } @else {
+      <p class="eyebrow">VISTA GENERAL</p>
+      <h1>Dashboard</h1>
+      <p class="intro">
+        Bienvenido, {{ authService.usuario()?.fullname }}. Este es tu espacio de trabajo.
+      </p>
+      <section class="welcome-banner">
+        <div>
+          <span class="banner-label">ERP COMERCIAL Y CONTABLE</span>
+          <h2>Panel de Operaciones</h2>
+          <p>
+            Explora las funciones asignadas a tu perfil desde la barra lateral.
+          </p>
+        </div>
+        <span class="banner-symbol" aria-hidden="true">↗</span>
+      </section>
+      <section class="summary" aria-label="Resumen del sistema">
+        <div>
+          <span>Módulos Activos</span><strong>{{ visibleModules().length }}</strong><small>Áreas de trabajo</small>
+        </div>
+        <div>
+          <span>Funciones Disponibles</span><strong>{{ functionCount() }}</strong><small>Permisos asignados</small>
+        </div>
+        <div>
+          <span>Tu acceso</span><strong class="session-label">Sesión activa</strong><small>{{
+            authService.usuario()?.email }}</small>
+        </div>
+      </section>
+      <div class="section-heading">
+        <h2>Módulos del Sistema</h2>
+        <span>Selecciona una función para continuar</span>
+      </div>
+      <section class="module-grid" aria-label="Módulos del ERP">
+        @for (module of visibleModules(); track module.id) {
+        @if (!authService.isClient() || module.id === 'comercial-y-preventa') {
+        <article class="module-card">
+          <div class="card-top">
+            <span class="card-icon" aria-hidden="true">{{ module.icon }}</span><span class="count">{{
+              module.functions.length }} funciones</span>
+          </div>
+          <h3>{{ module.name }}</h3>
+          <div class="card-functions">
+            @for (fn of module.functions; track fn.id) {
+            @if (!authService.isClient() || fn.id === 'perfil-personal') {
+            <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }">{{ fn.name }}<span
+                aria-hidden="true">↗</span></a>
+            }
+            } @empty {
+            <p class="future-note">
+              Sin funciones asignadas.
+            </p>
+            }
+          </div>
+        </article>
+        }
+        }
+      </section>
+      }
+    </main>
+  </div>
+</div>

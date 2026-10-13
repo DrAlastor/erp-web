@@ -3,13 +3,14 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
-import { authInterceptor } from './core/auth/auth.interceptor';
+import { authInterceptor } from './modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/interceptors/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor]))
   ]
 };

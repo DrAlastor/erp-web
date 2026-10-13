@@ -1,0 +1,579 @@
+<div class="empleados-container">
+  <!-- ENCABEZADO Y ACCIONES PRINCIPALES -->
+  <header class="header-section">
+    <div class="header-titles">
+      <div class="badge-modulo">Seguridad & Personal</div>
+      <h1 class="page-title">Gestión de Empleados</h1>
+      <p class="page-subtitle">
+        Administración del maestro de colaboradores, asignación de cargos, sucursales y vinculación a cuentas del sistema.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-primary" (click)="abrirModalNuevo()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>Registrar Empleado</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ALERTAS DE FEEDBACK -->
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <div class="alert-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
+      <div class="alert-content">
+        <span class="alert-title">Atención</span>
+        <p class="alert-text">{{ error() }}</p>
+      </div>
+      <button type="button" class="alert-close" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success" role="alert">
+      <div class="alert-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </div>
+      <div class="alert-content">
+        <span class="alert-title">Operación exitosa</span>
+        <p class="alert-text">{{ success() }}</p>
+      </div>
+      <button type="button" class="alert-close" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+
+  <!-- BARRA DE FILTROS Y BÚSQUEDA -->
+  <section class="filters-card">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar por CI, nombre o apellido..."
+        [value]="filtroSearch()"
+        (input)="filtroSearch.set($any($event.target).value); onFiltroChange()"
+        class="search-input"
+      />
+    </div>
+
+    <div class="filters-group">
+      <!-- Filtro Sucursal -->
+      <div class="filter-item">
+        <label for="filtro-sucursal" class="filter-label">Sucursal:</label>
+        <select
+          id="filtro-sucursal"
+          class="filter-select"
+          [value]="filtroSucursal()"
+          (change)="filtroSucursal.set($any($event.target).value); onFiltroChange()"
+        >
+          <option value="">Todas las sucursales</option>
+          @for (s of sucursales(); track s.id) {
+            <option [value]="s.id">{{ s.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Filtro Cargo -->
+      <div class="filter-item">
+        <label for="filtro-cargo" class="filter-label">Cargo:</label>
+        <select
+          id="filtro-cargo"
+          class="filter-select"
+          [value]="filtroCargo()"
+          (change)="filtroCargo.set($any($event.target).value); onFiltroChange()"
+        >
+          <option value="">Todos los cargos</option>
+          @for (c of cargosPredefinidos; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Filtro Estado -->
+      <div class="filter-item">
+        <label for="filtro-estado" class="filter-label">Estado:</label>
+        <select
+          id="filtro-estado"
+          class="filter-select"
+          [value]="filtroEstado()"
+          (change)="filtroEstado.set($any($event.target).value); onFiltroChange()"
+        >
+          <option value="todos">Todos los estados</option>
+          <option value="activos">Solo Activos</option>
+          <option value="inactivos">Solo Inactivos</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLA DE EMPLEADOS -->
+  <section class="table-card">
+    @if (loading()) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p class="state-text">Cargando colaboradores del maestro...</p>
+      </div>
+    } @else if (empleados().length === 0) {
+      <div class="state-container empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <h3 class="empty-title">No se encontraron colaboradores</h3>
+        <p class="empty-description">
+          No hay registros que coincidan con los filtros aplicados o aún no se han registrado colaboradores.
+        </p>
+        <button type="button" class="btn btn-secondary" (click)="abrirModalNuevo()">
+          Registrar Primer Empleado
+        </button>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Documento (CI)</th>
+              <th scope="col">Colaborador</th>
+              <th scope="col">Cargo</th>
+              <th scope="col">Sucursal</th>
+              <th scope="col">Contacto</th>
+              <th scope="col" class="text-center">Estado</th>
+              <th scope="col" class="text-center">Cuenta ERP</th>
+              <th scope="col" class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of empleados(); track emp.id) {
+              <tr [class.row-inactivo]="!emp.activo">
+                <!-- Documento CI -->
+                <td>
+                  <span class="ci-code">{{ emp.ci }}</span>
+                </td>
+
+                <!-- Colaborador -->
+                <td>
+                  <div class="colaborador-cell">
+                    <span class="colaborador-nombre">{{ emp.nombreCompleto }}</span>
+                    @if (emp.email) {
+                      <span class="colaborador-email">{{ emp.email }}</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Cargo -->
+                <td>
+                  <span class="cargo-tag">{{ emp.cargo }}</span>
+                </td>
+
+                <!-- Sucursal -->
+                <td>
+                  <div class="sucursal-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3l12 4M3 7l6-4" />
+                    </svg>
+                    <span>{{ emp.sucursalNombre || 'Sin Sucursal' }}</span>
+                  </div>
+                </td>
+
+                <!-- Contacto -->
+                <td>
+                  <span class="telefono-text">{{ emp.telefono || '—' }}</span>
+                </td>
+
+                <!-- Estado -->
+                <td class="text-center">
+                  @if (emp.activo) {
+                    <span class="badge badge-active">Activo</span>
+                  } @else {
+                    <span class="badge badge-inactive">Inactivo</span>
+                  }
+                </td>
+
+                <!-- Cuenta ERP (Vinculación) -->
+                <td class="text-center">
+                  @if (emp.tieneUsuario) {
+                    <div class="badge-usuario vinculado" [title]="'Vinculado a cuenta: ' + (emp.usuarioEmail || 'Asignada')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="8.5" cy="7" r="4" />
+                        <polyline points="17 11 19 13 23 9" />
+                      </svg>
+                      <span>{{ emp.usuarioEmail || 'Vinculado' }}</span>
+                    </div>
+                  } @else {
+                    <div class="cuenta-wrap">
+                      <div class="badge-usuario sin-cuenta" title="No cuenta con usuario asignado en el sistema">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                        </svg>
+                        <span>Sin Cuenta</span>
+                      </div>
+                      @if (emp.activo) {
+                        <button
+                          type="button"
+                          class="btn-link-usuario"
+                          (click)="crearUsuarioParaEmpleado(emp)"
+                          title="Crear cuenta de acceso para este colaborador"
+                        >
+                          + Asignar Cuenta
+                        </button>
+                      }
+                    </div>
+                  }
+                </td>
+
+                <!-- Acciones -->
+                <td class="text-right">
+                  <div class="action-buttons">
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      title="Editar datos del empleado"
+                      (click)="abrirModalEditar(emp)"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      [class.btn-icon-danger]="emp.activo"
+                      [class.btn-icon-success]="!emp.activo"
+                      [title]="emp.activo ? 'Desactivar empleado (Baja lógica)' : 'Reactivar empleado'"
+                      (click)="solicitarCambioEstado(emp)"
+                    >
+                      @if (emp.activo) {
+                        <!-- Ícono para desactivar -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="15" y1="9" x2="9" y2="15" />
+                          <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                      } @else {
+                        <!-- Ícono para reactivar -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="23 4 23 10 17 10" />
+                          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                        </svg>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span class="count-label">Total colaboradores registrados: <strong>{{ empleados().length }}</strong></span>
+      </div>
+    }
+  </section>
+
+  <!-- MODAL DE REGISTRO / EDICIÓN (2 SECCIONES) -->
+  @if (modalAbierto()) {
+    <div class="modal-backdrop" (click)="cerrarModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <h2 class="modal-title">
+              {{ modoEdicion() ? 'Editar Colaborador' : 'Registrar Nuevo Colaborador' }}
+            </h2>
+            <p class="modal-subtitle">
+              {{ modoEdicion() ? 'Actualice la información laboral o datos de contacto.' : 'Complete la ficha personal y organizacional para dar de alta en la empresa.' }}
+            </p>
+          </div>
+          <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar modal">✕</button>
+        </header>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="modal-body">
+          <!-- SECCIÓN 1: DATOS PERSONALES -->
+          <div class="form-section">
+            <div class="section-title-wrap">
+              <span class="section-number">1</span>
+              <h3 class="section-title">Datos Personales</h3>
+            </div>
+
+            <div class="form-grid">
+              <!-- CI y Expedido -->
+              <div class="form-group col-span-2">
+                <label class="input-label" for="ciNumero">
+                  Documento de Identidad (CI) <span class="required">*</span>
+                </label>
+                <div class="ci-input-group">
+                  <input
+                    type="text"
+                    id="ciNumero"
+                    formControlName="ciNumero"
+                    placeholder="Ej. 8472910"
+                    class="form-control mono-field"
+                    [class.is-invalid]="form.get('ciNumero')?.invalid && form.get('ciNumero')?.touched"
+                  />
+                  <select
+                    formControlName="ciExpedido"
+                    class="form-control select-expedido"
+                    aria-label="Departamento de expedición"
+                  >
+                    @for (d of departamentosBolivia; track d.sigla) {
+                      <option [value]="d.sigla">{{ d.sigla }} - {{ d.nombre }}</option>
+                    }
+                  </select>
+                </div>
+                @if (form.get('ciNumero')?.invalid && form.get('ciNumero')?.touched) {
+                  <span class="error-text">El número de CI es obligatorio (4-20 caracteres alfanuméricos).</span>
+                }
+              </div>
+
+              <!-- Nombres -->
+              <div class="form-group">
+                <label class="input-label" for="nombre">
+                  Nombres <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="nombre"
+                  formControlName="nombre"
+                  placeholder="Ej. Juan Carlos"
+                  class="form-control"
+                  [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched"
+                />
+                @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+                  <span class="error-text">Los nombres son obligatorios.</span>
+                }
+              </div>
+
+              <!-- Apellidos -->
+              <div class="form-group">
+                <label class="input-label" for="apellido">
+                  Apellidos <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="apellido"
+                  formControlName="apellido"
+                  placeholder="Ej. Perez Prado"
+                  class="form-control"
+                  [class.is-invalid]="form.get('apellido')?.invalid && form.get('apellido')?.touched"
+                />
+                @if (form.get('apellido')?.invalid && form.get('apellido')?.touched) {
+                  <span class="error-text">Los apellidos son obligatorios.</span>
+                }
+              </div>
+
+              <!-- Teléfono -->
+              <div class="form-group">
+                <label class="input-label" for="telefono">Teléfono / Celular</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  formControlName="telefono"
+                  placeholder="Ej. 70012345"
+                  class="form-control"
+                />
+              </div>
+
+              <!-- Email -->
+              <div class="form-group">
+                <label class="input-label" for="email">Correo Electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  placeholder="colaborador@empresa.com"
+                  class="form-control"
+                  [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+                />
+                @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                  <span class="error-text">Ingrese un correo electrónico válido.</span>
+                }
+              </div>
+
+              <!-- Dirección -->
+              <div class="form-group col-span-2">
+                <label class="input-label" for="direccion">Dirección Domiciliaria</label>
+                <input
+                  type="text"
+                  id="direccion"
+                  formControlName="direccion"
+                  placeholder="Ej. Av. San Martín #450, Barrio Equipetrol"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN 2: DATOS ORGANIZACIONALES -->
+          <div class="form-section">
+            <div class="section-title-wrap">
+              <span class="section-number">2</span>
+              <h3 class="section-title">Datos Organizacionales</h3>
+            </div>
+
+            <div class="form-grid">
+              <!-- Sucursal Asignada -->
+              <div class="form-group">
+                <label class="input-label" for="sucursalId">
+                  Sucursal Asignada <span class="required">*</span>
+                </label>
+                <select
+                  id="sucursalId"
+                  formControlName="sucursalId"
+                  class="form-control"
+                  [class.is-invalid]="form.get('sucursalId')?.invalid && form.get('sucursalId')?.touched"
+                >
+                  <option [ngValue]="null" disabled>Seleccione una sucursal...</option>
+                  @for (s of sucursales(); track s.id) {
+                    <option [value]="s.id">{{ s.nombre }}</option>
+                  }
+                </select>
+                @if (form.get('sucursalId')?.invalid && form.get('sucursalId')?.touched) {
+                  <span class="error-text">Debe asignar una sucursal válida.</span>
+                }
+              </div>
+
+              <!-- Cargo -->
+              <div class="form-group">
+                <label class="input-label" for="cargo">
+                  Cargo / Puesto <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="cargo"
+                  formControlName="cargo"
+                  placeholder="Ej. Ejecutivo de Ventas"
+                  list="cargos-list"
+                  class="form-control"
+                  [class.is-invalid]="form.get('cargo')?.invalid && form.get('cargo')?.touched"
+                />
+                <datalist id="cargos-list">
+                  @for (c of cargosPredefinidos; track c) {
+                    <option [value]="c"></option>
+                  }
+                </datalist>
+                @if (form.get('cargo')?.invalid && form.get('cargo')?.touched) {
+                  <span class="error-text">El cargo es obligatorio.</span>
+                }
+              </div>
+
+              <!-- Fecha de Ingreso -->
+              <div class="form-group col-span-2">
+                <label class="input-label" for="fechaIngreso">
+                  Fecha de Ingreso <span class="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="fechaIngreso"
+                  formControlName="fechaIngreso"
+                  class="form-control"
+                  [class.is-invalid]="form.get('fechaIngreso')?.invalid && form.get('fechaIngreso')?.touched"
+                />
+                @if (form.get('fechaIngreso')?.invalid && form.get('fechaIngreso')?.touched) {
+                  <span class="error-text">La fecha de ingreso es obligatoria.</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="cerrarModal()" [disabled]="busy()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="busy()">
+              @if (busy()) {
+                <span class="spinner-sm"></span>
+                <span>Guardando...</span>
+              } @else {
+                <span>{{ modoEdicion() ? 'Actualizar Colaborador' : 'Guardar Colaborador' }}</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL DE CONFIRMACIÓN DE BAJA / ALTA LÓGICA -->
+  @if (confirmacionModal(); as emp) {
+    <div class="modal-backdrop" (click)="cancelarCambioEstado()">
+      <div class="modal-card modal-confirm" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="confirm-icon-wrap" [class.danger]="emp.activo" [class.success]="!emp.activo">
+            @if (emp.activo) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+            }
+          </div>
+          <div>
+            <h3 class="modal-title">
+              {{ emp.activo ? '¿Desactivar Colaborador?' : '¿Reactivar Colaborador?' }}
+            </h3>
+            <p class="modal-subtitle">
+              {{ emp.nombreCompleto }} (CI: {{ emp.ci }})
+            </p>
+          </div>
+        </header>
+
+        <div class="confirm-body">
+          @if (emp.activo) {
+            <div class="warning-callout">
+              <strong>Importante:</strong> Al desactivar al colaborador, se aplicará <strong>baja lógica</strong> conservando su historial de transacciones. Si tiene una cuenta de usuario ERP asociada (<code>{{ emp.usuarioEmail || 'cuenta asignada' }}</code>), <strong>ésta será inhabilitada automáticamente</strong> impidiendo su ingreso al sistema.
+            </div>
+          } @else {
+            <p class="confirm-text">
+              El colaborador volverá a figurar como <strong>Activo</strong> en el maestro. Tome en cuenta que su cuenta de usuario deberá ser habilitada manualmente si requiere acceso al sistema.
+            </p>
+          }
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cancelarCambioEstado()" [disabled]="busy()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn"
+            [class.btn-danger]="emp.activo"
+            [class.btn-success]="!emp.activo"
+            (click)="confirmarCambioEstado()"
+            [disabled]="busy()"
+          >
+            @if (busy()) {
+              <span class="spinner-sm"></span>
+              <span>Procesando...</span>
+            } @else {
+              <span>{{ emp.activo ? 'Confirmar Desactivación' : 'Confirmar Reactivación' }}</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

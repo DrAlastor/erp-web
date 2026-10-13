@@ -1,0 +1,525 @@
+<div class="inventario-container">
+  <!-- Cabecera del Módulo -->
+  <div class="header-section">
+    <div>
+      <h2>Movimientos de Inventario y Existencias</h2>
+      <p>Gestión de Kardex inmutable, control de existencias por almacén y monitoreo de alertas de stock mínimo.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn primary" [disabled]="!puedeRegistrar()" (click)="abrirModalNuevo()">
+        <span>+</span> Registrar Movimiento
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensajes de Estado / Notificaciones -->
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>✕</span>
+      <div>{{ error() }}</div>
+    </div>
+  }
+  @if (success()) {
+    <div class="alert alert-success" role="status">
+      <span>✓</span>
+      <div>{{ success() }}</div>
+    </div>
+  }
+
+  <!-- Navegación por Pestañas -->
+  <div class="tab-nav">
+    <button
+      class="tab-btn"
+      [class.active]="tabActiva() === 'movimientos'"
+      (click)="cambiarTab('movimientos')"
+    >
+      📋 Historial Kardex (Movimientos)
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="tabActiva() === 'stock'"
+      (click)="cambiarTab('stock')"
+    >
+      🏢 Administrar Stock por Almacén
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="tabActiva() === 'alertas'"
+      (click)="cambiarTab('alertas')"
+    >
+      ⚠️ Alertas de Stock Mínimo
+      @if (alertasList().length > 0) {
+        <span class="pill-count">{{ alertasList().length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 1: HISTORIAL DE MOVIMIENTOS (KARDEX)   -->
+  <!-- ========================================== -->
+  @if (tabActiva() === 'movimientos') {
+    <div class="tab-content">
+      <form class="filters-bar" (ngSubmit)="cargarMovimientos(true)">
+        <label>
+          Almacén
+          <select [(ngModel)]="filtroMovAlmacenId" name="filtroAlmacen" (change)="cargarMovimientos(true)">
+            <option value="">Todos los almacenes</option>
+            @for (alm of almacenes(); track alm.id) {
+              <option [value]="alm.id">{{ alm.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Producto
+          <select [(ngModel)]="filtroMovProductoId" name="filtroProducto" (change)="cargarMovimientos(true)">
+            <option value="">Todos los productos</option>
+            @for (prod of productos(); track prod.id) {
+              <option [value]="prod.id">{{ prod.nombre }} ({{ prod.codigoSku }})</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Tipo de Movimiento
+          <select [(ngModel)]="filtroMovTipo" name="filtroTipo" (change)="cargarMovimientos(true)">
+            <option value="">Todos los tipos</option>
+            <option value="ENTRADA">Entrada</option>
+            <option value="SALIDA">Salida</option>
+            <option value="AJUSTE_POSITIVO">Ajuste (+)</option>
+            <option value="AJUSTE_NEGATIVO">Ajuste (-)</option>
+          </select>
+        </label>
+
+        <button class="btn secondary" type="submit" [disabled]="loading()">Filtrar</button>
+      </form>
+
+      @if (loading()) {
+        <div class="loading-state">Cargando movimientos del Kardex...</div>
+      } @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Producto</th>
+                <th>Almacén</th>
+                <th>Cantidad</th>
+                <th>Costo Unit.</th>
+                <th>Saldo Cantidad</th>
+                <th>Saldo Valorado</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mov of movimientos(); track mov.id) {
+                <tr>
+                  <td><strong>#{{ mov.id }}</strong></td>
+                  <td>{{ mov.fecha | date: 'short' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="claseTipoMovimiento(mov.tipoMovimiento)">
+                      {{ mov.tipoMovimiento }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="cell-strong">{{ mov.productoNombre }}</div>
+                    <small class="cell-sub">{{ mov.productoSku }}</small>
+                  </td>
+                  <td>{{ mov.almacenNombre }}</td>
+                  <td>
+                    <strong [class.text-entrada]="mov.tipoMovimiento === 'ENTRADA' || mov.tipoMovimiento === 'AJUSTE_POSITIVO'"
+                            [class.text-salida]="mov.tipoMovimiento === 'SALIDA' || mov.tipoMovimiento === 'AJUSTE_NEGATIVO'">
+                      {{ mov.cantidad | number: '1.2-2' }} {{ mov.unidadMedida }}
+                    </strong>
+                  </td>
+                  <td>Bs. {{ mov.costoUnitario | number: '1.2-2' }}</td>
+                  <td><strong>{{ mov.saldoCantidad | number: '1.2-2' }}</strong></td>
+                  <td>Bs. {{ mov.saldoValorado | number: '1.2-2' }}</td>
+                  <td>
+                    <button class="btn-sm" (click)="movimientoSeleccionado.set(mov)">Ver</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="10" class="empty-state">No se registraron movimientos con los filtros aplicados.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        @if (paginasMovimientos() > 1) {
+          <div class="pagination">
+            <button
+              [disabled]="pageMovimientos() === 0 || loading()"
+              (click)="pageMovimientos.set(pageMovimientos() - 1); cargarMovimientos()"
+            >
+              Anterior
+            </button>
+            <span>Página {{ pageMovimientos() + 1 }} de {{ paginasMovimientos() }} (Total: {{ totalMovimientos() }})</span>
+            <button
+              [disabled]="pageMovimientos() >= paginasMovimientos() - 1 || loading()"
+              (click)="pageMovimientos.set(pageMovimientos() + 1); cargarMovimientos()"
+            >
+              Siguiente
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- TAB 2: ADMINISTRAR STOCK POR ALMACÉN       -->
+  <!-- ========================================== -->
+  @if (tabActiva() === 'stock') {
+    <div class="tab-content">
+      <form class="filters-bar" (ngSubmit)="cargarStock(true)">
+        <label>
+          Almacén
+          <select [(ngModel)]="filtroStockAlmacenId" name="filtroStockAlm" (change)="cargarStock(true)">
+            <option value="">Todos los almacenes</option>
+            @for (alm of almacenes(); track alm.id) {
+              <option [value]="alm.id">{{ alm.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex-grow">
+          Buscar Producto
+          <input
+            type="text"
+            [(ngModel)]="filtroStockSearch"
+            name="filtroStockSearch"
+            placeholder="Buscar por nombre, SKU o código de barra..."
+          />
+        </label>
+
+        <button class="btn secondary" type="submit" [disabled]="loading()">Buscar</button>
+      </form>
+
+      @if (loading()) {
+        <div class="loading-state">Cargando existencias de inventario...</div>
+      } @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Almacén</th>
+                <th>Stock Actual</th>
+                <th>Stock Mínimo</th>
+                <th>Costo Prom.</th>
+                <th>Precio Venta</th>
+                <th>Estado Existencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (stk of stockList(); track stk.id) {
+                <tr>
+                  <td>
+                    <div class="cell-strong">{{ stk.productoNombre }}</div>
+                    <small class="cell-sub">SKU: {{ stk.productoSku }}</small>
+                  </td>
+                  <td>{{ stk.almacenNombre }}</td>
+                  <td>
+                    <span class="stock-number" [class.stock-low]="stk.bajoStockMinimo">
+                      {{ stk.cantidadActual | number: '1.2-2' }} {{ stk.unidadMedida }}
+                    </span>
+                  </td>
+                  <td>{{ stk.stockMinimo }} {{ stk.unidadMedida }}</td>
+                  <td>Bs. {{ stk.costoPromedio | number: '1.2-2' }}</td>
+                  <td>Bs. {{ stk.precioVenta | number: '1.2-2' }}</td>
+                  <td>
+                    @if (stk.bajoStockMinimo) {
+                      <span class="badge badge-warning">⚠️ Bajo Mínimo</span>
+                    } @else {
+                      <span class="badge badge-success">✓ Stock Óptimo</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="empty-state">No se encontraron existencias registradas.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (paginasStock() > 1) {
+          <div class="pagination">
+            <button
+              [disabled]="pageStock() === 0 || loading()"
+              (click)="pageStock.set(pageStock() - 1); cargarStock()"
+            >
+              Anterior
+            </button>
+            <span>Página {{ pageStock() + 1 }} de {{ paginasStock() }} (Total: {{ totalStock() }})</span>
+            <button
+              [disabled]="pageStock() >= paginasStock() - 1 || loading()"
+              (click)="pageStock.set(pageStock() + 1); cargarStock()"
+            >
+              Siguiente
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- TAB 3: ALERTAS DE STOCK MÍNIMO             -->
+  <!-- ========================================== -->
+  @if (tabActiva() === 'alertas') {
+    <div class="tab-content">
+      <div class="alertas-header">
+        <div>
+          <h3>Monitoreo de Quiebre de Stock</h3>
+          <p>Artículos que requieren reposición inmediata porque sus existencias están en o por debajo del límite mínimo.</p>
+        </div>
+        <div class="filters-bar">
+          <label>
+            Filtrar Almacén
+            <select [(ngModel)]="filtroAlertaAlmacenId" name="filtroAlertaAlm" (change)="cargarAlertas()">
+              <option value="">Todos los almacenes</option>
+              @for (alm of almacenes(); track alm.id) {
+                <option [value]="alm.id">{{ alm.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="alertas-grid">
+        @for (alerta of alertasList(); track alerta.productoId + '-' + alerta.almacenId) {
+          <div class="alerta-card" [class.danger]="alerta.nivelCriticidad === 'AGOTADO'">
+            <div class="card-header">
+              <span class="badge" [ngClass]="claseCriticidad(alerta.nivelCriticidad)">
+                {{ alerta.nivelCriticidad }}
+              </span>
+              <span class="almacen-badge">{{ alerta.almacenNombre }}</span>
+            </div>
+            <h4>{{ alerta.productoNombre }}</h4>
+            <div class="sku-tag">SKU: {{ alerta.productoSku }}</div>
+
+            <div class="alerta-metrics">
+              <div class="metric">
+                <span>Stock Actual</span>
+                <strong class="stock-val" [class.zero]="alerta.cantidadActual <= 0">
+                  {{ alerta.cantidadActual | number: '1.2-2' }}
+                </strong>
+                <small>{{ alerta.unidadMedida }}</small>
+              </div>
+              <div class="metric">
+                <span>Stock Mínimo</span>
+                <strong>{{ alerta.stockMinimo }}</strong>
+                <small>{{ alerta.unidadMedida }}</small>
+              </div>
+              <div class="metric deficit">
+                <span>Déficit Reposición</span>
+                <strong class="deficit-val">+{{ alerta.deficit | number: '1.2-2' }}</strong>
+                <small>{{ alerta.unidadMedida }}</small>
+              </div>
+            </div>
+
+            <button
+              class="btn-sm primary full-width" [disabled]="!puedeRegistrar()"
+              (click)="formProductoId = alerta.productoId; formAlmacenId = alerta.almacenId; formTipo = 'ENTRADA'; abrirModalNuevo()"
+            >
+              + Reponer Stock (Entrada)
+            </button>
+          </div>
+        } @empty {
+          <div class="empty-alertas">
+            <span class="icon-ok">✓</span>
+            <h4>¡Todo en orden!</h4>
+            <p>No existen productos en déficit ni quiebres de stock en los almacenes monitoreados.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: REGISTRAR NUEVO MOVIMIENTO          -->
+  <!-- ========================================== -->
+  @if (modalNuevoAbierto()) {
+    <div class="modal-overlay" (click)="cerrarModalNuevo()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Registrar Movimiento de Inventario</h3>
+          <button class="close-btn" (click)="cerrarModalNuevo()">✕</button>
+        </div>
+
+        <form (ngSubmit)="guardarMovimiento()">
+          <div class="form-grid">
+            <label>
+              Almacén Destino / Origen *
+              <select [(ngModel)]="formAlmacenId" name="formAlmacen" (change)="onProductoOAlmacenChange()" required>
+                @for (alm of almacenes(); track alm.id) {
+                  <option [value]="alm.id">{{ alm.nombre }}</option>
+                }
+              </select>
+            </label>
+
+            <label>
+              Producto *
+              <select [(ngModel)]="formProductoId" name="formProducto" (change)="onProductoOAlmacenChange()" required>
+                @for (prod of productos(); track prod.id) {
+                  <option [value]="prod.id">{{ prod.nombre }} ({{ prod.codigoSku }})</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <!-- Indicador de existencias en tiempo real -->
+          @if (stockDisponibleForm() !== null) {
+            <div class="stock-hint">
+              <span>Existencias actuales en este almacén:</span>
+              <strong>{{ stockDisponibleForm() | number: '1.2-2' }}</strong>
+            </div>
+          }
+
+          <div class="form-grid">
+            <label>
+              Tipo de Movimiento *
+              <select [(ngModel)]="formTipo" name="formTipo" required>
+                <option value="ENTRADA">🟢 Entrada (Compra / Reposición)</option>
+                <option value="SALIDA">🔴 Salida (Despacho / Consumo)</option>
+                <option value="AJUSTE_POSITIVO">🟡 Ajuste Positivo (Sobrante)</option>
+                <option value="AJUSTE_NEGATIVO">🟡 Ajuste Negativo (Merma)</option>
+              </select>
+            </label>
+
+            <label>
+              Cantidad *
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                [(ngModel)]="formCantidad"
+                name="formCantidad"
+                placeholder="Ej: 10.00"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Costo Unitario (Bs.)
+              <input
+                type="number"
+                step="0.01"
+                min="0.00"
+                [(ngModel)]="formCostoUnitario"
+                name="formCostoUnitario"
+                placeholder="Costo por unidad"
+              />
+            </label>
+
+            <label>
+              Nro. Documento / Referencia
+              <input
+                type="text"
+                maxlength="100"
+                [(ngModel)]="formReferenciaDoc"
+                name="formReferenciaDoc"
+                placeholder="Ej: FAC-1029, DESP-04"
+              />
+            </label>
+          </div>
+
+          <label class="full-width">
+            Motivo o Justificación
+            @if (formTipo.startsWith('AJUSTE')) {
+              <strong class="text-danger">* (Obligatorio en ajustes)</strong>
+            }
+            <textarea
+              rows="2"
+              maxlength="255"
+              [(ngModel)]="formMotivo"
+              name="formMotivo"
+              placeholder="Describa la justificación del movimiento..."
+              [required]="formTipo.startsWith('AJUSTE')"
+            ></textarea>
+          </label>
+
+          <div class="modal-footer">
+            <button type="button" class="btn secondary" (click)="cerrarModalNuevo()" [disabled]="busy()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn primary" [disabled]="busy()">
+              {{ busy() ? 'Registrando...' : 'Confirmar e Inmutabilizar en Kardex' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: DETALLE DE MOVIMIENTO (COMPROBANTE) -->
+  <!-- ========================================== -->
+  @if (movimientoSeleccionado(); as mov) {
+    <div class="modal-overlay" (click)="movimientoSeleccionado.set(null)">
+      <div class="modal-content detalle-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Comprobante Kardex #{{ mov.id }}</h3>
+          <button class="close-btn" (click)="movimientoSeleccionado.set(null)">✕</button>
+        </div>
+
+        <div class="detalle-body">
+          <div class="detalle-row">
+            <span>Fecha y Hora:</span>
+            <strong>{{ mov.fecha | date: 'medium' }}</strong>
+          </div>
+          <div class="detalle-row">
+            <span>Tipo de Movimiento:</span>
+            <span class="badge" [ngClass]="claseTipoMovimiento(mov.tipoMovimiento)">{{ mov.tipoMovimiento }}</span>
+          </div>
+          <div class="detalle-row">
+            <span>Producto:</span>
+            <strong>{{ mov.productoNombre }} ({{ mov.productoSku }})</strong>
+          </div>
+          <div class="detalle-row">
+            <span>Almacén:</span>
+            <strong>{{ mov.almacenNombre }}</strong>
+          </div>
+          <div class="detalle-row">
+            <span>Cantidad Movida:</span>
+            <strong>{{ mov.cantidad | number: '1.2-2' }} {{ mov.unidadMedida }}</strong>
+          </div>
+          <div class="detalle-row">
+            <span>Costo Unitario:</span>
+            <strong>Bs. {{ mov.costoUnitario | number: '1.2-2' }}</strong>
+          </div>
+          <div class="detalle-row highlight">
+            <span>Saldo Resultante:</span>
+            <strong>{{ mov.saldoCantidad | number: '1.2-2' }} {{ mov.unidadMedida }} (Bs. {{ mov.saldoValorado | number: '1.2-2' }})</strong>
+          </div>
+          <div class="detalle-row">
+            <span>Documento Referencia:</span>
+            <span>{{ mov.referenciaDoc || 'Sin referencia' }}</span>
+          </div>
+          <div class="detalle-row">
+            <span>Motivo / Justificación:</span>
+            <span>{{ mov.motivo || 'Sin observaciones' }}</span>
+          </div>
+          <div class="detalle-row">
+            <span>Registrado Por:</span>
+            <span>{{ mov.creadoPor }}</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn secondary" (click)="movimientoSeleccionado.set(null)">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,907 @@
+<div class="maestros-container">
+  <!-- Cabecera Principal -->
+  <header class="header-section">
+    <div class="header-titles">
+      <span class="badge-modulo">Catálogo & Inventario</span>
+      <h1 class="page-title">Datos Maestros de Inventario</h1>
+      <p class="page-subtitle">
+        Parametrización estructural de almacenes por sucursal, árbol jerárquico de categorías y unidades de medida oficiales.
+      </p>
+    </div>
+
+    <!-- Chips / Resumen Rápido -->
+    <div class="kpi-chips">
+      <div class="kpi-chip">
+        <span class="kpi-label">Sucursales</span>
+        <span class="kpi-value">{{ totalAlmacenesActivos() }} <small>/ {{ totalAlmacenes() }}</small></span>
+      </div>
+      <div class="kpi-chip">
+        <span class="kpi-label">Categorías</span>
+        <span class="kpi-value">{{ totalCategorias() }}</span>
+      </div>
+      <div class="kpi-chip">
+        <span class="kpi-label">Unidades</span>
+        <span class="kpi-value">{{ totalUnidades() }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notificaciones de Feedback -->
+  @if (errorMsg()) {
+    <div class="alert-banner alert-error" role="alert">
+      <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <div class="alert-content">
+        <strong>Atención</strong>
+        <p>{{ errorMsg() }}</p>
+      </div>
+      <button type="button" class="btn-close-alert" (click)="limpiarMensajes()">✕</button>
+    </div>
+  }
+
+  @if (successMsg()) {
+    <div class="alert-banner alert-success" role="status">
+      <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <div class="alert-content">
+        <strong>Operación Exitosa</strong>
+        <p>{{ successMsg() }}</p>
+      </div>
+      <button type="button" class="btn-close-alert" (click)="limpiarMensajes()">✕</button>
+    </div>
+  }
+
+  <!-- Segmented Control (Pestañas de Navegación) -->
+  <nav class="tabs-nav" aria-label="Secciones de maestros de inventario">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="tabActiva() === 'almacenes'"
+      (click)="cambiarTab('almacenes')"
+    >
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+      <span>Sucursales Físicas</span>
+      <span class="tab-badge">{{ almacenes().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="tabActiva() === 'categorias'"
+      (click)="cambiarTab('categorias')"
+    >
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+      </svg>
+      <span>Árbol de Categorías</span>
+      <span class="tab-badge">{{ categoriasPlanas().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="tabActiva() === 'unidades'"
+      (click)="cambiarTab('unidades')"
+    >
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2v20M7 7l10 10M17 7l-10 10" />
+      </svg>
+      <span>Unidades de Medida</span>
+      <span class="tab-badge">{{ unidades().length }}</span>
+    </button>
+  </nav>
+
+  <!-- ======================================================= -->
+  <!-- PESTAÑA 1: SUCURSALES FÍSICAS                           -->
+  <!-- ======================================================= -->
+  @if (tabActiva() === 'almacenes') {
+    <section class="tab-section">
+      <!-- Barra de Filtros y Acciones -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="search"
+            class="input-search"
+            placeholder="Buscar por nombre, ciudad o dirección..."
+            [ngModel]="searchAlmacenes()"
+            (ngModelChange)="searchAlmacenes.set($event)"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Estado:</label>
+          <select
+            class="filter-select"
+            [ngModel]="filtroEstadoAlmacen()"
+            (ngModelChange)="filtroEstadoAlmacen.set($event)"
+          >
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn-primary" (click)="abrirModalCrearAlmacen()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Nueva Sucursal</span>
+        </button>
+      </div>
+
+      <!-- Grid de Sucursales -->
+      @if (almacenesFiltrados().length === 0) {
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+          <h3>No se encontraron sucursales</h3>
+          <p>Prueba ajustando los filtros o registra una nueva sucursal física para tu empresa.</p>
+          <button type="button" class="btn-primary" (click)="abrirModalCrearAlmacen()">
+            + Registrar Sucursal
+          </button>
+        </div>
+      } @else {
+        <div class="cards-grid">
+          @for (alm of almacenesFiltrados(); track alm.id) {
+            <article class="almacen-card" [class.inactivo]="!alm.activo">
+              <header class="card-header">
+                <div class="card-header-left">
+                  <div class="icon-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 21h18M3 7v14M21 7v14M9 21V11h6v10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span class="card-code">{{ alm.codigo }}</span>
+                    @if (alm.esPrincipal || alm.id === 1) {
+                      <span class="badge-principal">Sucursal Principal</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Switch Activo / Inactivo -->
+                <button
+                  type="button"
+                  class="status-pill"
+                  [class.pill-active]="alm.activo"
+                  [class.pill-inactive]="!alm.activo"
+                  (click)="cambiarEstadoAlmacen(alm)"
+                  [title]="alm.activo ? 'Clic para desactivar' : 'Clic para activar'"
+                >
+                  <span class="status-dot"></span>
+                  <span>{{ alm.activo ? 'Activa' : 'Inactiva' }}</span>
+                </button>
+              </header>
+
+              <div class="card-body">
+                <h3 class="card-title">{{ alm.nombre }}</h3>
+
+                <!-- Ciudad -->
+                <div class="info-row">
+                  <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                  <span class="info-text">
+                    <strong>Ciudad:</strong> {{ alm.ciudadNombre || 'Santa Cruz de la Sierra' }}
+                  </span>
+                </div>
+
+                <!-- Dirección Física -->
+                <div class="info-row">
+                  <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span class="info-text">
+                    {{ alm.direccion || 'Sin dirección física especificada' }}
+                  </span>
+                </div>
+
+                <!-- Teléfono -->
+                <div class="info-row">
+                  <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <span class="info-text">
+                    <strong>Teléfono:</strong> {{ alm.telefono || 'Sin teléfono' }}
+                  </span>
+                </div>
+
+                <!-- Horario de Atención -->
+                <div class="info-row">
+                  <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span class="info-text">
+                    <strong>Horario:</strong> {{ alm.horaApertura || '08:30' }} - {{ alm.horaCierre || '19:00' }}
+                  </span>
+                </div>
+              </div>
+
+              <footer class="card-footer">
+                <button
+                  type="button"
+                  class="btn-card-action"
+                  (click)="abrirModalEditarAlmacen(alm)"
+                  title="Editar sucursal"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                  <span>Editar</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-card-action btn-danger"
+                  (click)="confirmarEliminar('almacen', alm.id, alm.nombre)"
+                  title="Eliminar sucursal"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  <span>Eliminar</span>
+                </button>
+              </footer>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ======================================================= -->
+  <!-- PESTAÑA 2: ÁRBOL DE CATEGORÍAS                          -->
+  <!-- ======================================================= -->
+  @if (tabActiva() === 'categorias') {
+    <section class="tab-section">
+      <div class="toolbar">
+        <div class="tree-controls">
+          <button type="button" class="btn-subtle" (click)="expandirTodo()">
+            <span>[+] Expandir Todo</span>
+          </button>
+          <button type="button" class="btn-subtle" (click)="colapsarTodo()">
+            <span>[−] Colapsar Todo</span>
+          </button>
+        </div>
+
+        <div class="view-toggles">
+          <button
+            type="button"
+            class="btn-toggle"
+            [class.active]="vistaArbol()"
+            (click)="vistaArbol.set(true)"
+          >
+            Vista Jerárquica
+          </button>
+          <button
+            type="button"
+            class="btn-toggle"
+            [class.active]="!vistaArbol()"
+            (click)="vistaArbol.set(false)"
+          >
+            Vista Plana
+          </button>
+        </div>
+
+        <button type="button" class="btn-primary" (click)="abrirModalCrearCategoria(null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Nueva Categoría Raíz</span>
+        </button>
+      </div>
+
+      <!-- VISTA EN ÁRBOL -->
+      @if (vistaArbol()) {
+        <div class="tree-container">
+          @if (categoriasArbol().length === 0) {
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              <h3>No hay categorías registradas</h3>
+              <p>Comienza estructurando tu catálogo creando una categoría principal o raíz.</p>
+              <button type="button" class="btn-primary" (click)="abrirModalCrearCategoria(null)">
+                + Crear Categoría Raíz
+              </button>
+            </div>
+          } @else {
+            <div class="tree-root">
+              @for (raiz of categoriasArbol(); track raiz.id) {
+                <ng-container
+                  *ngTemplateOutlet="nodoTemplate; context: { $implicit: raiz, nivel: 0 }"
+                ></ng-container>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- VISTA PLANA / TABLA -->
+        <div class="table-card">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Categoría Superior</th>
+                <th class="text-center">Artículos</th>
+                <th class="text-center">Subcategorías</th>
+                <th class="text-center">Estado</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cat of categoriasPlanas(); track cat.id) {
+                <tr>
+                  <td>
+                    <strong>{{ cat.nombre }}</strong>
+                    @if (cat.descripcion) {
+                      <div class="cell-desc">{{ cat.descripcion }}</div>
+                    }
+                  </td>
+                  <td>
+                    @if (cat.padreNombre) {
+                      <span class="parent-badge">{{ cat.padreNombre }}</span>
+                    } @else {
+                      <span class="root-badge">Nivel Raíz</span>
+                    }
+                  </td>
+                  <td class="text-center">
+                    <span class="count-pill">{{ cat.articulosCount }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="count-pill">{{ cat.subcategoriasCount }}</span>
+                  </td>
+                  <td class="text-center">
+                    <button
+                      type="button"
+                      class="status-pill"
+                      [class.pill-active]="cat.activo"
+                      [class.pill-inactive]="!cat.activo"
+                      (click)="cambiarEstadoCategoria(cat)"
+                    >
+                      <span class="status-dot"></span>
+                      <span>{{ cat.activo ? 'Activa' : 'Inactiva' }}</span>
+                    </button>
+                  </td>
+                  <td class="text-right">
+                    <div class="row-actions">
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        title="Agregar subcategoría"
+                        (click)="abrirModalCrearCategoria(cat.id)"
+                      >
+                        + Hijo
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        title="Editar categoría"
+                        (click)="abrirModalEditarCategoria(cat)"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon btn-danger"
+                        title="Eliminar categoría"
+                        (click)="confirmarEliminar('categoria', cat.id, cat.nombre)"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ======================================================= -->
+  <!-- PESTAÑA 3: UNIDADES DE MEDIDA                           -->
+  <!-- ======================================================= -->
+  @if (tabActiva() === 'unidades') {
+    <section class="tab-section">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="search"
+            class="input-search"
+            placeholder="Buscar por código, nombre o abreviatura..."
+            [ngModel]="searchUnidades()"
+            (ngModelChange)="searchUnidades.set($event)"
+          />
+        </div>
+
+        <button type="button" class="btn-primary" (click)="abrirModalCrearUnidad()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Nueva Unidad de Medida</span>
+        </button>
+      </div>
+
+      <div class="table-card">
+        @if (unidadesFiltradas().length === 0) {
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <line x1="2" y1="12" x2="22" y2="12" />
+            </svg>
+            <h3>No se encontraron unidades de medida</h3>
+            <p>Registra las unidades métricas oficiales para cuantificar tus artículos.</p>
+            <button type="button" class="btn-primary" (click)="abrirModalCrearUnidad()">
+              + Registrar Unidad
+            </button>
+          </div>
+        } @else {
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Código Oficial</th>
+                <th>Nombre Descriptivo</th>
+                <th>Abreviatura</th>
+                <th class="text-center">Artículos Asignados</th>
+                <th class="text-center">Estado</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of unidadesFiltradas(); track u.id) {
+                <tr>
+                  <td>
+                    <span class="code-badge">{{ u.codigo }}</span>
+                  </td>
+                  <td>
+                    <strong>{{ u.nombre }}</strong>
+                  </td>
+                  <td>
+                    <code class="abrev-badge">{{ u.abreviatura }}</code>
+                  </td>
+                  <td class="text-center">
+                    <span class="count-pill">{{ u.productosCount }}</span>
+                  </td>
+                  <td class="text-center">
+                    <button
+                      type="button"
+                      class="status-pill"
+                      [class.pill-active]="u.activo"
+                      [class.pill-inactive]="!u.activo"
+                      (click)="cambiarEstadoUnidad(u)"
+                      [title]="u.activo ? 'Clic para desactivar' : 'Clic para activar'"
+                    >
+                      <span class="status-dot"></span>
+                      <span>{{ u.activo ? 'Activa' : 'Inactiva' }}</span>
+                    </button>
+                  </td>
+                  <td class="text-right">
+                    <div class="row-actions">
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        title="Editar unidad"
+                        (click)="abrirModalEditarUnidad(u)"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon btn-danger"
+                        title="Eliminar unidad"
+                        (click)="confirmarEliminar('unidad', u.id, u.nombre)"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<!-- ======================================================= -->
+  <!-- TEMPLATE RECURSIVO: NODO DEL ÁRBOL DE CATEGORÍAS        -->
+  <!-- ======================================================= -->
+<ng-template #nodoTemplate let-nodo let-nivel="nivel">
+  <div class="tree-node" [style.padding-left.px]="nivel * 24">
+    <div class="node-row" [class.node-inactivo]="!nodo.activo">
+      <!-- Botón Expandir/Colapsar o Espaciador -->
+      @if (nodo.subcategorias && nodo.subcategorias.length > 0) {
+        <button
+          type="button"
+          class="btn-collapse"
+          (click)="alternarExpansionNodo(nodo.id)"
+          [title]="estaExpandido(nodo.id) ? 'Colapsar subcategorías' : 'Expandir subcategorías'"
+        >
+          {{ estaExpandido(nodo.id) ? '▾' : '▸' }}
+        </button>
+      } @else {
+        <span class="node-leaf-bullet">•</span>
+      }
+
+      <!-- Nombre y Detalles -->
+      <div class="node-info">
+        <span class="node-title">{{ nodo.nombre }}</span>
+        @if (nodo.descripcion) {
+          <span class="node-desc">{{ nodo.descripcion }}</span>
+        }
+      </div>
+
+      <!-- Métricas -->
+      <div class="node-metrics">
+        @if (nodo.subcategorias && nodo.subcategorias.length > 0) {
+          <span class="badge-subcats">{{ nodo.subcategorias.length }} subcategorías</span>
+        }
+        <span class="badge-articulos">{{ nodo.articulosCount }} artículos</span>
+      </div>
+
+      <!-- Switch Activo -->
+      <button
+        type="button"
+        class="status-pill mini"
+        [class.pill-active]="nodo.activo"
+        [class.pill-inactive]="!nodo.activo"
+        (click)="cambiarEstadoCategoria(nodo)"
+      >
+        <span class="status-dot"></span>
+        <span>{{ nodo.activo ? 'Activa' : 'Inactiva' }}</span>
+      </button>
+
+      <!-- Acciones del Nodo -->
+      <div class="node-actions">
+        <button
+          type="button"
+          class="btn-node-action"
+          (click)="abrirModalCrearCategoria(nodo.id)"
+          title="Agregar subcategoría dependiente"
+        >
+          + Subcategoría
+        </button>
+        <button
+          type="button"
+          class="btn-node-action"
+          (click)="abrirModalEditarCategoria(nodo)"
+          title="Editar categoría"
+        >
+          Editar
+        </button>
+        <button
+          type="button"
+          class="btn-node-action btn-danger"
+          (click)="confirmarEliminar('categoria', nodo.id, nodo.nombre)"
+          title="Eliminar categoría"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Subcategorías Recursivas -->
+    @if (nodo.subcategorias && nodo.subcategorias.length > 0 && estaExpandido(nodo.id)) {
+      <div class="subnodes-container">
+        @for (sub of nodo.subcategorias; track sub.id) {
+          <ng-container
+            *ngTemplateOutlet="nodoTemplate; context: { $implicit: sub, nivel: nivel + 1 }"
+          ></ng-container>
+        }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<!-- ======================================================= -->
+<!-- MODAL 1: REGISTRAR / EDITAR SUCURSAL                    -->
+<!-- ======================================================= -->
+@if (modalAlmacenAbierto()) {
+  <div class="modal-backdrop" (click)="cerrarModalAlmacen()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h3>{{ almacenEditando() ? 'Editar Sucursal' : 'Registrar Nueva Sucursal' }}</h3>
+          <p>Configura el nombre, ciudad y datos de ubicación de la sucursal física.</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="cerrarModalAlmacen()">✕</button>
+      </header>
+
+      <form [formGroup]="formAlmacen" (ngSubmit)="guardarAlmacen()" class="modal-form">
+        <div class="form-row-2">
+          <!-- Nombre de Sucursal -->
+          <div class="form-group">
+            <label>Nombre de la Sucursal <span class="required">*</span></label>
+            <input
+              type="text"
+              formControlName="nombre"
+              placeholder="Ej. Sucursal Central Equipetrol"
+            />
+            @if (formAlmacen.get('nombre')?.invalid && formAlmacen.get('nombre')?.touched) {
+              <small class="error-msg">El nombre es obligatorio.</small>
+            }
+          </div>
+
+          <!-- Ciudad -->
+          <div class="form-group">
+            <label>Ciudad Geográfica <span class="required">*</span></label>
+            <select formControlName="ciudadId">
+              <option [ngValue]="null" disabled>-- Seleccione una ciudad --</option>
+              @for (c of ciudades(); track c.id) {
+                <option [ngValue]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Dirección Física -->
+          <div class="form-group">
+            <label>Dirección Física</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              placeholder="Ej. Av. San Martín #450, Barrio Equipetrol"
+            />
+          </div>
+
+          <!-- Teléfono -->
+          <div class="form-group">
+            <label>Teléfono de Contacto</label>
+            <input
+              type="text"
+              formControlName="telefono"
+              placeholder="Ej. +591 3 3456789"
+            />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <!-- Hora Apertura -->
+          <div class="form-group">
+            <label>Hora de Apertura</label>
+            <input
+              type="time"
+              formControlName="horaApertura"
+            />
+          </div>
+
+          <!-- Hora Cierre -->
+          <div class="form-group">
+            <label>Hora de Cierre</label>
+            <input
+              type="time"
+              formControlName="horaCierre"
+            />
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-cancelar" (click)="cerrarModalAlmacen()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : (almacenEditando() ? 'Guardar Cambios' : 'Registrar Sucursal') }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ======================================================= -->
+<!-- MODAL 2: REGISTRAR / EDITAR CATEGORÍA                   -->
+<!-- ======================================================= -->
+@if (modalCategoriaAbierto()) {
+  <div class="modal-backdrop" (click)="cerrarModalCategoria()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h3>{{ categoriaEditando() ? 'Editar Categoría' : 'Nueva Categoría de Catálogo' }}</h3>
+          <p>Define la jerarquía asignando su categoría superior o dejándola como raíz.</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="cerrarModalCategoria()">✕</button>
+      </header>
+
+      <form [formGroup]="formCategoria" (ngSubmit)="guardarCategoria()" class="modal-form">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre de la Categoría <span class="required">*</span></label>
+          <input
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej. Laptops Gamer, Periféricos, Componentes"
+          />
+          @if (formCategoria.get('nombre')?.invalid && formCategoria.get('nombre')?.touched) {
+            <small class="error-msg">El nombre es obligatorio.</small>
+          }
+        </div>
+
+        <!-- Categoría Superior / Padre -->
+        <div class="form-group">
+          <label>Categoría Superior (Padre Jerárquico)</label>
+          <select formControlName="padreId">
+            <option [ngValue]="null">-- Nivel Raíz (Categoría Principal) --</option>
+            @for (p of categoriasPadreDisponibles(); track p.id) {
+              <option [ngValue]="p.id">
+                {{ p.nombre }} {{ p.padreNombre ? ' (Bajo ' + p.padreNombre + ')' : '' }}
+              </option>
+            }
+          </select>
+          <small class="helper-text">
+            Si se deja en "Nivel Raíz", creará una categoría base de primer nivel en el catálogo.
+          </small>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label>Descripción / Observaciones</label>
+          <textarea
+            formControlName="descripcion"
+            rows="3"
+            placeholder="Detalles sobre los tipos de productos pertenecientes a esta categoría..."
+          ></textarea>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-cancelar" (click)="cerrarModalCategoria()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : (categoriaEditando() ? 'Guardar Cambios' : 'Crear Categoría') }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ======================================================= -->
+<!-- MODAL 3: REGISTRAR / EDITAR UNIDAD DE MEDIDA            -->
+<!-- ======================================================= -->
+@if (modalUnidadAbierto()) {
+  <div class="modal-backdrop" (click)="cerrarModalUnidad()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h3>{{ unidadEditando() ? 'Editar Unidad de Medida' : 'Registrar Unidad de Medida' }}</h3>
+          <p>Establece el código, nombre descriptivo y abreviatura métrica oficial.</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="cerrarModalUnidad()">✕</button>
+      </header>
+
+      <form [formGroup]="formUnidad" (ngSubmit)="guardarUnidad()" class="modal-form">
+        <div class="form-row-2">
+          <!-- Código -->
+          <div class="form-group">
+            <label>Código Oficial <span class="required">*</span></label>
+            <input
+              type="text"
+              formControlName="codigo"
+              placeholder="Ej. UND, CAJ, KG, MTR"
+              style="text-transform: uppercase"
+            />
+            @if (formUnidad.get('codigo')?.invalid && formUnidad.get('codigo')?.touched) {
+              <small class="error-msg">El código es obligatorio (máx. 20 car.)</small>
+            }
+          </div>
+
+          <!-- Abreviatura -->
+          <div class="form-group">
+            <label>Abreviatura <span class="required">*</span></label>
+            <input
+              type="text"
+              formControlName="abreviatura"
+              placeholder="Ej. u, caja, kg, m"
+            />
+            @if (formUnidad.get('abreviatura')?.invalid && formUnidad.get('abreviatura')?.touched) {
+              <small class="error-msg">La abreviatura es obligatoria.</small>
+            }
+          </div>
+        </div>
+
+        <!-- Nombre Descriptivo -->
+        <div class="form-group">
+          <label>Nombre Descriptivo <span class="required">*</span></label>
+          <input
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej. Unidad, Caja, Kilogramo, Metro lineal"
+          />
+          @if (formUnidad.get('nombre')?.invalid && formUnidad.get('nombre')?.touched) {
+            <small class="error-msg">El nombre es obligatorio.</small>
+          }
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-cancelar" (click)="cerrarModalUnidad()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : (unidadEditando() ? 'Guardar Cambios' : 'Registrar Unidad') }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ======================================================= -->
+<!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN                    -->
+<!-- ======================================================= -->
+@if (modalEliminarAbierto()) {
+  <div class="modal-backdrop" (click)="cancelarEliminar()">
+    <div class="modal-card modal-confirmar" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h3>Confirmar Eliminación</h3>
+          <p>¿Estás seguro de que deseas eliminar este registro maestro?</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="cancelarEliminar()">✕</button>
+      </header>
+
+      <div class="modal-confirm-body">
+        <div class="warning-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <div>
+          <p class="confirm-target">
+            <strong>{{ entidadEliminarNombre() }}</strong>
+          </p>
+          <p class="confirm-hint">
+            Si la entidad tiene existencias en Kardex, subcategorías o artículos asociados,
+            el sistema impedirá el borrado físico y requerirá utilizar la desactivación (baja lógica).
+          </p>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cancelarEliminar()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-primary btn-danger-action" [disabled]="guardando()" (click)="ejecutarEliminacion()">
+          {{ guardando() ? 'Eliminando...' : 'Sí, Eliminar' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}
