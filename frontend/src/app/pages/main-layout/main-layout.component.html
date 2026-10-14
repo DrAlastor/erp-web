@@ -83,8 +83,12 @@
       <app-catalogo />
       } @else if (fn.id === 'cu11-movimientos-de-inventario' || fn.id === 'movimientos-de-inventario') {
       <app-movimiento-inventario />
+      } @else if (fn.id === 'cu12-consultar-kardex') {
+      <app-consultar-kardex />
       } @else if (!authService.isClient() && (fn.id === 'cu13-gestionar-clientes' || fn.id === 'gestion-de-clientes')) {
       <app-clientes />
+      } @else if (fn.id === 'cu17-validacion-comercial-aprobacion') {
+      <app-validacion-comercial />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>
