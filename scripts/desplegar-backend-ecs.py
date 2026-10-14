@@ -70,10 +70,9 @@ def actualizar_servicio(task_def_arn):
     print("[+] Despliegue forzado iniciado.")
 
 
-def esperar_nuevo_task_y_obtener_ip(max_espera_seg=360):
-    print("[*] Esperando a que el nuevo task de ECS inicie y obtenga IP pública...")
+def esperar_nuevo_task_y_obtener_ip(target_task_def_arn=None, max_espera_seg=360):
+    print(f"[*] Esperando a que el nuevo task de ECS ({target_task_def_arn or 'reciente'}) inicie y obtenga IP pública...")
     inicio = time.time()
-    task_visto = None
 
     while time.time() - inicio < max_espera_seg:
         tasks = json.loads(run_aws("ecs", "list-tasks", "--cluster", CLUSTER, "--service-name", SERVICE))
@@ -81,6 +80,8 @@ def esperar_nuevo_task_y_obtener_ip(max_espera_seg=360):
         if task_arns:
             desc = json.loads(run_aws("ecs", "describe-tasks", "--cluster", CLUSTER, "--tasks", *task_arns))
             for t in desc.get("tasks", []):
+                if target_task_def_arn and t.get("taskDefinitionArn") != target_task_def_arn:
+                    continue
                 last_status = t.get("lastStatus")
                 attachments = t.get("attachments", [])
                 eni_id = None
@@ -154,7 +155,7 @@ def main():
 
     nueva_td_arn = registrar_nueva_revision(args.image)
     actualizar_servicio(nueva_td_arn)
-    nueva_ip = esperar_nuevo_task_y_obtener_ip()
+    nueva_ip = esperar_nuevo_task_y_obtener_ip(nueva_td_arn)
     actualizar_cloudfront(nueva_ip)
     print("\n========================================================")
     print(f"¡DESPLIEGUE FINALIZADO CON ÉXITO!")
