@@ -45,9 +45,10 @@ export const ERP_MODULES: ErpModule[] = [
     functions: [
       { id: 'cu13-gestionar-clientes', name: 'Gestionar Clientes', code: 'CU13', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'CAJERO'] },
       { id: 'cu14-precios-y-listas-precio', name: 'Gestionar Precios y Listas de Precio', code: 'CU14', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
-      { id: 'cu15-gestionar-cotizaciones', name: 'Gestionar Cotizaciones', code: 'CU15', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'cu15-gestionar-cotizaciones', name: 'Gestionar Cotizaciones', code: 'CU15', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'CAJERO'] },
       { id: 'cu16-pedidos-de-venta', name: 'Gestionar Pedidos de Venta', code: 'CU16', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
       { id: 'cu17-validacion-comercial-aprobacion', name: 'Validación Comercial y Aprobación', code: 'CU17', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'cu18-gestionar-despacho-de-venta', name: 'Gestionar Despacho de Venta', code: 'CU18', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR', 'CAJERO'] },
       { id: 'cu18-gestionar-facturacion', name: 'Gestionar Facturación', code: 'CU18', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] },
       { id: 'cu19-facturacion-electronica-sin', name: 'Facturación Electrónica (SIN)', code: 'CU19', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
       { id: 'cu20-devoluciones-de-venta', name: 'Gestionar Devoluciones de Venta', code: 'CU20', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] }

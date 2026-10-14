@@ -10,6 +10,8 @@ import { MovimientoInventarioComponent } from '../../modulos/catalogo-e-inventar
 import { CatalogoComponent } from '../../modulos/catalogo-e-inventario/cu10-catalogo-de-articulos/components/catalogo.component';
 import { ClientesComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/clientes.component';
 import { ClientePortalComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/cliente-portal.component';
+import { CotizacionesComponent } from '../../modulos/ventas-y-facturacion/cu15-gestionar-cotizaciones/components/cotizaciones.component';
+import { DespachosComponent } from '../../modulos/ventas-y-facturacion/cu18-gestionar-despacho-de-venta/components/despachos.component';
 import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
@@ -19,7 +21,8 @@ import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inven
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
-    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent],
+    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
+    CotizacionesComponent, DespachosComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

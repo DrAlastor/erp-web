@@ -1,0 +1,304 @@
+<div class="header">
+  <div>
+    <h2>Despachos de venta</h2>
+    <p>Prepara y confirma la salida de mercadería de los pedidos aprobados.</p>
+  </div>
+  @if (vista() === 'preparar' || vista() === 'detalle') {
+    <button (click)="irA('pendientes')">← Volver a despachos</button>
+  }
+</div>
+
+@if (vista() === 'pendientes' || vista() === 'notas') {
+  <div class="tabs" role="tablist">
+    <button role="tab" [class.active]="vista() === 'pendientes'" [attr.aria-selected]="vista() === 'pendientes'"
+      (click)="irA('pendientes')">Pedidos por despachar</button>
+    <button role="tab" [class.active]="vista() === 'notas'" [attr.aria-selected]="vista() === 'notas'"
+      (click)="irA('notas')">Notas de despacho</button>
+  </div>
+}
+
+@if (error()) {
+  <div class="message error" role="alert">
+    {{ error() }}
+    @if (faltantes().length) {
+      <ul class="faltantes">
+        @for (f of faltantes(); track f.productoId) {
+          <li>
+            <strong>{{ f.productoNombre }}</strong>: se necesitan {{ f.requerido | number: '1.0-2' }}
+            y hay {{ f.disponible | number: '1.0-2' }}
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- =================================================== POR DESPACHAR -->
+    @case ('pendientes') {
+      @if (porAprobar().length) {
+        <section class="provisional" aria-label="Pedidos esperando validación comercial">
+          <h3>Esperando validación comercial</h3>
+          <p>
+            Estos pedidos todavía no fueron aprobados. <strong>Provisional:</strong> mientras no exista la
+            CU17 (Validación Comercial y Aprobación) se pueden aprobar desde aquí.
+          </p>
+          <ul>
+            @for (p of porAprobar(); track p.id) {
+              <li>
+                <span><strong>{{ p.numeroPedido }}</strong> · {{ p.clienteRazonSocial }} · Bs {{ p.total | number: '1.2-2' }}</span>
+                <button [disabled]="busy()" (click)="aprobar(p)">Aprobar</button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <form class="filters" (ngSubmit)="cargarPendientes()">
+        <label>
+          Sucursal
+          <select name="suc" [(ngModel)]="sucursalFiltro" (change)="cargarPendientes()">
+            <option [ngValue]="null">Todas las sucursales</option>
+            @for (s of sucursales(); track s.id) {
+              <option [ngValue]="s.id">{{ s.nombre }}</option>
+            }
+          </select>
+        </label>
+      </form>
+
+      @if (loading()) {
+        <p role="status">Cargando pedidos...</p>
+      } @else {
+        @for (p of pendientes(); track p.pedidoId) {
+          <article class="order">
+            <header>
+              <div>
+                <h3>{{ p.numeroPedido }} <span class="badge" [attr.data-estado]="p.estado">{{ etiqueta(p.estado) }}</span></h3>
+                <p>{{ p.clienteRazonSocial }} · {{ p.sucursalNombre }} · {{ p.fecha }}</p>
+              </div>
+              <button class="primary" [disabled]="busy()" (click)="preparar(p)">Preparar despacho</button>
+            </header>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Producto</th><th class="num">Pedido</th><th class="num">Ya comprometido</th>
+                    <th class="num">Pendiente</th><th class="num">Stock en sucursal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (i of p.items; track i.productoId) {
+                    <tr [class.done]="i.pendiente <= 0">
+                      <td>{{ i.productoCodigo }} · {{ i.productoNombre }}</td>
+                      <td class="num">{{ i.pedido | number: '1.0-2' }}</td>
+                      <td class="num">{{ i.comprometido | number: '1.0-2' }}</td>
+                      <td class="num"><strong>{{ i.pendiente | number: '1.0-2' }}</strong></td>
+                      <td class="num" [class.short-stock]="i.stockDisponible < i.pendiente">{{ i.stockDisponible | number: '1.0-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">No hay pedidos aprobados con productos por despachar.</p>
+        }
+      }
+    }
+
+    <!-- =================================================== NOTAS -->
+    @case ('notas') {
+      <form class="filters" (ngSubmit)="cargarNotas(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="search" maxlength="150" placeholder="Despacho, pedido o cliente" />
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="estado" (change)="cargarNotas(true)">
+            <option value="">Todos los estados</option>
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor">{{ e.etiqueta }}</option>
+            }
+          </select>
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+      </form>
+      @if (loading()) {
+        <p role="status">Cargando despachos...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Notas de despacho</caption>
+            <thead>
+              <tr>
+                <th>Despacho</th><th>Pedido</th><th>Cliente</th><th>Sucursal</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (n of notas(); track n.id) {
+                <tr>
+                  <td><strong>{{ n.numeroDespacho }}</strong></td>
+                  <td>{{ n.numeroPedido }}</td>
+                  <td>{{ n.clienteRazonSocial }}</td>
+                  <td>{{ n.sucursalNombre }}</td>
+                  <td>{{ n.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td><span class="badge" [attr.data-estado]="n.estado">{{ etiqueta(n.estado) }}</span></td>
+                  <td class="actions"><button [disabled]="busy()" (click)="abrir(n.id)">Ver</button></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7">No hay notas de despacho con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} despachos</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- =================================================== PREPARAR -->
+    @case ('preparar') {
+      @if (pedido(); as p) {
+        <section class="panel" aria-label="Preparar nota de despacho">
+          <h3>Preparar despacho del pedido {{ p.numeroPedido }}</h3>
+          <p>{{ p.clienteRazonSocial }}. Puedes despachar menos de lo pendiente: el saldo queda para otro despacho.</p>
+
+          <div class="grid">
+            <label>
+              Sucursal que despacha
+              <select name="sucursal" [(ngModel)]="sucursalId">
+                @for (s of sucursales(); track s.id) {
+                  <option [ngValue]="s.id">{{ s.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Conductor
+              <input name="conductor" [(ngModel)]="conductor" maxlength="100" />
+            </label>
+            <label>
+              Placa del vehículo
+              <input name="placa" [(ngModel)]="placa" maxlength="20" placeholder="1234-ABC" />
+            </label>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Producto</th><th class="num">Pendiente</th><th class="num">Stock</th><th class="num">A despachar</th></tr>
+              </thead>
+              <tbody>
+                @for (r of renglones(); track r.productoId; let i = $index) {
+                  <tr>
+                    <td>{{ r.productoCodigo }} · {{ r.productoNombre }}</td>
+                    <td class="num">{{ r.pendiente | number: '1.0-2' }}</td>
+                    <td class="num" [class.short-stock]="r.stockDisponible < r.cantidad">{{ r.stockDisponible | number: '1.0-2' }}</td>
+                    <td class="num">
+                      <input type="number" min="0" [max]="r.pendiente" step="1" class="short" [name]="'q' + i"
+                        [ngModel]="r.cantidad" (ngModelChange)="cambiarCantidad(i, $event)" />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <label class="obs-field">
+            Observaciones
+            <textarea name="obs" rows="2" maxlength="1000" [(ngModel)]="observaciones"></textarea>
+          </label>
+          <p class="hint">Registrar la nota no mueve el stock: el stock se descuenta al confirmar el despacho.</p>
+          <div class="actions">
+            <button class="primary" [disabled]="busy() || !sucursalId" (click)="registrar()">
+              {{ busy() ? 'Registrando...' : 'Registrar nota de despacho' }}
+            </button>
+            <button type="button" [disabled]="busy()" (click)="irA('pendientes')">Cancelar</button>
+          </div>
+        </section>
+      }
+    }
+
+    <!-- =================================================== DETALLE -->
+    @case ('detalle') {
+      @if (seleccionado(); as d) {
+        <section class="panel">
+          <h3 class="title">
+            {{ d.numeroDespacho }} <span class="badge" [attr.data-estado]="d.estado">{{ etiqueta(d.estado) }}</span>
+          </h3>
+          <dl class="facts">
+            <dt>Pedido</dt><dd>{{ d.numeroPedido }} <span class="badge" [attr.data-estado]="d.estadoPedido">{{ etiqueta(d.estadoPedido) }}</span></dd>
+            <dt>Cliente</dt><dd>{{ d.clienteRazonSocial }}</dd>
+            <dt>Sucursal</dt><dd>{{ d.sucursalNombre }}</dd>
+            <dt>Fecha</dt><dd>{{ d.fecha | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            <dt>Registró</dt><dd>{{ d.despachadoPor }}</dd>
+            <dt>Transporte</dt><dd>{{ d.conductor || 'Sin conductor' }} · {{ d.placa || 'sin placa' }}</dd>
+          </dl>
+
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Código</th><th>Producto</th><th class="num">Cantidad</th></tr></thead>
+              <tbody>
+                @for (i of d.items; track i.id) {
+                  <tr>
+                    <td>{{ i.productoCodigo }}</td>
+                    <td>{{ i.productoNombre }}</td>
+                    <td class="num">{{ i.cantidad | number: '1.0-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (d.observaciones) {
+            <p class="obs">{{ d.observaciones }}</p>
+          }
+
+          <div class="actions">
+            @if (d.confirmable) {
+              <button class="primary" [disabled]="busy()" (click)="confirmar(d)">
+                {{ busy() ? 'Confirmando...' : 'Confirmar despacho' }}
+              </button>
+            }
+            @if (d.entregable) {
+              <button class="primary" [disabled]="busy()" (click)="entregar(d)">Marcar como entregado</button>
+            }
+            @if (d.anulable) {
+              <button class="danger" [disabled]="busy()" (click)="motivo = ''; anulando.set(true)">Anular</button>
+            }
+          </div>
+        </section>
+
+        @if (anulando()) {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="anular-title">
+              <h3 id="anular-title">Anular {{ d.numeroDespacho }}</h3>
+              @if (d.estado === 'DESPACHADO') {
+                <p>La mercadería ya salió: al anular, el stock vuelve a la sucursal con una entrada en el Kardex.</p>
+              } @else {
+                <p>La nota todavía no movió stock.</p>
+              }
+              <label>
+                Motivo
+                <input name="motivo" [(ngModel)]="motivo" maxlength="255" placeholder="Ej.: el cliente rechazó la entrega" />
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="anulando.set(false)">Cancelar</button>
+                <button class="danger" [disabled]="busy() || !motivo.trim()" (click)="anular()">Anular</button>
+              </div>
+            </section>
+          </div>
+        }
+      }
+    }
+  }
+}
