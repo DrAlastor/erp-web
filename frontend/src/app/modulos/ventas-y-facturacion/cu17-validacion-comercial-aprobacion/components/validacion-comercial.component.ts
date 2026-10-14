@@ -128,6 +128,7 @@ export class ValidacionComercialComponent implements OnInit {
       case 'COMPLETADO':
         return 'estado-ok';
       case 'RECHAZADO':
+      case 'ANULADO':
         return 'estado-no';
       default:
         return 'estado-pendiente';

@@ -15,6 +15,7 @@ import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.mapper.V
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.CreditoClienteRepository;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.CreditoClienteRepository.DatosCliente;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.CreditoClienteRepository.DeudaCliente;
+import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.ExistenciaBloqueoRepository;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.service.ReglasValidacionComercial.Cliente;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.service.ReglasValidacionComercial.Deuda;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.service.ReglasValidacionComercial.Linea;
@@ -55,11 +56,12 @@ public class ValidacionComercialService {
     private final ProductoRepository productoRepository;
     private final StockAlmacenRepository stockRepository;
     private final CreditoClienteRepository creditoRepository;
+    private final ExistenciaBloqueoRepository existenciaBloqueo;
     private final ValidacionMapper mapper;
 
     /** Estados que se pueden filtrar en la bandeja; vacío o TODOS devuelve todos los pedidos. */
     private static final Set<String> ESTADOS = Set.of(
-            Pedido.PENDIENTE, Pedido.APROBADO, Pedido.RECHAZADO, "COMPLETADO");
+            Pedido.PENDIENTE, Pedido.APROBADO, Pedido.RECHAZADO, "COMPLETADO", "ANULADO");
 
     @Transactional(readOnly = true)
     public Page<PedidoResumenResponse> listar(String estado, int page, int size) {
@@ -68,7 +70,8 @@ public class ValidacionComercialService {
             filtro = estado.trim().toUpperCase();
             if (!ESTADOS.contains(filtro)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Estado no válido: '" + estado + "'. Use PENDIENTE, APROBADO, RECHAZADO, COMPLETADO o TODOS.");
+                        "Estado no válido: '" + estado
+                                + "'. Use PENDIENTE, APROBADO, RECHAZADO, COMPLETADO, ANULADO o TODOS.");
             }
         }
         Page<Pedido> pedidos = pedidoRepository.buscarPorEstado(filtro, PageRequest.of(page, size));
@@ -87,6 +90,7 @@ public class ValidacionComercialService {
     @Transactional
     public ValidacionPedidoResponse aprobar(Integer pedidoId, String observacion, String actor) {
         Pedido pedido = pedidoPendienteBloqueado(pedidoId);
+        bloquearExistencias(pedido);
         Evaluacion evaluacion = evaluacion(pedido);
 
         List<Regla> bloqueantes = evaluacion.reglas().stream().filter(Regla::impideAprobar).toList();
@@ -127,6 +131,17 @@ public class ValidacionComercialService {
                             + " y no admite una nueva decisión.");
         }
         return pedido;
+    }
+
+    /** Bloquea las existencias del pedido para que la reserva se calcule sin carreras. */
+    private void bloquearExistencias(Pedido pedido) {
+        List<Long> productoIds = pedidoRepository.detallesDe(pedido.getId()).stream()
+                .map(d -> d.getProductoId().longValue())
+                .distinct()
+                .toList();
+        if (!productoIds.isEmpty()) {
+            existenciaBloqueo.bloquear(pedido.getSucursalId(), productoIds);
+        }
     }
 
     private void registrarDecision(Pedido pedido, String estado, String texto, String actor) {
