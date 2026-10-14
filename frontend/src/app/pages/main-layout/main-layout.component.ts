@@ -14,12 +14,15 @@ import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
 import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inventario/cu09-datos-maestros-inventario/components/datos-maestros-inventario.component';
+import { ConsultarKardexComponent } from '../../modulos/catalogo-e-inventario/cu12-consultar-kardex/components/consultar-kardex.component';
+import { ValidacionComercialComponent } from '../../modulos/ventas-y-facturacion/cu17-validacion-comercial-aprobacion/components/validacion-comercial.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
-    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent],
+    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
+    ConsultarKardexComponent, ValidacionComercialComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
