@@ -9,6 +9,7 @@ import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/cu02-gest
 import { MovimientoInventarioComponent } from '../../modulos/catalogo-e-inventario/cu11-movimientos-de-inventario/components/movimiento-inventario.component';
 import { CatalogoComponent } from '../../modulos/catalogo-e-inventario/cu10-catalogo-de-articulos/components/catalogo.component';
 import { ClientesComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/clientes.component';
+import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
 import { ClientePortalComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/cliente-portal.component';
 import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 
@@ -19,7 +20,7 @@ import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inven
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
-    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent],
+    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent, PedidosVentaComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

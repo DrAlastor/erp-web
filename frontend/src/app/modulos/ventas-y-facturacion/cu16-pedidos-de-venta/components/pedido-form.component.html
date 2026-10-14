@@ -1,0 +1,72 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="pedido-form-title">
+    <header class="modal-header">
+      <div>
+        <h3 id="pedido-form-title">
+          {{ pedido() ? 'Editar pedido ' + pedido()!.numeroPedido : 'Nuevo pedido de venta' }}
+        </h3>
+        <p>Selecciona el cliente, la sucursal de despacho y los productos solicitados.</p>
+      </div>
+      <button type="button" class="close-btn" aria-label="Cerrar" [disabled]="busy()" (click)="closed.emit()">✕</button>
+    </header>
+
+    <div class="form-grid">
+      <div class="field wide">
+        <span class="field-label">Cliente *</span>
+        <app-cliente-selector [(cliente)]="cliente" [disabled]="busy()" [invalid]="intentado() && !cliente()" />
+      </div>
+      <label>
+        Sucursal *
+        <select [ngModel]="sucursalId() ?? ''" (ngModelChange)="onSucursal($event)" [disabled]="busy()"
+          [class.invalid]="intentado() && !sucursalId()">
+          <option value="">Selecciona una sucursal</option>
+          @for (sucursal of sucursales(); track sucursal.id) {
+            <option [value]="sucursal.id">{{ sucursal.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Fecha
+        <input type="date" [(ngModel)]="fecha" [disabled]="busy()" />
+      </label>
+      <label class="wide">
+        Observaciones
+        <textarea rows="2" maxlength="500" [(ngModel)]="observaciones" [disabled]="busy()"
+          placeholder="Condiciones de entrega, referencias, etc."></textarea>
+      </label>
+    </div>
+
+    <h4 class="section-title">Productos</h4>
+    <app-pedido-lineas [(lineas)]="lineas" [sucursalId]="sucursalId()" />
+
+    <div class="totals">
+      <div><span>Subtotal</span><strong>Bs. {{ subtotal() | number: '1.2-2' }}</strong></div>
+      <div>
+        <label for="pedido-descuento">Descuento global (Bs.)</label>
+        <input id="pedido-descuento" type="number" min="0" step="0.01" class="discount"
+          [class.invalid]="descuento() < 0 || descuento() > subtotal()"
+          [ngModel]="descuento()" (ngModelChange)="onDescuento($event)" [disabled]="busy()" />
+      </div>
+      <div class="grand"><span>Total</span><strong>Bs. {{ total() | number: '1.2-2' }}</strong></div>
+    </div>
+
+    @if (sinStock()) {
+      <p class="message warning" role="status">
+        Hay productos cuya cantidad supera el stock disponible en la sucursal; el pedido podría ser rechazado.
+      </p>
+    }
+    @if (intentado() && validacion()) {
+      <p class="message error" role="alert">{{ validacion() }}</p>
+    }
+    @if (error()) {
+      <p class="message error" role="alert">{{ error() }}</p>
+    }
+
+    <footer class="modal-footer">
+      <button type="button" [disabled]="busy()" (click)="closed.emit()">Cancelar</button>
+      <button type="button" class="primary" [disabled]="busy()" (click)="save()">
+        {{ busy() ? 'Guardando...' : pedido() ? 'Guardar cambios' : 'Registrar pedido' }}
+      </button>
+    </footer>
+  </section>
+</div>
