@@ -28,7 +28,7 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @org.hibernate.annotations.Formula("email")
+    @Column(name = "username", length = 100)
     private String username;
 
     @Column(nullable = false, length = 255)
@@ -62,18 +62,35 @@ public class Usuario {
     @Transient
     private Boolean rbacInicializado = true;
 
+    @Column(name = "fullname", length = 150)
+    private String fullname;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "empleado_id", insertable = false, updatable = false)
+    private modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Empleado empleado;
+
     // Métodos de compatibilidad requeridos por el servicio de autenticación y JWT
     public String getUsername() {
+        if (this.username != null && !this.username.isBlank()) {
+            return this.username;
+        }
         return this.email != null ? this.email : "";
     }
 
     public void setUsername(String username) {
+        this.username = username;
         if (this.email == null || this.email.isBlank()) {
             this.email = username;
         }
     }
 
     public String getFullname() {
+        if (this.fullname != null && !this.fullname.trim().isBlank()) {
+            return this.fullname.trim();
+        }
+        if (this.empleado != null && this.empleado.getNombreCompleto() != null && !this.empleado.getNombreCompleto().trim().isBlank()) {
+            return this.empleado.getNombreCompleto().trim();
+        }
         if (this.email != null && this.email.contains("@")) {
             String prefix = this.email.split("@")[0];
             return Character.toUpperCase(prefix.charAt(0)) + prefix.substring(1);
@@ -82,7 +99,7 @@ public class Usuario {
     }
 
     public void setFullname(String fullname) {
-        // Compatibilidad
+        this.fullname = fullname;
     }
 
     public Boolean getEnable() {

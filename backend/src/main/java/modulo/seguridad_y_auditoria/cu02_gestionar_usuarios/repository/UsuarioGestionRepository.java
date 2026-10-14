@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 public interface UsuarioGestionRepository extends JpaRepository<Usuario, Long>, JpaSpecificationExecutor<Usuario> {
 
-    @Query("select case when count(u) > 0 then true else false end from Usuario u where lower(u.email) = lower(:username) or lower(u.email) like lower(concat(:username, '@%'))")
+    @Query("select case when count(u) > 0 then true else false end from Usuario u where lower(u.email) = lower(:username) or lower(coalesce(u.username, '')) = lower(:username) or lower(u.email) like lower(concat(:username, '@%'))")
     boolean existsByUsernameIgnoreCase(@Param("username") String username);
 
     boolean existsByEmailIgnoreCase(String email);

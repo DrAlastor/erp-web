@@ -42,7 +42,7 @@ import java.util.List;
  * queda para quien tenga INVENTARIO_ANULAR, y el resto de los roles sólo consulta.
  */
 @RestController
-@RequestMapping("/api/despachos")
+@RequestMapping({"/api/v1/despachos", "/api/despachos"})
 @Validated
 public class DespachoController {
 

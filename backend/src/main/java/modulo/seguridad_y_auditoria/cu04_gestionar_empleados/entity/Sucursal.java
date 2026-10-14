@@ -1,7 +1,11 @@
 package modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "sucursal")
@@ -37,28 +41,4 @@ public class Sucursal {
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-
-    public Integer getCiudadId() { return ciudadId; }
-    public void setCiudadId(Integer ciudadId) { this.ciudadId = ciudadId; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
-
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
-
-    public java.time.LocalTime getHoraApertura() { return horaApertura; }
-    public void setHoraApertura(java.time.LocalTime horaApertura) { this.horaApertura = horaApertura; }
-
-    public java.time.LocalTime getHoraCierre() { return horaCierre; }
-    public void setHoraCierre(java.time.LocalTime horaCierre) { this.horaCierre = horaCierre; }
-
-    public Boolean getActivo() { return activo; }
-    public void setActivo(Boolean activo) { this.activo = activo; }
 }

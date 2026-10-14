@@ -23,8 +23,11 @@ public class UsuarioMapper {
     /** Arma la entidad del alta; la contraseña la cifra el servicio, no el mapper. */
     public Usuario toEntity(UsuarioRequest request, UUID empresaId, String actor) {
         Usuario usuario = new Usuario();
-        usuario.setUsername(request.username().trim());
-        usuario.setEmail(request.email().trim());
+        String usr = request.username() != null && !request.username().trim().isBlank()
+                ? request.username().trim()
+                : request.email().trim().split("@")[0];
+        usuario.setUsername(usr);
+        usuario.setEmail(request.email().trim().toLowerCase());
         usuario.setFullname(request.fullname().trim());
         usuario.setEmpresaId(empresaId);
         usuario.setCreatedBy(actor);

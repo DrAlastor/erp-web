@@ -28,7 +28,7 @@ import java.util.Set;
  * nada más depende de él.
  */
 @RestController
-@RequestMapping("/api/pedidos")
+@RequestMapping({"/api/v1/pedidos", "/api/pedidos"})
 public class PedidoProvisionalController {
 
     private final PedidoRepository pedidos;

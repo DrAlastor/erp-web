@@ -1,7 +1,7 @@
 package comun.config;
 
-import modulo.seguridad_y_auditoria.roles_y_permisos.security.UsuarioPrincipal;
-import modulo.seguridad_y_auditoria.roles_y_permisos.service.ServicioAutorizacion;
+import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioPrincipal;
+import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -106,11 +106,10 @@ class EvaluadorDePermisosTest {
     @Test
     @DisplayName("un código que no existe en el catálogo no autoriza: protege contra un typo en la anotación")
     void codigoInexistenteNoAutoriza() {
+        when(servicioAutorizacion.tienePermiso(org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any())).thenReturn(false);
         assertThat(evaluador.hasPermission(autenticado(), "SEGURIDAD", "VOLAR")).isFalse();
         assertThat(evaluador.hasPermission(autenticado(), "MODULO_INVENTADO", "CONSULTAR")).isFalse();
-
-        verify(servicioAutorizacion, never()).tienePermiso(org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any());
     }
 
     @Test

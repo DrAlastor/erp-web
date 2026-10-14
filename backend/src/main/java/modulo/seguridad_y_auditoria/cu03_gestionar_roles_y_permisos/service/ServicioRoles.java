@@ -122,7 +122,7 @@ public class ServicioRoles {
         }
     }
 
-    private Set<String> obtenerPermisosEfectivos(Rol rol) {
+    public Set<String> obtenerPermisosEfectivos(Rol rol) {
         if (matrizPermisosPorRol.containsKey(rol.getId())) {
             return matrizPermisosPorRol.get(rol.getId());
         }

@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  * y anular quedan para quien tenga COMERCIAL_MODIFICAR y COMERCIAL_ANULAR.
  */
 @RestController
-@RequestMapping("/api/cotizaciones")
+@RequestMapping({"/api/v1/cotizaciones", "/api/cotizaciones"})
 @Validated
 public class CotizacionController {
 
