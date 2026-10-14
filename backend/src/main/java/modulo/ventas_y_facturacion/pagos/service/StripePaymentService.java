@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import modulo.ventas_y_facturacion.pagos.dto.StripeCheckoutRequestDTO;
 import modulo.ventas_y_facturacion.pagos.dto.StripeCheckoutResponseDTO;
+import modulo.ventas_y_facturacion.pagos.dto.StripeSesionDTO;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -35,6 +36,7 @@ public class StripePaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(StripePaymentService.class);
     private static final String STRIPE_API_CHECKOUT_URL = "https://api.stripe.com/v1/checkout/sessions";
+    private static final String STRIPE_API_REFUNDS_URL = "https://api.stripe.com/v1/refunds";
 
     @Value("${stripe.secret-key:}")
     private String secretKey;
@@ -59,6 +61,11 @@ public class StripePaymentService {
 
     public String getPublicKey() {
         return publicKey;
+    }
+
+    /** Indica si hay una clave secreta configurada para hablar con Stripe. */
+    public boolean estaConfigurado() {
+        return secretKey != null && !secretKey.isBlank();
     }
 
     /**
@@ -152,6 +159,61 @@ public class StripePaymentService {
         } catch (Exception ex) {
             log.error("Error general procesando sesión Stripe: {}", ex.getMessage(), ex);
             throw new RuntimeException("Error al procesar pago con Stripe: " + ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Consulta una sesión de Checkout en Stripe. Es la fuente de verdad para saber si un
+     * pago se completó: nunca se confía en lo que diga el navegador.
+     */
+    public StripeSesionDTO consultarSesion(String sessionId) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(secretKey);
+            // Se expande el cargo para saber si el pago ya fue reembolsado.
+            ResponseEntity<String> response = restTemplate.exchange(
+                    STRIPE_API_CHECKOUT_URL + "/{id}?expand[]={expand}",
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    String.class,
+                    sessionId,
+                    "payment_intent.latest_charge");
+
+            JsonNode root = objectMapper.readTree(response.getBody());
+            Map<String, String> metadata = new java.util.HashMap<>();
+            root.path("metadata").fields().forEachRemaining(e -> metadata.put(e.getKey(), e.getValue().asText()));
+            JsonNode intent = root.path("payment_intent");
+            return new StripeSesionDTO(
+                    root.path("id").asText(),
+                    root.path("payment_status").asText(),
+                    root.path("amount_total").asLong(),
+                    intent.path("latest_charge").path("amount_refunded").asLong(0),
+                    root.path("currency").asText(),
+                    intent.isObject() ? intent.path("id").asText(null) : null,
+                    metadata);
+        } catch (HttpStatusCodeException ex) {
+            log.error("Stripe rechazó la consulta de la sesión {} (Status: {}): {}",
+                    sessionId, ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw new RuntimeException("La sesión de pago " + sessionId + " no existe en Stripe", ex);
+        } catch (Exception ex) {
+            throw new RuntimeException("No se pudo consultar la sesión de pago en Stripe: " + ex.getMessage(), ex);
+        }
+    }
+
+    /** Reembolsa por completo el cobro asociado a un PaymentIntent. */
+    public void reembolsar(String paymentIntentId) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setBearerAuth(secretKey);
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("payment_intent", paymentIntentId);
+            restTemplate.exchange(STRIPE_API_REFUNDS_URL, HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+            log.info("Reembolso Stripe registrado para el PaymentIntent {}", paymentIntentId);
+        } catch (HttpStatusCodeException ex) {
+            log.error("Stripe rechazó el reembolso de {} (Status: {}): {}",
+                    paymentIntentId, ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw new RuntimeException("Stripe rechazó el reembolso del pago " + paymentIntentId, ex);
         }
     }
 }

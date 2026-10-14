@@ -85,6 +85,10 @@
       <app-movimiento-inventario />
       } @else if (!authService.isClient() && (fn.id === 'cu13-gestionar-clientes' || fn.id === 'gestion-de-clientes')) {
       <app-clientes />
+      } @else if (fn.id === 'cu19-registrar-venta-facturacion-y-anulacion') {
+      <app-facturacion />
+      } @else if (fn.id === 'cu20-devoluciones-de-venta') {
+      <app-devoluciones />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

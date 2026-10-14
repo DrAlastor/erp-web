@@ -1,0 +1,255 @@
+<div class="header">
+  <div>
+    <h2>Devoluciones y notas de crédito</h2>
+    <p>Registra devoluciones parciales o totales sobre facturas o notas de venta vigentes. La mercadería vuelve al inventario, se ajusta la cuenta por cobrar o la caja y se revierte en forma proporcional el asiento de la venta.</p>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" [class.active]="tab() === 'nueva'" [attr.aria-selected]="tab() === 'nueva'" (click)="cambiarTab('nueva')">
+      Nueva devolución
+    </button>
+    <button role="tab" [class.active]="tab() === 'historial'" [attr.aria-selected]="tab() === 'historial'" (click)="cambiarTab('historial')">
+      Notas de crédito
+    </button>
+  </div>
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @if (tab() === 'nueva') {
+    <section class="card">
+      <h3>1. Buscar el comprobante de venta</h3>
+      <form class="filters" (ngSubmit)="buscarVentas()">
+        <label>
+          N° de factura o nota de venta
+          <input name="numeroFactura" type="number" min="1" [(ngModel)]="numeroFactura" placeholder="Ej. 1003" />
+        </label>
+        <label>
+          NIT/CI del cliente
+          <input name="nitCliente" maxlength="30" [(ngModel)]="nitCliente" placeholder="Ej. 4928172013" />
+        </label>
+        <button class="primary" [disabled]="loading()">{{ loading() ? 'Buscando...' : 'Buscar' }}</button>
+      </form>
+
+      @if (ventas(); as lista) {
+        @if (!lista.length) {
+          <p class="hint">No hay comprobantes vigentes con esos datos. Solo se pueden devolver ventas emitidas (no anuladas).</p>
+        } @else if (lista.length > 1 || !venta()) {
+          <ul class="results">
+            @for (v of lista; track v.ventaId) {
+              <li [class.selected]="venta()?.ventaId === v.ventaId">
+                <span>
+                  <strong>{{ nombreComprobante(v) }} · {{ v.razonSocialCliente }}</strong>
+                  <span class="mono">
+                    {{ v.fecha | date: 'dd/MM/yyyy' }} · {{ v.sucursalNombre }} · {{ v.tipoVenta === 'CONTADO' ? 'Contado' : 'Crédito' }}
+                    · Bs {{ v.total | number: '1.2-2' }}
+                  </span>
+                </span>
+                <button type="button" [disabled]="sinDisponible(v)" (click)="elegir(v)">
+                  {{ sinDisponible(v) ? 'Ya devuelta' : 'Seleccionar' }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </section>
+
+    @if (venta(); as v) {
+      <section class="card">
+        <div class="card-head">
+          <h3>2. Productos a devolver · {{ nombreComprobante(v) }}</h3>
+          <button type="button" (click)="devolverTodo()">Devolver todo lo disponible</button>
+        </div>
+        <p class="hint">
+          {{ v.razonSocialCliente }} · NIT/CI {{ v.nitCliente }} · {{ v.sucursalNombre }} ·
+          {{ v.tipoVenta === 'CONTADO' ? 'Contado' : 'Crédito' }}
+        </p>
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Líneas del comprobante</caption>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Vendido</th>
+                <th>Ya devuelto</th>
+                <th>Disponible</th>
+                <th>Precio neto</th>
+                <th>A devolver</th>
+                <th>Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of v.lineas; track l.ventaDetalleId) {
+                <tr [class.muted]="l.cantidadDisponible <= 0">
+                  <td><strong>{{ l.nombre }}</strong><br /><span class="mono">{{ l.codigo }}</span></td>
+                  <td class="num">{{ l.cantidadVendida | number: '1.0-2' }}</td>
+                  <td class="num">{{ l.cantidadDevuelta | number: '1.0-2' }}</td>
+                  <td class="num">{{ l.cantidadDisponible | number: '1.0-2' }}</td>
+                  <td class="num">{{ l.precioUnitarioNeto | number: '1.2-2' }}</td>
+                  <td>
+                    <input class="qty" type="number" min="0" step="1" [max]="l.cantidadDisponible"
+                      [disabled]="l.cantidadDisponible <= 0" [name]="'cant' + l.ventaDetalleId"
+                      [(ngModel)]="cantidades[l.ventaDetalleId]" />
+                    @if (cantidades[l.ventaDetalleId] > l.cantidadDisponible) {
+                      <span class="warn">Máx. {{ l.cantidadDisponible }}</span>
+                    }
+                  </td>
+                  <td class="num">{{ importeLinea(l.ventaDetalleId, l.precioUnitarioNeto) | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="two-cols">
+        <section class="card">
+          <h3>3. Motivo</h3>
+          <div class="form">
+            <label>
+              Motivo de la devolución
+              <select name="motivo" [(ngModel)]="motivo">
+                @for (m of motivos; track m.valor) {
+                  <option [value]="m.valor">{{ m.etiqueta }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Observaciones (opcional)
+              <textarea name="observaciones" rows="3" maxlength="500" [(ngModel)]="observaciones"></textarea>
+            </label>
+          </div>
+        </section>
+        <section class="card totals">
+          <h3>Resumen</h3>
+          <dl>
+            <dt class="strong">Total nota de crédito</dt><dd class="strong">Bs {{ totalDevolucion() | number: '1.2-2' }}</dd>
+          </dl>
+          <p class="hint">
+            @if (v.tipoVenta === 'CREDITO') {
+              Se descontará del saldo de la cuenta por cobrar. Si el cliente ya pagó, el excedente se reembolsa por caja.
+            } @else {
+              Se registrará un egreso de caja por el reembolso en el turno abierto de la sucursal.
+            }
+          </p>
+          <div class="actions">
+            <button class="primary" [disabled]="!puedeEmitir()" (click)="emitir()">
+              {{ busy() ? 'Emitiendo...' : 'Emitir nota de crédito' }}
+            </button>
+            <button type="button" [disabled]="busy()" (click)="venta.set(null)">Cancelar</button>
+          </div>
+        </section>
+      </div>
+    }
+  } @else {
+    <form class="filters" (ngSubmit)="cargarNotas(true)">
+      <label>
+        Buscar
+        <input name="search" [(ngModel)]="search" maxlength="150" placeholder="N° nota, N° comprobante, NIT o cliente" />
+      </label>
+      <button class="primary" [disabled]="busy()">Buscar</button>
+    </form>
+    @if (loading()) {
+      <p role="status">Cargando notas de crédito...</p>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <caption class="sr-only">Notas de crédito emitidas</caption>
+          <thead>
+            <tr>
+              <th>N° nota</th>
+              <th>Fecha</th>
+              <th>Comprobante</th>
+              <th>Cliente</th>
+              <th>Motivo</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (n of notas(); track n.id) {
+              <tr>
+                <td class="mono">{{ n.numeroNota }}</td>
+                <td>{{ n.fecha | date: 'dd/MM/yyyy' }}</td>
+                <td class="mono">{{ nombreComprobante(n) }}</td>
+                <td><strong>{{ n.razonSocialCliente }}</strong><br /><span class="mono">{{ n.nitCliente }}</span></td>
+                <td>{{ etiquetaMotivo(n.motivo) }}</td>
+                <td class="num">{{ n.total | number: '1.2-2' }}</td>
+                <td><span class="badge" [class.inactive]="n.estado !== 'EMITIDA'">{{ n.estado === 'EMITIDA' ? 'Emitida' : 'Anulada' }}</span></td>
+                <td><button [disabled]="busy()" (click)="ver(n)">Ver</button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8">No se encontraron notas de crédito.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span>{{ total() }} notas de crédito</span>
+        <div>
+          <button [disabled]="page === 0 || busy()" (click)="navegar(-1)">Anterior</button>
+          <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+          <button [disabled]="page + 1 >= pages() || busy()" (click)="navegar(1)">Siguiente</button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (nota(); as n) {
+    <div class="modal-backdrop">
+      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="nota-title">
+        <div class="dialog-head">
+          <div>
+            <h3 id="nota-title">Nota de crédito {{ n.numeroNota }}</h3>
+            <span class="badge" [class.inactive]="n.estado !== 'EMITIDA'">{{ n.estado === 'EMITIDA' ? 'Emitida' : 'Anulada' }}</span>
+          </div>
+          <button type="button" (click)="nota.set(null)" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="fiscal">
+          <span>Comprobante <b class="mono">{{ nombreComprobante(n) }}</b></span>
+          <span>Fecha <b>{{ n.fecha | date: 'dd/MM/yyyy' }}</b></span>
+          <span>Cliente <b>{{ n.razonSocialCliente }}</b> · NIT/CI <b class="mono">{{ n.nitCliente }}</b></span>
+          <span>Sucursal <b>{{ n.sucursalNombre }}</b></span>
+          <span>Motivo <b>{{ etiquetaMotivo(n.motivo) }}</b></span>
+        </div>
+        @if (n.observaciones) {
+          <p class="hint">{{ n.observaciones }}</p>
+        }
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Producto</th><th>Cant.</th><th>P. unit.</th><th>Subtotal</th></tr>
+            </thead>
+            <tbody>
+              @for (d of n.detalles; track d.id) {
+                <tr>
+                  <td>{{ d.nombre }}<br /><span class="mono">{{ d.codigo }}</span></td>
+                  <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
+                  <td class="num">{{ d.precioUnitario | number: '1.2-2' }}</td>
+                  <td class="num">{{ d.subtotal | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <dl class="dialog-totals">
+          <dt class="strong">Total</dt><dd class="strong">Bs {{ n.total | number: '1.2-2' }}</dd>
+          @if (n.montoAplicadoCxc !== null) {
+            <dt>Aplicado a cuenta por cobrar</dt><dd>Bs {{ n.montoAplicadoCxc | number: '1.2-2' }}</dd>
+            <dt>Reembolsado por caja</dt><dd>Bs {{ n.montoReembolsado | number: '1.2-2' }}</dd>
+          }
+        </dl>
+        @if (n.asientoContable) {
+          <p class="hint">Asiento contable generado: <b class="mono">{{ n.asientoContable }}</b></p>
+        }
+      </section>
+    </div>
+  }
+}
