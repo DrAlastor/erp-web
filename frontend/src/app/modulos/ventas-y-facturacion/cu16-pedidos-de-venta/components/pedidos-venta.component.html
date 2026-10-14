@@ -1,0 +1,114 @@
+<div class="pedidos-header">
+  <div>
+    <h2>Pedidos de venta</h2>
+    <p>Registra y da seguimiento a los pedidos de tus clientes por sucursal.</p>
+  </div>
+  @if (!forbidden()) {
+    <button class="primary" *siPermiso="'COMERCIAL_CREAR'" [disabled]="busy()" (click)="openNew()">
+      + Nuevo pedido
+    </button>
+  }
+</div>
+@if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+  </div>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+@if (!forbidden()) {
+  <form class="filters" (ngSubmit)="load(true)">
+    <label class="grow">
+      Buscar
+      <input name="search" [(ngModel)]="search" maxlength="150" placeholder="N° de pedido, cliente o NIT/CI" />
+    </label>
+    <label>
+      Estado
+      <select name="estado" [(ngModel)]="estado" (change)="load(true)">
+        <option value="">Todos los estados</option>
+        @for (item of estados; track item) {
+          <option [value]="item">{{ item }}</option>
+        }
+      </select>
+    </label>
+    <button class="primary" [disabled]="loading()">Buscar</button>
+  </form>
+  @if (loading()) {
+    <p role="status">Cargando pedidos...</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <caption class="sr-only">Pedidos de venta registrados</caption>
+        <thead>
+          <tr>
+            <th>N° pedido</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Sucursal</th>
+            <th>Vendedor</th>
+            <th class="num">Ítems</th>
+            <th class="num">Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pedido of pedidos(); track pedido.id) {
+            <tr>
+              <td class="mono"><strong>{{ pedido.numeroPedido }}</strong></td>
+              <td class="mono">{{ pedido.fecha }}</td>
+              <td>
+                <strong>{{ pedido.clienteRazonSocial }}</strong>
+                <span class="cell-sub">NIT/CI {{ pedido.clienteNitCi }}</span>
+              </td>
+              <td>{{ pedido.sucursalNombre }}</td>
+              <td>{{ pedido.vendedorNombre || 'Sin asignar' }}</td>
+              <td class="num">{{ pedido.cantidadItems }}</td>
+              <td class="num"><strong>Bs. {{ pedido.total | number: '1.2-2' }}</strong></td>
+              <td>
+                <span class="badge" [class]="claseEstado(pedido.estado)">{{ pedido.estado }}</span>
+              </td>
+              <td>
+                <div class="actions">
+                  <button type="button" class="btn-action-view" [disabled]="busy()" (click)="detalleId.set(pedido.id)">Ver</button>
+                  @if (pedido.estado === 'PENDIENTE') {
+                    <button type="button" class="btn-action-edit" *siPermiso="'COMERCIAL_MODIFICAR'" [disabled]="busy()" (click)="edit(pedido.id)">
+                      Editar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9" class="empty">No se encontraron pedidos con estos filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} pedidos</span>
+      <div>
+        <button [disabled]="page === 0 || loading()" (click)="navigate(-1)">Anterior</button>
+        <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+        <button [disabled]="page + 1 >= pages() || loading()" (click)="navigate(1)">Siguiente</button>
+      </div>
+    </div>
+  }
+  @if (editor() !== undefined) {
+    <app-pedido-form
+      [pedido]="editor() ?? null"
+      (saved)="onSaved($event, !editor())"
+      (closed)="editor.set(undefined)" />
+  }
+  @if (detalleId(); as id) {
+    <app-pedido-detalle
+      [pedidoId]="id"
+      (changed)="onChanged($event)"
+      (editar)="edit($event)"
+      (closed)="detalleId.set(null)" />
+  }
+}

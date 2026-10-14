@@ -1,0 +1,91 @@
+<div class="search-row">
+  <input
+    [(ngModel)]="busqueda"
+    maxlength="150"
+    aria-label="Buscar producto"
+    [disabled]="!sucursalId()"
+    [placeholder]="sucursalId() ? 'Código o nombre del producto' : 'Selecciona primero una sucursal'"
+    (keydown.enter)="$event.preventDefault(); buscar()" />
+  <button type="button" [disabled]="!sucursalId() || buscando()" (click)="buscar()">
+    {{ buscando() ? 'Buscando...' : 'Buscar producto' }}
+  </button>
+</div>
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (buscado()) {
+  <ul class="results" role="listbox" aria-label="Productos encontrados">
+    @for (producto of resultados(); track producto.id) {
+      <li>
+        <button type="button" role="option" (click)="agregar(producto)">
+          <span>
+            <strong>{{ producto.nombre }}</strong>
+            <span class="cell-sub">{{ producto.codigo }}</span>
+          </span>
+          <span class="meta">
+            <span>Bs. {{ producto.precioVenta | number: '1.2-2' }}</span>
+            <span [class.low]="producto.stockDisponible <= 0">Stock {{ producto.stockDisponible | number: '1.0-2' }}</span>
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li class="none">No se encontraron productos para esta sucursal.</li>
+    }
+  </ul>
+}
+@if (aviso()) {
+  <p class="message warning" role="status">{{ aviso() }}</p>
+}
+<div class="table-scroll lines">
+  <table>
+    <caption class="sr-only">Productos del pedido</caption>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th class="num">Stock disp.</th>
+        <th>Cantidad</th>
+        <th>Precio unit. (Bs.)</th>
+        <th>Descuento (Bs.)</th>
+        <th class="num">Subtotal</th>
+        <th><span class="sr-only">Quitar</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (linea of lineas(); track linea.productoId; let i = $index) {
+        <tr>
+          <td>
+            <strong>{{ linea.nombre }}</strong>
+            <span class="cell-sub">{{ linea.codigo }}</span>
+            @if (sinStock(linea)) {
+              <span class="line-warning">Supera el stock disponible</span>
+            }
+          </td>
+          <td class="num">{{ linea.stock === null ? '—' : (linea.stock | number: '1.0-2') }}</td>
+          <td>
+            <input type="number" min="0.01" step="1" [attr.aria-label]="'Cantidad de ' + linea.nombre"
+              [class.invalid]="linea.cantidad <= 0 || sinStock(linea)"
+              [ngModel]="linea.cantidad" (ngModelChange)="patch(i, { cantidad: num($event) })" />
+          </td>
+          <td>
+            <input type="number" min="0" step="0.01" [attr.aria-label]="'Precio unitario de ' + linea.nombre"
+              [class.invalid]="linea.precioUnitario < 0"
+              [ngModel]="linea.precioUnitario" (ngModelChange)="patch(i, { precioUnitario: num($event) })" />
+          </td>
+          <td>
+            <input type="number" min="0" step="0.01" [attr.aria-label]="'Descuento de ' + linea.nombre"
+              [class.invalid]="linea.descuento < 0 || subtotalLinea(linea) < 0"
+              [ngModel]="linea.descuento" (ngModelChange)="patch(i, { descuento: num($event) })" />
+          </td>
+          <td class="num"><strong>Bs. {{ subtotalLinea(linea) | number: '1.2-2' }}</strong></td>
+          <td>
+            <button type="button" class="danger" [attr.aria-label]="'Quitar ' + linea.nombre" (click)="quitar(i)">✕</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty">Aún no agregaste productos al pedido.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

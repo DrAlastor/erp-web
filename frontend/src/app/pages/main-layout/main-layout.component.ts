@@ -16,13 +16,23 @@ import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
 import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inventario/cu09-datos-maestros-inventario/components/datos-maestros-inventario.component';
+import { PreciosYListasComponent } from '../../modulos/ventas-y-facturacion/cu14-precios-y-listas-precio/components/precios-y-listas.component';
+import { NotificationBellComponent } from '../../core/components/notification-bell/notification-bell.component';
+import { DashboardHomeComponent } from './components/dashboard-home/dashboard-home.component';
+import { ConsultarKardexComponent } from '../../modulos/catalogo-e-inventario/cu12-consultar-kardex/components/consultar-kardex.component';
+import { ValidacionComercialComponent } from '../../modulos/ventas-y-facturacion/cu17-validacion-comercial-aprobacion/components/validacion-comercial.component';
+import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-registrar-venta-facturacion-y-anulacion/components/facturacion.component';
+import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
+
+import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
-    CotizacionesComponent, DespachosComponent],
+    PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

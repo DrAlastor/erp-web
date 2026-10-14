@@ -48,7 +48,7 @@ export class DespachosService {
   }
 
   branches() {
-    return this.http.get<Sucursal[]>(`${environment.apiUrl}/inventario/almacenes`);
+    return this.http.get<Sucursal[]>(`${environment.apiUrl}/almacenes`);
   }
 
   /** Provisional hasta la CU17. */

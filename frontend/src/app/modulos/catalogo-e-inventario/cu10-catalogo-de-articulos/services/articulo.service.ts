@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { Articulo } from '../models/articulo.model';
+import { Articulo, ArticuloRequest, Categoria } from '../models/articulo.model';
 
 @Injectable({ providedIn: 'root' })
 export class ArticuloService {
@@ -21,5 +21,21 @@ export class ArticuloService {
     return this.http.get<Articulo[]>(this.baseUrl, {
       params: { categoriaId: String(categoriaId) }
     });
+  }
+
+  crear(request: ArticuloRequest): Observable<Articulo> {
+    return this.http.post<Articulo>(this.baseUrl, request);
+  }
+
+  actualizar(id: number, request: ArticuloRequest): Observable<Articulo> {
+    return this.http.put<Articulo>(`${this.baseUrl}/${id}`, request);
+  }
+
+  eliminar(id: number): Observable<Articulo> {
+    return this.http.delete<Articulo>(`${this.baseUrl}/${id}`);
+  }
+
+  listarCategorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${environment.apiUrl}/categorias`);
   }
 }

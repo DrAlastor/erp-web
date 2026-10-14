@@ -98,9 +98,9 @@ label {
 
 input,
 select {
-  background: var(--neutral-subtle);
-  color: var(--text-main);
-  border: 1px solid transparent;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1.5px solid #d1d5db !important;
   border-radius: 10px;
   padding: 8px 12px;
   min-width: 160px;
@@ -109,9 +109,9 @@ select {
   transition: all 140ms ease;
 
   &:focus {
-    background: var(--bg-surface);
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
+    background: #ffffff !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px var(--primary-light) !important;
     outline: none;
   }
 }
@@ -171,7 +171,7 @@ th {
   font-weight: 650;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--neutral-subtle);
+  background: #f8fafc;
   color: var(--text-secondary);
 }
 
@@ -195,14 +195,15 @@ td small {
   align-items: center;
 
   button {
-    background: var(--neutral-subtle);
+    background: #ffffff;
     color: var(--text-main);
-    border: 1px solid var(--bg-card-border);
+    border: 1px solid #d1d5db;
     padding: 6px 12px;
     font-size: 12px;
+    border-radius: 8px;
 
     &:hover {
-      background: var(--bg-subtle);
+      background: rgba(0, 102, 204, 0.08);
       border-color: var(--primary);
       color: var(--primary);
     }
@@ -236,7 +237,8 @@ td small {
   padding: 20px;
 }
 
-.modal-card.modal-crear {
+.modal-card.modal-crear,
+.modal-card.modal-detalle {
   background: #ffffff;
   border-radius: 18px;
   width: 100%;
@@ -246,6 +248,98 @@ td small {
   flex-direction: column;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .modal-header-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .user-avatar-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #e0f2fe;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    border: 1.5px solid #bae6fd;
+    flex-shrink: 0;
+  }
+
+  .user-subhead {
+    font-size: 12.5px;
+    color: #4b5563;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .dot-sep {
+      color: #9ca3af;
+      font-weight: bold;
+    }
+  }
+
+  .user-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      font-weight: 650;
+      color: #1e293b;
+
+      &.font-mono {
+        font-family: monospace;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .user-note-box {
+    margin-top: 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #1e40af;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+
+    .info-icon {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+  }
 
   .modal-header {
     padding: 20px 24px 16px;
@@ -323,23 +417,34 @@ td small {
     input, select {
       width: 100%;
       padding: 10px 14px;
-      border: 1.5px solid #374151;
+      border: 1.5px solid #d1d5db !important;
       border-radius: 10px;
       font-size: 14px;
       color: #111827 !important;
       font-weight: 600;
-      background: #ffffff;
+      background: #ffffff !important;
       outline: none;
       box-sizing: border-box;
 
       &::placeholder {
-        color: #6b7280;
+        color: #9ca3af;
         font-weight: 400;
       }
 
       &:focus {
-        border-color: #0071e3;
-        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+        background: #ffffff !important;
+        border-color: #0071e3 !important;
+        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2) !important;
+      }
+
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover, 
+      &:-webkit-autofill:focus, 
+      &:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+        -webkit-text-fill-color: #111827 !important;
+        box-shadow: 0 0 0 1000px #ffffff inset !important;
+        caret-color: #111827 !important;
       }
     }
 
@@ -348,6 +453,10 @@ td small {
       color: #374151;
       font-weight: 500;
     }
+  }
+
+  .modal-error-banner {
+    margin: 16px 24px 0;
   }
 
   .modal-footer {
