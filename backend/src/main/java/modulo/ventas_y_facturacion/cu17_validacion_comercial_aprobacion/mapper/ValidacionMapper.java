@@ -1,6 +1,6 @@
 package modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.mapper;
 
-import modulo.ventas_y_facturacion.cu16_pedidos_de_venta.entity.Pedido;
+import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.entity.PedidoAValidar;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.LineaPedidoResponse;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.PedidoResumenResponse;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.ReglaValidacionResponse;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Component
 public class ValidacionMapper {
 
-    public PedidoResumenResponse toResumen(Pedido pedido, String clienteNombre) {
+    public PedidoResumenResponse toResumen(PedidoAValidar pedido, String clienteNombre) {
         return PedidoResumenResponse.builder()
                 .id(pedido.getId())
                 .numeroPedido(pedido.getNumeroPedido())

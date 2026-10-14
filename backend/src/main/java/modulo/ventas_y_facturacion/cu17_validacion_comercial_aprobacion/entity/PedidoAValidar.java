@@ -1,4 +1,4 @@
-package modulo.ventas_y_facturacion.cu16_pedidos_de_venta.entity;
+package modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,12 +27,12 @@ import java.util.List;
  * vendedor y sucursal se guardan como identificadores para no acoplar este paquete a las
  * entidades de otros casos de uso.
  */
-@Entity
+@Entity(name = "PedidoAValidar")
 @Table(name = "pedidos")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Pedido {
+public class PedidoAValidar {
 
     /** Pedido registrado que espera la decisión del validador comercial. */
     public static final String PENDIENTE = "PENDIENTE";
@@ -78,7 +78,7 @@ public class Pedido {
     private LocalDateTime fechaCreacion;
 
     @OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY)
-    private List<PedidoDetalle> detalles = new ArrayList<>();
+    private List<PedidoAValidarDetalle> detalles = new ArrayList<>();
 
     @PrePersist
     protected void alCrear() {

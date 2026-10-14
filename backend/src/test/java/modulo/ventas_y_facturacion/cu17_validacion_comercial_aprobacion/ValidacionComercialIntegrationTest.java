@@ -150,6 +150,32 @@ class ValidacionComercialIntegrationTest {
     }
 
     @Test
+    @DisplayName("En un despacho parcial solo sigue reservado lo que falta despachar")
+    void despachoParcialReservaSoloLoPendiente() throws Exception {
+        // El pedido pide todo el stock y ya despachó todo menos 1 unidad: queda 1 reservada.
+        int parcial = crearPedido(stockLibre.intValue(), BigDecimal.ZERO);
+        jdbc.update("UPDATE pedidos SET estado = 'DESPACHO_PARCIAL' WHERE id = ?", parcial);
+        int nota = jdbc.queryForObject("""
+                INSERT INTO notas_despacho (pedido_id, sucursal_id, despachado_por, numero_despacho, fecha, estado)
+                VALUES (?, ?, ?, ?, NOW(), 'DESPACHADO') RETURNING id
+                """, Integer.class, parcial, SUCURSAL, vendedorId,
+                "TEST-DESP-" + UUID.randomUUID().toString().substring(0, 8));
+        jdbc.update("INSERT INTO despacho_detalles (despacho_id, producto_id, cantidad) VALUES (?, ?, ?)",
+                nota, productoId, stockLibre.intValue() - 1);
+
+        int pideTodo = crearPedido(stockLibre.intValue(), BigDecimal.ZERO);
+        int pideLoLibre = crearPedido(stockLibre.intValue() - 1, BigDecimal.ZERO);
+
+        mvc.perform(get("/api/validacion-comercial/pedidos/" + pideTodo).with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineas[0].reservado").value(1.0))
+                .andExpect(jsonPath("$.lineas[0].cubierta").value(false));
+        mvc.perform(get("/api/validacion-comercial/pedidos/" + pideLoLibre).with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lineas[0].cubierta").value(true));
+    }
+
+    @Test
     @DisplayName("Un pedido que pide más de lo que hay no se puede aprobar")
     void stockInsuficiente() throws Exception {
         int pedido = crearPedido(stockLibre.intValue() + 1, BigDecimal.ZERO);

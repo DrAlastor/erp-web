@@ -1,4 +1,4 @@
-package modulo.ventas_y_facturacion.cu16_pedidos_de_venta.entity;
+package modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,12 +16,12 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 /** Línea de un pedido de venta, mapeada a {@code pedido_detalles} de ERP_Asus. */
-@Entity
+@Entity(name = "PedidoAValidarDetalle")
 @Table(name = "pedido_detalles")
 @Getter
 @Setter
 @NoArgsConstructor
-public class PedidoDetalle {
+public class PedidoAValidarDetalle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class PedidoDetalle {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pedido_id", nullable = false)
-    private Pedido pedido;
+    private PedidoAValidar pedido;
 
     @Column(name = "producto_id", nullable = false)
     private Integer productoId;

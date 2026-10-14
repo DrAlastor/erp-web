@@ -5,9 +5,9 @@ import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.Produc
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.StockAlmacen;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.repository.ProductoRepository;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.repository.StockAlmacenRepository;
-import modulo.ventas_y_facturacion.cu16_pedidos_de_venta.entity.Pedido;
-import modulo.ventas_y_facturacion.cu16_pedidos_de_venta.entity.PedidoDetalle;
-import modulo.ventas_y_facturacion.cu16_pedidos_de_venta.repository.PedidoRepository;
+import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.entity.PedidoAValidar;
+import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.entity.PedidoAValidarDetalle;
+import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.PedidoAValidarRepository;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.LineaPedidoResponse;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.PedidoResumenResponse;
 import modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.dto.ValidacionPedidoResponse;
@@ -52,7 +52,7 @@ public class ValidacionComercialService {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    private final PedidoRepository pedidoRepository;
+    private final PedidoAValidarRepository pedidoRepository;
     private final ProductoRepository productoRepository;
     private final StockAlmacenRepository stockRepository;
     private final CreditoClienteRepository creditoRepository;
@@ -61,7 +61,8 @@ public class ValidacionComercialService {
 
     /** Estados que se pueden filtrar en la bandeja; vacío o TODOS devuelve todos los pedidos. */
     private static final Set<String> ESTADOS = Set.of(
-            Pedido.PENDIENTE, Pedido.APROBADO, Pedido.RECHAZADO, "COMPLETADO", "ANULADO");
+            PedidoAValidar.PENDIENTE, PedidoAValidar.APROBADO, PedidoAValidar.RECHAZADO,
+            "DESPACHO_PARCIAL", "DESPACHADO", "COMPLETADO", "ANULADO");
 
     @Transactional(readOnly = true)
     public Page<PedidoResumenResponse> listar(String estado, int page, int size) {
@@ -71,25 +72,25 @@ public class ValidacionComercialService {
             if (!ESTADOS.contains(filtro)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Estado no válido: '" + estado
-                                + "'. Use PENDIENTE, APROBADO, RECHAZADO, COMPLETADO, ANULADO o TODOS.");
+                                + "'. Use PENDIENTE, APROBADO, RECHAZADO, DESPACHO_PARCIAL, DESPACHADO, COMPLETADO, ANULADO o TODOS.");
             }
         }
-        Page<Pedido> pedidos = pedidoRepository.buscarPorEstado(filtro, PageRequest.of(page, size));
+        Page<PedidoAValidar> pedidos = pedidoRepository.buscarPorEstado(filtro, PageRequest.of(page, size));
         Map<Integer, String> nombres = creditoRepository.razonesSociales(
-                pedidos.getContent().stream().map(Pedido::getClienteId).collect(Collectors.toSet()));
+                pedidos.getContent().stream().map(PedidoAValidar::getClienteId).collect(Collectors.toSet()));
         return pedidos.map(p -> mapper.toResumen(p, nombres.get(p.getClienteId())));
     }
 
     @Transactional(readOnly = true)
     public ValidacionPedidoResponse evaluar(Integer pedidoId) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
+        PedidoAValidar pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> pedidoNoEncontrado(pedidoId));
         return construir(pedido, evaluacion(pedido));
     }
 
     @Transactional
     public ValidacionPedidoResponse aprobar(Integer pedidoId, String observacion, String actor) {
-        Pedido pedido = pedidoPendienteBloqueado(pedidoId);
+        PedidoAValidar pedido = pedidoPendienteBloqueado(pedidoId);
         bloquearExistencias(pedido);
         Evaluacion evaluacion = evaluacion(pedido);
 
@@ -105,7 +106,7 @@ public class ValidacionComercialService {
                     "El pedido tiene reglas no cumplidas: indique la justificación para aprobarlo.");
         }
 
-        registrarDecision(pedido, Pedido.APROBADO, observacion, actor);
+        registrarDecision(pedido, PedidoAValidar.APROBADO, observacion, actor);
         return construir(pedido, evaluacion);
     }
 
@@ -115,17 +116,17 @@ public class ValidacionComercialService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "El motivo es obligatorio para rechazar un pedido.");
         }
-        Pedido pedido = pedidoPendienteBloqueado(pedidoId);
+        PedidoAValidar pedido = pedidoPendienteBloqueado(pedidoId);
         Evaluacion evaluacion = evaluacion(pedido);
 
-        registrarDecision(pedido, Pedido.RECHAZADO, motivo, actor);
+        registrarDecision(pedido, PedidoAValidar.RECHAZADO, motivo, actor);
         return construir(pedido, evaluacion);
     }
 
-    private Pedido pedidoPendienteBloqueado(Integer pedidoId) {
-        Pedido pedido = pedidoRepository.buscarParaDecidir(pedidoId)
+    private PedidoAValidar pedidoPendienteBloqueado(Integer pedidoId) {
+        PedidoAValidar pedido = pedidoRepository.buscarParaDecidir(pedidoId)
                 .orElseThrow(() -> pedidoNoEncontrado(pedidoId));
-        if (!Pedido.PENDIENTE.equals(pedido.getEstado())) {
+        if (!PedidoAValidar.PENDIENTE.equals(pedido.getEstado())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "El pedido " + pedido.getNumeroPedido() + " ya está en estado " + pedido.getEstado()
                             + " y no admite una nueva decisión.");
@@ -134,7 +135,7 @@ public class ValidacionComercialService {
     }
 
     /** Bloquea las existencias del pedido para que la reserva se calcule sin carreras. */
-    private void bloquearExistencias(Pedido pedido) {
+    private void bloquearExistencias(PedidoAValidar pedido) {
         List<Long> productoIds = pedidoRepository.detallesDe(pedido.getId()).stream()
                 .map(d -> d.getProductoId().longValue())
                 .distinct()
@@ -144,7 +145,7 @@ public class ValidacionComercialService {
         }
     }
 
-    private void registrarDecision(Pedido pedido, String estado, String texto, String actor) {
+    private void registrarDecision(PedidoAValidar pedido, String estado, String texto, String actor) {
         String marca = "[VALIDACION COMERCIAL " + LocalDateTime.now().format(FORMATO_FECHA)
                 + " | " + (actor != null ? actor : "sistema") + " | " + estado + "]"
                 + (texto != null && !texto.isBlank() ? " " + texto.trim() : "");
@@ -156,15 +157,15 @@ public class ValidacionComercialService {
 
     /** Lo que se leyó para evaluar un pedido, para no volver a consultarlo al armar la respuesta. */
     private record Evaluacion(
-            List<PedidoDetalle> detalles,
+            List<PedidoAValidarDetalle> detalles,
             DatosCliente cliente,
             DeudaCliente deuda,
             List<LineaPedidoResponse> lineas,
             List<Regla> reglas) {
     }
 
-    private Evaluacion evaluacion(Pedido pedido) {
-        List<PedidoDetalle> detalles = pedidoRepository.detallesDe(pedido.getId());
+    private Evaluacion evaluacion(PedidoAValidar pedido) {
+        List<PedidoAValidarDetalle> detalles = pedidoRepository.detallesDe(pedido.getId());
 
         Set<Long> productoIds = detalles.stream()
                 .map(d -> d.getProductoId().longValue())
@@ -174,7 +175,7 @@ public class ValidacionComercialService {
 
         List<Linea> lineasRegla = new ArrayList<>();
         List<LineaPedidoResponse> lineasRespuesta = new ArrayList<>();
-        for (PedidoDetalle d : detalles) {
+        for (PedidoAValidarDetalle d : detalles) {
             Producto producto = productos.get(d.getProductoId().longValue());
             BigDecimal fisico = stockRepository
                     .findByProductoIdAndAlmacenId(d.getProductoId().longValue(), pedido.getSucursalId())
@@ -203,7 +204,7 @@ public class ValidacionComercialService {
         return new Evaluacion(detalles, datos, deuda, lineasRespuesta, reglas);
     }
 
-    private ValidacionPedidoResponse construir(Pedido pedido, Evaluacion e) {
+    private ValidacionPedidoResponse construir(PedidoAValidar pedido, Evaluacion e) {
         boolean bloqueado = e.reglas().stream().anyMatch(Regla::impideAprobar);
         boolean advertencias = e.reglas().stream().anyMatch(r -> !r.cumple() && !r.bloqueante());
         BigDecimal limite = e.cliente() != null && e.cliente().limiteCredito() != null
@@ -219,12 +220,12 @@ public class ValidacionComercialService {
                 .creditoDisponible(limite.subtract(e.deuda().saldoPendiente()).max(BigDecimal.ZERO))
                 .lineas(e.lineas())
                 .reglas(e.reglas().stream().map(mapper::toRegla).toList())
-                .puedeAprobar(Pedido.PENDIENTE.equals(pedido.getEstado()) && !bloqueado)
+                .puedeAprobar(PedidoAValidar.PENDIENTE.equals(pedido.getEstado()) && !bloqueado)
                 .requiereJustificacion(advertencias)
                 .build();
     }
 
     private ResponseStatusException pedidoNoEncontrado(Integer pedidoId) {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido con ID " + pedidoId + " no encontrado.");
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "PedidoAValidar con ID " + pedidoId + " no encontrado.");
     }
 }
