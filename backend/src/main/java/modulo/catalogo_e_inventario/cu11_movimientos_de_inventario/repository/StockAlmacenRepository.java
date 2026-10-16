@@ -47,4 +47,8 @@ public interface StockAlmacenRepository extends JpaRepository<StockAlmacen, Long
            "s.cantidadActual <= s.stockMinimo " +
            "ORDER BY (s.stockMinimo - s.cantidadActual) DESC")
     List<StockAlmacen> findAlertasStockMinimo(@Param("almacenId") Integer almacenId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE StockAlmacen s SET s.stockMinimo = :nuevoMinimo WHERE s.producto.id = :productoId")
+    void actualizarStockMinimoPorProducto(@Param("productoId") Long productoId, @Param("nuevoMinimo") java.math.BigDecimal nuevoMinimo);
 }

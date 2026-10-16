@@ -742,3 +742,14 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Global Print Isolation Safeguard */
+@media print {
+  .no-print,
+  app-sidebar,
+  .topbar,
+  aside,
+  header {
+    display: none !important;
+  }
+}

@@ -38,6 +38,12 @@ export const routes: Routes = [
     title: 'Panel | NexoERP'
   },
   {
+    path: 'app/:funcion',
+    loadComponent: () => import('./pages/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
+    canActivate: [authGuard],
+    title: 'Panel | NexoERP'
+  },
+  {
     path: '**',
     redirectTo: ''
   }

@@ -1,4 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface NotificacionERP {
   id: string;
@@ -12,154 +14,141 @@ export interface NotificacionERP {
   funcionId?: string;
 }
 
-const STORAGE_LEIDAS_KEY = 'erp_notificaciones_leidas_ids';
-const STORAGE_ELIMINADAS_KEY = 'erp_notificaciones_eliminadas_ids';
-
-function obtenerLeidasStorage(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_LEIDAS_KEY);
-    return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
-  } catch {
-    return new Set<string>();
-  }
-}
-
-function guardarLeidasStorage(ids: Set<string>): void {
-  try {
-    localStorage.setItem(STORAGE_LEIDAS_KEY, JSON.stringify(Array.from(ids)));
-  } catch { /* noop */ }
-}
-
-function obtenerEliminadasStorage(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_ELIMINADAS_KEY);
-    return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
-  } catch {
-    return new Set<string>();
-  }
-}
-
-function guardarEliminadasStorage(ids: Set<string>): void {
-  try {
-    localStorage.setItem(STORAGE_ELIMINADAS_KEY, JSON.stringify(Array.from(ids)));
-  } catch { /* noop */ }
+interface NotificacionBackendDto {
+  id: number;
+  usuarioId: number;
+  titulo: string;
+  mensaje: string;
+  tipo: string;
+  categoria: string;
+  fecha: string;
+  leida: boolean;
+  moduloId?: string;
+  funcionId?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificacionesService {
-  private readonly leidasSet = obtenerLeidasStorage();
-  private readonly eliminadasSet = obtenerEliminadasStorage();
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/notificaciones`;
 
-  private readonly _notificaciones = signal<NotificacionERP[]>(this.inicializarNotificaciones());
-
+  private readonly _notificaciones = signal<NotificacionERP[]>([]);
   readonly notificaciones = this._notificaciones.asReadonly();
 
   readonly conteoNoLeidas = computed(() =>
     this._notificaciones().filter(n => !n.leida).length
   );
 
-  private inicializarNotificaciones(): NotificacionERP[] {
-    const iniciales: NotificacionERP[] = [
-      {
-        id: 'n-1',
-        titulo: 'Stock Crítico en Almacén Central',
-        mensaje: 'El artículo "Laptop ASUS Vivobook 15" ha alcanzado el nivel de reserva mínimo (2 unidades disponibles).',
-        categoria: 'inventario',
-        tipo: 'urgente',
-        fecha: new Date(Date.now() - 1000 * 60 * 15),
-        leida: false,
-        moduloId: 'catalogo-e-inventario',
-        funcionId: 'cu10-catalogo-de-articulos'
-      },
-      {
-        id: 'n-2',
-        titulo: 'Nueva Cotización Registrada',
-        mensaje: 'Se ha emitido la cotización comercial #COT-1004 para el cliente Importadora Boliviana S.R.L.',
-        categoria: 'ventas',
-        tipo: 'info',
-        fecha: new Date(Date.now() - 1000 * 60 * 45),
-        leida: false,
-        moduloId: 'ventas-y-facturacion',
-        funcionId: 'cu15-gestionar-cotizaciones'
-      },
-      {
-        id: 'n-3',
-        titulo: 'Lista de Precios Actualizada',
-        mensaje: 'La lista "Tarifa Mayorista 2026" fue guardada con protección de margen de rentabilidad aprobada.',
-        categoria: 'ventas',
-        tipo: 'exito',
-        fecha: new Date(Date.now() - 1000 * 60 * 120),
-        leida: false,
-        moduloId: 'ventas-y-facturacion',
-        funcionId: 'cu14-precios-y-listas-precio'
-      },
-      {
-        id: 'n-4',
-        titulo: 'Despacho Pendiente de Entrega',
-        mensaje: 'Guía de despacho #DESP-0082 lista para revisión física y salida de almacén.',
-        categoria: 'inventario',
-        tipo: 'alerta',
-        fecha: new Date(Date.now() - 1000 * 60 * 240),
-        leida: true,
-        moduloId: 'ventas-y-facturacion',
-        funcionId: 'cu18-gestionar-despacho-de-venta'
-      },
-      {
-        id: 'n-5',
-        titulo: 'Inicio de Sesión Seguro',
-        mensaje: 'Se verificó autenticación exitosa mediante credenciales con token JWT activo.',
-        categoria: 'seguridad',
-        tipo: 'info',
-        fecha: new Date(Date.now() - 1000 * 60 * 360),
-        leida: true,
-        moduloId: 'seguridad-y-auditoria',
-        funcionId: 'cu08-consultar-bitacora'
-      }
-    ];
+  private intervalId: any = null;
 
-    return iniciales
-      .filter(item => !this.eliminadasSet.has(item.id))
-      .map(item => ({
-        ...item,
-        leida: item.leida || this.leidasSet.has(item.id)
-      }));
+  constructor() {
+    this.cargarNotificaciones();
+    // Sondeo periódico cada 30 segundos para recibir alertas en tiempo real
+    if (typeof window !== 'undefined') {
+      this.intervalId = setInterval(() => {
+        this.cargarNotificaciones(true);
+      }, 30000);
+    }
+  }
+
+  cargarNotificaciones(silencioso = false): void {
+    this.http.get<NotificacionBackendDto[]>(this.apiUrl).subscribe({
+      next: (dtos) => {
+        if (Array.isArray(dtos)) {
+          const list: NotificacionERP[] = dtos.map(d => ({
+            id: String(d.id),
+            titulo: d.titulo,
+            mensaje: d.mensaje,
+            categoria: this.normalizarCategoria(d.categoria),
+            tipo: this.normalizarTipo(d.tipo),
+            fecha: new Date(d.fecha),
+            leida: Boolean(d.leida),
+            moduloId: d.moduloId,
+            funcionId: d.funcionId
+          }));
+          this._notificaciones.set(list);
+        }
+      },
+      error: () => {
+        // En caso de que no haya sesión o error de red, no interrumpir la experiencia
+      }
+    });
   }
 
   marcarComoLeida(id: string): void {
-    this.leidasSet.add(id);
-    guardarLeidasStorage(this.leidasSet);
+    // Actualización optimista local
     this._notificaciones.update(items =>
       items.map(item => item.id === id ? { ...item, leida: true } : item)
     );
+
+    const numId = Number(id);
+    if (!isNaN(numId) && numId > 0) {
+      this.http.put(`${this.apiUrl}/${numId}/leer`, {}).subscribe({
+        error: () => {}
+      });
+    }
   }
 
   marcarTodasComoLeidas(): void {
-    const items = this._notificaciones();
-    items.forEach(item => this.leidasSet.add(item.id));
-    guardarLeidasStorage(this.leidasSet);
+    // Actualización optimista local
     this._notificaciones.update(curr =>
       curr.map(item => ({ ...item, leida: true }))
     );
+
+    this.http.put(`${this.apiUrl}/marcar-todas`, {}).subscribe({
+      error: () => {}
+    });
   }
 
   eliminarNotificacion(id: string): void {
-    this.eliminadasSet.add(id);
-    guardarEliminadasStorage(this.eliminadasSet);
+    // Actualización optimista local
     this._notificaciones.update(items =>
       items.filter(item => item.id !== id)
     );
+
+    const numId = Number(id);
+    if (!isNaN(numId) && numId > 0) {
+      this.http.delete(`${this.apiUrl}/${numId}`).subscribe({
+        error: () => {}
+      });
+    }
+  }
+
+  notificarCambioPassword(email?: string): void {
+    this.http.post(`${this.apiUrl}/evento-password`, { email }).subscribe({
+      next: () => {
+        this.cargarNotificaciones();
+      },
+      error: () => {}
+    });
   }
 
   agregarNotificacion(notif: Omit<NotificacionERP, 'id' | 'fecha' | 'leida'>): void {
-    const id = 'n-' + Date.now();
+    const id = 'local-' + Date.now();
     const nueva: NotificacionERP = {
       ...notif,
       id,
       fecha: new Date(),
-      leida: this.leidasSet.has(id)
+      leida: false
     };
     this._notificaciones.update(items => [nueva, ...items]);
+  }
+
+  private normalizarCategoria(cat?: string): 'ventas' | 'inventario' | 'seguridad' | 'sistema' {
+    const lower = (cat || '').toLowerCase();
+    if (lower === 'ventas') return 'ventas';
+    if (lower === 'inventario') return 'inventario';
+    if (lower === 'seguridad') return 'seguridad';
+    return 'sistema';
+  }
+
+  private normalizarTipo(t?: string): 'info' | 'alerta' | 'exito' | 'urgente' {
+    const lower = (t || '').toLowerCase();
+    if (lower === 'alerta') return 'alerta';
+    if (lower === 'exito') return 'exito';
+    if (lower === 'urgente') return 'urgente';
+    return 'info';
   }
 }

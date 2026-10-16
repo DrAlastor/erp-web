@@ -75,6 +75,7 @@ public class SecurityConfig {
                                                 "/api/health/**",
                                                 "/api/pagos/webhook/**",
                                                 "/api/pagos/stripe/config",
+                                                "/api/notificaciones/evento-password",
                                                 "/error")
                                         .permitAll()
                                         .anyRequest()

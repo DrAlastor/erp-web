@@ -47,7 +47,11 @@ export class NotificationBellComponent {
   });
 
   toggleOpen(): void {
-    this.isOpen.update(v => !v);
+    const next = !this.isOpen();
+    this.isOpen.set(next);
+    if (next) {
+      this.notificacionesService.cargarNotificaciones(true);
+    }
   }
 
   setFiltro(filtro: 'todas' | 'no-leidas' | 'ventas' | 'inventario'): void {

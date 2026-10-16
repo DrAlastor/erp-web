@@ -5,6 +5,7 @@ import { environment } from '../../../../../environments/environment';
 import {
   AlertaStockMinimoResponse,
   AlmacenSimple,
+  ActualizarStockMinimoRequest,
   MovimientoInventarioRequest,
   MovimientoInventarioResponse,
   PageResult,
@@ -111,5 +112,12 @@ export class MovimientoInventarioService {
    */
   listarAlmacenes(): Observable<AlmacenSimple[]> {
     return this.http.get<AlmacenSimple[]>(`${this.baseUrl}/almacenes`);
+  }
+
+  /**
+   * Actualiza el stock mínimo para una existencia en almacén o globalmente.
+   */
+  actualizarStockMinimo(stockId: number, req: ActualizarStockMinimoRequest): Observable<StockAlmacenResponse> {
+    return this.http.put<StockAlmacenResponse>(`${this.baseUrl}/stock/${stockId}/minimo`, req);
   }
 }

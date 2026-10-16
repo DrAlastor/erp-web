@@ -49,6 +49,7 @@ public class AuthService {
     private final RolRepository rolRepository;
     private final PermisoRepository permisoRepository;
     private final ClienteRepository clienteRepository;
+    private final modulo.notificaciones.service.NotificacionService notificacionService;
 
     @Value("${jwt.refresh-expiration-days}")
     private long refreshExpirationDays;
@@ -81,6 +82,17 @@ public class AuthService {
         usuario.setIntentosFallidos(0);
         usuario.setBloqueadoHasta(null);
         usuarioRepository.save(usuario);
+
+        try {
+            notificacionService.notificar(
+                    usuario.getId(),
+                    "Inicio de Sesión",
+                    String.format("Inicio de sesión exitoso desde la IP %s con el usuario '%s'.",
+                            ip != null ? ip : "127.0.0.1",
+                            usuario.getUsername() != null ? usuario.getUsername() : usuario.getEmail()),
+                    "INFO"
+            );
+        } catch (Exception ignored) {}
 
         return emitirTokens(usuario, ip, userAgent);
     }

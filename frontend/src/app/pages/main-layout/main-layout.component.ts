@@ -1,6 +1,6 @@
 import { RolesComponent } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/components/roles.component';
 import { PermisosService } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/services/permisos.service';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
@@ -45,6 +45,17 @@ export class MainLayoutComponent {
 
   constructor() {
     this.permisos.cargar().subscribe({ error: () => this.permisos.limpiar() });
+    effect(() => {
+      const mod = this.selectedModule();
+      if (mod) {
+        this.expanded.update((current) => {
+          if (current.has(mod.id)) return current;
+          const next = new Set(current);
+          next.add(mod.id);
+          return next;
+        });
+      }
+    });
   }
 
   // Módulos visibles filtrados según el rol del usuario conectado
@@ -73,22 +84,43 @@ export class MainLayoutComponent {
 
   readonly sidebarOpen = signal(false);
   readonly expanded = signal(new Set<string>());
-  private readonly params = toSignal(inject(ActivatedRoute).queryParamMap);
+  private readonly route = inject(ActivatedRoute);
+  private readonly pathParams = toSignal(this.route.paramMap);
+  private readonly queryParams = toSignal(this.route.queryParamMap);
 
-  readonly selectedModule = computed(() =>
-    this.visibleModules().find((module) => module.id === this.params()?.get('modulo')),
-  );
+  readonly currentFuncionSlug = computed(() => {
+    return this.pathParams()?.get('funcion') || this.queryParams()?.get('funcion') || null;
+  });
 
-  readonly selectedFunction = computed(() =>
-    this.selectedModule()?.functions.find((fn) => {
-      const selected = fn.id === this.params()?.get('funcion');
-      return selected && (!this.authService.isClient() || fn.id === 'perfil-personal');
-    }),
-  );
+  readonly selectedFunction = computed(() => {
+    const rawSlug = this.currentFuncionSlug();
+    if (!rawSlug) return null;
 
-  readonly hasSelection = computed(
-    () => !!this.params()?.get('modulo') || !!this.params()?.get('funcion'),
-  );
+    const slug = rawSlug.toLowerCase();
+    const cleanSlug = slug.replace(/^cu\d+-/, '');
+
+    for (const mod of this.visibleModules()) {
+      const fn = mod.functions.find(f =>
+        f.id === slug ||
+        f.slug === slug ||
+        f.id === cleanSlug ||
+        f.slug === cleanSlug
+      );
+      if (fn) {
+        if (this.authService.isClient() && fn.id !== 'perfil-personal') return null;
+        return fn;
+      }
+    }
+    return null;
+  });
+
+  readonly selectedModule = computed(() => {
+    const fn = this.selectedFunction();
+    if (!fn) return null;
+    return this.visibleModules().find(mod => mod.functions.some(f => f.id === fn.id)) || null;
+  });
+
+  readonly hasSelection = computed(() => !!this.currentFuncionSlug());
 
   toggleModule(id: string): void {
     this.expanded.update((current) => {

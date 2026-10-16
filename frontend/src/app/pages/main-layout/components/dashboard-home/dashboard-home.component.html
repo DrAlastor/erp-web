@@ -186,7 +186,7 @@
       <article class="kpi-card">
         <div class="kpi-icon-wrap cyan">🏷</div>
         <div class="kpi-body">
-          <span class="kpi-label">Tarifas Vigentes (CU14)</span>
+          <span class="kpi-label">Tarifas Vigentes</span>
           <div class="kpi-val-row">
             <strong class="kpi-val">3 Listas</strong>
             <span class="kpi-trend positive">Activas</span>
@@ -314,28 +314,28 @@
 
     <div class="quick-buttons-row">
       @if (rolEfectivo() === 'ADMIN') {
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu14-precios-y-listas-precio' }" class="quick-btn">
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
           <span class="btn-icon">🏷</span>
           <div class="btn-info">
-            <strong>Gestionar Precios (CU14)</strong>
+            <strong>Gestionar Precios</strong>
             <small>Matriz de tarifas y descuentos</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'catalogo-e-inventario', funcion: 'cu10-catalogo-de-articulos' }" class="quick-btn">
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
           <span class="btn-icon">▦</span>
           <div class="btn-info">
             <strong>Catálogo de Artículos</strong>
             <small>Precios, costos y stock</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'seguridad-y-auditoria', funcion: 'cu04-gestionar-empleados' }" class="quick-btn">
+        <a [routerLink]="['/app', 'gestionar-empleados']" class="quick-btn">
           <span class="btn-icon">👥</span>
           <div class="btn-info">
             <strong>Personal y Empleados</strong>
             <small>Cuentas y sucursales</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'seguridad-y-auditoria', funcion: 'cu08-consultar-bitacora' }" class="quick-btn">
+        <a [routerLink]="['/app', 'consultar-bitacora']" class="quick-btn">
           <span class="btn-icon">◎</span>
           <div class="btn-info">
             <strong>Auditoría y Bitácora</strong>
@@ -345,28 +345,28 @@
       }
 
       @if (rolEfectivo() === 'VENDEDOR') {
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu15-gestionar-cotizaciones' }" class="quick-btn">
+        <a [routerLink]="['/app', 'gestionar-cotizaciones']" class="quick-btn">
           <span class="btn-icon">≡</span>
           <div class="btn-info">
             <strong>Nueva Cotización</strong>
             <small>Emitir proforma comercial</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu14-precios-y-listas-precio' }" class="quick-btn">
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
           <span class="btn-icon">🏷</span>
           <div class="btn-info">
             <strong>Consultar Listas Precios</strong>
             <small>Tarifas autorizadas</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu13-gestionar-clientes' }" class="quick-btn">
+        <a [routerLink]="['/app', 'gestionar-clientes']" class="quick-btn">
           <span class="btn-icon">🤝</span>
           <div class="btn-info">
             <strong>Cartera de Clientes</strong>
             <small>Límites de crédito y NIT</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'catalogo-e-inventario', funcion: 'cu10-catalogo-de-articulos' }" class="quick-btn">
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
           <span class="btn-icon">🔍</span>
           <div class="btn-info">
             <strong>Consultar Stock</strong>
@@ -376,28 +376,28 @@
       }
 
       @if (rolEfectivo() === 'ALMACENERO') {
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu18-gestionar-despacho-de-venta' }" class="quick-btn">
+        <a [routerLink]="['/app', 'gestionar-despacho-de-venta']" class="quick-btn">
           <span class="btn-icon">🚚</span>
           <div class="btn-info">
             <strong>Despachos de Venta</strong>
             <small>Picking, empaque y salida</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'catalogo-e-inventario', funcion: 'cu11-movimientos-de-inventario' }" class="quick-btn">
+        <a [routerLink]="['/app', 'movimientos-de-inventario']" class="quick-btn">
           <span class="btn-icon">⇄</span>
           <div class="btn-info">
             <strong>Movimiento Inventario</strong>
             <small>Entradas, salidas y ajustes</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'catalogo-e-inventario', funcion: 'cu09-datos-maestros-inventario' }" class="quick-btn">
+        <a [routerLink]="['/app', 'datos-maestros-inventario']" class="quick-btn">
           <span class="btn-icon">▦</span>
           <div class="btn-info">
             <strong>Almacenes y Categorías</strong>
             <small>Datos maestros</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'catalogo-e-inventario', funcion: 'cu10-catalogo-de-articulos' }" class="quick-btn">
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
           <span class="btn-icon">◫</span>
           <div class="btn-info">
             <strong>Stock de Artículos</strong>
@@ -407,21 +407,28 @@
       }
 
       @if (rolEfectivo() === 'CAJERO') {
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu13-gestionar-clientes' }" class="quick-btn">
+        <a [routerLink]="['/app', 'facturacion']" class="quick-btn">
+          <span class="btn-icon">💳</span>
+          <div class="btn-info">
+            <strong>Caja y Facturación</strong>
+            <small>Cobro en caja y emisión SIN</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'gestionar-clientes']" class="quick-btn">
           <span class="btn-icon">🤝</span>
           <div class="btn-info">
             <strong>Consultar Cliente</strong>
             <small>Historial y datos de NIT</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu18-gestionar-despacho-de-venta' }" class="quick-btn">
+        <a [routerLink]="['/app', 'gestionar-despacho-de-venta']" class="quick-btn">
           <span class="btn-icon">≡</span>
           <div class="btn-info">
             <strong>Verificar Despacho</strong>
             <small>Cobro contra entrega</small>
           </div>
         </a>
-        <a routerLink="/app" [queryParams]="{ modulo: 'ventas-y-facturacion', funcion: 'cu14-precios-y-listas-precio' }" class="quick-btn">
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
           <span class="btn-icon">🏷</span>
           <div class="btn-info">
             <strong>Tarifario y Descuentos</strong>
@@ -464,7 +471,7 @@
                 <strong>Tarifa Mayorista Actualizada</strong>
               </div>
             </td>
-            <td><span class="module-chip">Ventas (CU14)</span></td>
+            <td><span class="module-chip">Ventas</span></td>
             <td><code>LP-MAY26</code></td>
             <td>Admin Central</td>
             <td>18 Artículos</td>
@@ -477,7 +484,7 @@
                 <strong>Nueva Cotización Comercial</strong>
               </div>
             </td>
-            <td><span class="module-chip">Ventas (CU15)</span></td>
+            <td><span class="module-chip">Ventas</span></td>
             <td><code>COT-1004</code></td>
             <td>Vendedor Zona Sur</td>
             <td>Bs 12,450</td>
@@ -490,7 +497,7 @@
                 <strong>Despacho en Preparación</strong>
               </div>
             </td>
-            <td><span class="module-chip">Despacho (CU18)</span></td>
+            <td><span class="module-chip">Despacho</span></td>
             <td><code>DSP-0082</code></td>
             <td>Almacén Norte</td>
             <td>6 Cajas</td>
@@ -503,7 +510,7 @@
                 <strong>Ingreso por Compra Proveedor</strong>
               </div>
             </td>
-            <td><span class="module-chip">Inventario (CU11)</span></td>
+            <td><span class="module-chip">Inventario</span></td>
             <td><code>MOV-2026-44</code></td>
             <td>Almacén Central</td>
             <td>50 Unid.</td>

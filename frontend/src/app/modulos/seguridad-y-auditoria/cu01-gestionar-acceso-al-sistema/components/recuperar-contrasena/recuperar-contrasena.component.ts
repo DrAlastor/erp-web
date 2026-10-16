@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ThemeService } from '../../../../../core/services/theme.service';
+import { NotificacionesService } from '../../../../../core/services/notificaciones.service';
 
 @Component({
   selector: 'app-recuperar-contrasena',
@@ -22,6 +23,7 @@ export class RecuperarContrasenaComponent {
   readonly showConfirmPassword = signal(false);
 
   readonly themeService = inject(ThemeService);
+  private readonly notificacionesService = inject(NotificacionesService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
 
@@ -103,6 +105,8 @@ export class RecuperarContrasenaComponent {
     setTimeout(() => {
       this.loading.set(false);
       this.successMessage.set('Contraseña actualizada con éxito. Redirigiendo...');
+      const email = this.requestForm.getRawValue().email;
+      this.notificacionesService.notificarCambioPassword(email);
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 1200);

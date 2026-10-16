@@ -23,10 +23,10 @@
         <div class="function-list" [id]="'functions-' + module.id" [hidden]="!expanded().has(module.id)">
           @for (fn of module.functions; track fn.id) {
           @if (!authService.isClient() || fn.id === 'perfil-personal') {
-          <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }" [class.selected]="
-                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+          <a [routerLink]="['/app', fn.slug || fn.id]" [class.selected]="
+                    selectedFunction()?.id === fn.id
                   " [attr.aria-current]="
-                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                    selectedFunction()?.id === fn.id
                       ? 'page'
                       : null
                   " (click)="sidebarOpen.set(false)">{{ fn.name }}</a>
@@ -70,37 +70,37 @@
       <a class="back-link" routerLink="/app">← Volver al dashboard</a>
       <p class="eyebrow">{{ selectedModule()?.name }}</p>
       <h1>{{ fn.name }}</h1>
-      @if (authService.isClient() && (fn.id === 'perfil-personal' || fn.id === 'cu13-gestionar-clientes')) {
+      @if (authService.isClient() && (fn.id === 'perfil-personal' || fn.id === 'gestionar-clientes' || fn.id === 'cu13-gestionar-clientes')) {
       <app-cliente-portal />
-      } @else if (!authService.isClient() && (fn.id === 'cu02-gestionar-usuarios' || fn.id === 'gestion-de-usuarios')) {
+      } @else if (!authService.isClient() && (fn.id === 'gestionar-usuarios' || fn.id === 'gestion-de-usuarios' || fn.id === 'cu02-gestionar-usuarios')) {
       <app-usuarios />
-      } @else if (fn.id === 'cu03-gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos') {
+      } @else if (fn.id === 'gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos' || fn.id === 'cu03-gestionar-roles-y-permisos') {
       <app-roles />
-      } @else if (fn.id === 'cu04-gestionar-empleados' || fn.id === 'gestionar-empleados') {
+      } @else if (fn.id === 'gestionar-empleados' || fn.id === 'cu04-gestionar-empleados') {
       <app-empleados />
-      } @else if (fn.id === 'cu09-datos-maestros-inventario' || fn.id === 'datos-maestros-inventario') {
+      } @else if (fn.id === 'datos-maestros-inventario' || fn.id === 'cu09-datos-maestros-inventario') {
       <app-datos-maestros-inventario />
-      } @else if (fn.id === 'cu10-catalogo-de-articulos' || fn.id === 'catalogo-de-articulos') {
+      } @else if (fn.id === 'catalogo-de-articulos' || fn.id === 'cu10-catalogo-de-articulos') {
       <app-catalogo />
-      } @else if (fn.id === 'cu11-movimientos-de-inventario' || fn.id === 'movimientos-de-inventario') {
+      } @else if (fn.id === 'movimientos-de-inventario' || fn.id === 'cu11-movimientos-de-inventario') {
       <app-movimiento-inventario />
-      } @else if (fn.id === 'cu12-consultar-kardex' || fn.id === 'consultar-kardex') {
+      } @else if (fn.id === 'consultar-kardex' || fn.id === 'cu12-consultar-kardex') {
       <app-consultar-kardex />
-      } @else if (!authService.isClient() && (fn.id === 'cu13-gestionar-clientes' || fn.id === 'gestion-de-clientes')) {
+      } @else if (!authService.isClient() && (fn.id === 'gestionar-clientes' || fn.id === 'gestion-de-clientes' || fn.id === 'cu13-gestionar-clientes')) {
       <app-clientes />
-      } @else if (fn.id === 'cu14-precios-y-listas-precio' || fn.id === 'gestionar-precios-y-listas-precio') {
+      } @else if (fn.id === 'precios-y-listas-precio' || fn.id === 'gestionar-precios-y-listas-precio' || fn.id === 'cu14-precios-y-listas-precio') {
       <app-precios-y-listas />
-      } @else if (fn.id === 'cu15-gestionar-cotizaciones') {
+      } @else if (fn.id === 'gestionar-cotizaciones' || fn.id === 'cu15-gestionar-cotizaciones') {
       <app-cotizaciones />
-      } @else if (fn.id === 'cu16-pedidos-de-venta' || fn.id === 'pedidos-de-venta') {
+      } @else if (fn.id === 'pedidos-de-venta' || fn.id === 'cu16-pedidos-de-venta') {
       <app-pedidos-venta />
-      } @else if (fn.id === 'cu17-validacion-comercial-aprobacion' || fn.id === 'validacion-comercial') {
+      } @else if (fn.id === 'validacion-comercial' || fn.id === 'cu17-validacion-comercial-aprobacion') {
       <app-validacion-comercial />
-      } @else if (fn.id === 'cu18-gestionar-despacho-de-venta') {
+      } @else if (fn.id === 'gestionar-despacho-de-venta' || fn.id === 'cu18-gestionar-despacho-de-venta') {
       <app-despachos />
-      } @else if (fn.id === 'cu19-registrar-venta-facturacion-y-anulacion' || fn.id === 'cu19-facturacion-electronica-sin' || fn.id === 'facturacion') {
+      } @else if (fn.id === 'facturacion' || fn.id === 'cu19-registrar-venta-facturacion-y-anulacion' || fn.id === 'cu19-facturacion-electronica-sin') {
       <app-facturacion />
-      } @else if (fn.id === 'cu20-devoluciones-de-venta' || fn.id === 'cu20-gestionar-devoluciones-y-notas-de-credito' || fn.id === 'devoluciones') {
+      } @else if (fn.id === 'devoluciones-y-notas-de-credito' || fn.id === 'devoluciones' || fn.id === 'cu20-devoluciones-de-venta' || fn.id === 'cu20-gestionar-devoluciones-y-notas-de-credito') {
       <app-devoluciones />
       } @else {
       <section class="module-card function-content">

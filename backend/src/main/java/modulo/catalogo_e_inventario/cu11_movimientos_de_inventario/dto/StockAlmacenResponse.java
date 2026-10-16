@@ -18,6 +18,7 @@ public class StockAlmacenResponse {
     private String unidadMedida;
     private BigDecimal precioVenta;
     private BigDecimal costoPromedio;
+    private BigDecimal saldoValorado;
     private Integer stockMinimo;
     private Integer almacenId;
     private String almacenNombre;

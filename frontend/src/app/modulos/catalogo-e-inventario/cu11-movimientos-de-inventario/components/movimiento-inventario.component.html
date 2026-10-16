@@ -214,7 +214,9 @@
                 <th>Stock Mínimo</th>
                 <th>Costo Prom.</th>
                 <th>Precio Venta</th>
+                <th>Saldo Valorado</th>
                 <th>Estado Existencia</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -234,16 +236,24 @@
                   <td>Bs. {{ stk.costoPromedio | number: '1.2-2' }}</td>
                   <td>Bs. {{ stk.precioVenta | number: '1.2-2' }}</td>
                   <td>
+                    <strong>Bs. {{ (stk.saldoValorado || (stk.cantidadActual * stk.costoPromedio)) | number: '1.2-2' }}</strong>
+                  </td>
+                  <td>
                     @if (stk.bajoStockMinimo) {
                       <span class="badge badge-warning">⚠️ Bajo Mínimo</span>
                     } @else {
                       <span class="badge badge-success">✓ Stock Óptimo</span>
                     }
                   </td>
+                  <td>
+                    <button class="btn-sm" [disabled]="!puedeRegistrar()" (click)="abrirModalMinimo(stk)" title="Modificar límite de stock mínimo">
+                      ✏️ Modificar
+                    </button>
+                  </td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="empty-state">No se encontraron existencias registradas.</td>
+                  <td colspan="9" class="empty-state">No se encontraron existencias registradas.</td>
                 </tr>
               }
             </tbody>
@@ -521,5 +531,63 @@
         </div>
       </div>
     </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- MODAL: MODIFICAR STOCK MÍNIMO (CRUD)      -->
+  <!-- ========================================== -->
+  @if (modalMinimoAbierto()) {
+    @if (stockSeleccionado(); as stk) {
+      <div class="modal-overlay" (click)="cerrarModalMinimo()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Modificar Stock Mínimo de Reserva</h3>
+            <button class="close-btn" (click)="cerrarModalMinimo()">✕</button>
+          </div>
+
+          <form (ngSubmit)="guardarStockMinimo()">
+            <div class="modal-body-info">
+              <p><strong>Artículo:</strong> {{ stk.productoNombre }} ({{ stk.productoSku }})</p>
+              <p><strong>Almacén:</strong> {{ stk.almacenNombre }}</p>
+              <p><strong>Existencia actual:</strong> {{ stk.cantidadActual | number: '1.2-2' }} {{ stk.unidadMedida }}</p>
+              <p><strong>Stock mínimo actual:</strong> {{ stk.stockMinimo }} {{ stk.unidadMedida }}</p>
+            </div>
+
+            <div class="form-grid">
+              <label class="full-width">
+                Nuevo Stock Mínimo (Unidades)
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  [(ngModel)]="formNuevoMinimo"
+                  name="nuevoMinimo"
+                  required
+                  placeholder="Ej: 5"
+                />
+              </label>
+
+              <label class="full-width checkbox-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="formAplicarGlobal"
+                  name="aplicarGlobal"
+                />
+                <span>Aplicar este nuevo stock mínimo a todas las sucursales y almacenes para este producto</span>
+              </label>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn secondary" (click)="cerrarModalMinimo()" [disabled]="busy()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn primary" [disabled]="busy() || formNuevoMinimo === null || formNuevoMinimo < 0">
+                {{ busy() ? 'Guardando...' : 'Guardar Stock Mínimo' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
   }
 </div>
