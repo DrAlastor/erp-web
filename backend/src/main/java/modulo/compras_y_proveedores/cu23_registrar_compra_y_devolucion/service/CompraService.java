@@ -162,9 +162,9 @@ public class CompraService {
     @Transactional
     public CompraDTO anularCompra(Integer id, AnularCompraRequest req, String actor, String ip) {
         Compra compra = buscarCompra(id);
-        if (!Compra.REGISTRADA.equals(compra.getEstado())) {
+        if (!compra.estaVigente()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Solo se puede anular una compra en estado REGISTRADA (estado actual: " + compra.getEstado() + ")");
+                    "Solo se puede anular una compra vigente, sin devoluciones (estado actual: " + compra.getEstado() + ")");
         }
         if (devolucionRepository.existsByCompraId(id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La compra tiene devoluciones y no puede anularse");
@@ -210,7 +210,7 @@ public class CompraService {
     public DevolucionDTO registrarDevolucion(Integer compraId, RegistrarDevolucionRequest req, Long usuarioId,
                                              String actor, String ip) {
         Compra compra = buscarCompra(compraId);
-        if (!Compra.REGISTRADA.equals(compra.getEstado()) && !Compra.DEVUELTA_PARCIAL.equals(compra.getEstado())) {
+        if (!compra.estaVigente() && !Compra.DEVUELTA_PARCIAL.equals(compra.getEstado())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "No se puede devolver una compra en estado " + compra.getEstado());
         }

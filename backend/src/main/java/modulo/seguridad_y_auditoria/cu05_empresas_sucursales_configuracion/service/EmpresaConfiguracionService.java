@@ -53,7 +53,7 @@ public class EmpresaConfiguracionService {
 
     // ---------------------------------------------------------------- Empresa
 
-    @Transactional(readOnly = true)
+    @Transactional
     public EmpresaDTO obtenerEmpresa(UUID empresaId) {
         return aDTO(buscarEmpresa(empresaId));
     }
@@ -132,7 +132,9 @@ public class EmpresaConfiguracionService {
     public SucursalDTO cambiarEstadoSucursal(Integer id, boolean activo, String actor, String ip) {
         Sucursal sucursal = buscarSucursal(id);
         if (!activo) {
-            if (!empleadoRepository.buscarConFiltros(id, null, true, null).isEmpty()) {
+            boolean conEmpleados = empleadoRepository.findAll().stream()
+                    .anyMatch(e -> Objects.equals(e.getSucursalId(), id) && Boolean.TRUE.equals(e.getActivo()));
+            if (conEmpleados) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "No se puede desactivar la sucursal: tiene empleados activos asignados");
             }
@@ -160,7 +162,8 @@ public class EmpresaConfiguracionService {
 
     /** Devuelve los parametros de la empresa; crea con su valor por defecto los que aun no existen. */
     @Transactional
-    public List<ParametroDTO> obtenerConfiguracion(UUID empresaId) {
+    public List<ParametroDTO> obtenerConfiguracion(UUID empresaIdSolicitada) {
+        UUID empresaId = buscarEmpresa(empresaIdSolicitada).getId();
         Map<String, ParametroSistema> existentes = parametroRepository.findByEmpresaIdOrderByClaveAsc(empresaId)
                 .stream().collect(Collectors.toMap(ParametroSistema::getClave, p -> p));
         CATALOGO_PARAMETROS.forEach((clave, def) -> {
@@ -175,7 +178,8 @@ public class EmpresaConfiguracionService {
     }
 
     @Transactional
-    public List<ParametroDTO> guardarConfiguracion(UUID empresaId, GuardarConfiguracionRequest req, String actor, String ip) {
+    public List<ParametroDTO> guardarConfiguracion(UUID empresaIdSolicitada, GuardarConfiguracionRequest req, String actor, String ip) {
+        UUID empresaId = buscarEmpresa(empresaIdSolicitada).getId();
         obtenerConfiguracion(empresaId); // asegura que existan todas las filas
         Map<String, ParametroSistema> filas = parametroRepository.findByEmpresaIdOrderByClaveAsc(empresaId)
                 .stream().collect(Collectors.toMap(ParametroSistema::getClave, p -> p));
@@ -252,9 +256,25 @@ public class EmpresaConfiguracionService {
         s.setHoraCierre(req.horaCierre());
     }
 
+    /**
+     * Empresa de esta base de datos. Cada empresa tiene su propia base, asi que hay una sola fila;
+     * si el login trae un id que existe se usa ese, y si la tabla esta vacia se crea la empresa inicial.
+     */
     private EmpresaPerfil buscarEmpresa(UUID empresaId) {
-        return empresaRepository.findById(empresaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa no encontrada"));
+        if (empresaId != null) {
+            Optional<EmpresaPerfil> exacta = empresaRepository.findById(empresaId);
+            if (exacta.isPresent()) return exacta.get();
+        }
+        return empresaRepository.findAll().stream().filter(EmpresaPerfil::isActivo).findFirst()
+                .or(() -> empresaRepository.findAll().stream().findFirst())
+                .orElseGet(() -> {
+                    EmpresaPerfil nueva = new EmpresaPerfil();
+                    nueva.setId(UUID.randomUUID());
+                    nueva.setNombre("Mi Empresa");
+                    nueva.setNit("SIN-NIT");
+                    log.info("CU05: no habia empresa registrada, se creo la empresa inicial {}", nueva.getId());
+                    return empresaRepository.save(nueva);
+                });
     }
 
     private Sucursal buscarSucursal(Integer id) {

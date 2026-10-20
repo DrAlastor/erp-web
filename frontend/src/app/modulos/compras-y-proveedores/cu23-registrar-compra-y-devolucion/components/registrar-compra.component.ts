@@ -204,6 +204,7 @@ export class RegistrarCompraComponent implements OnInit {
   abrirAnular(c: Compra): void {
     this.limpiarAlertas();
     this.formAnular.reset({ motivo: '' });
+    this.detalle.set(null);
     this.anulando.set(c);
   }
 
@@ -247,6 +248,7 @@ export class RegistrarCompraComponent implements OnInit {
         });
         this.formDevolucion.patchValue({ motivo: '', fecha: this.hoy });
         this.totalDevolucion.set(0);
+        this.detalle.set(null);
         this.devolviendo.set(completa);
       },
       error: (err) => this.error.set(this.mensaje(err, 'No se pudo cargar la compra.')),
@@ -300,11 +302,16 @@ export class RegistrarCompraComponent implements OnInit {
   }
 
   puedeDevolver(c: Compra): boolean {
-    return c.estado === 'REGISTRADA' || c.estado === 'DEVUELTA_PARCIAL';
+    return this.estaVigente(c) || c.estado === 'DEVUELTA_PARCIAL';
+  }
+
+  /** REGISTRADA, o COMPLETADA (estado con que vienen las compras anteriores a este módulo). */
+  estaVigente(c: Compra): boolean {
+    return c.estado === 'REGISTRADA' || c.estado === 'COMPLETADA';
   }
 
   etiquetaEstado(e: string): string {
-    return ({ REGISTRADA: 'Registrada', DEVUELTA_PARCIAL: 'Devuelta parcial', DEVUELTA: 'Devuelta', ANULADA: 'Anulada' } as any)[e] ?? e;
+    return ({ REGISTRADA: 'Registrada', COMPLETADA: 'Completada', DEVUELTA_PARCIAL: 'Devuelta parcial', DEVUELTA: 'Devuelta', ANULADA: 'Anulada' } as any)[e] ?? e;
   }
 
   private mensaje(err: any, porDefecto: string): string {

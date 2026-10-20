@@ -36,7 +36,7 @@ export interface CompraDetalle {
   cantidadDevuelta: number;
 }
 
-export type EstadoCompra = 'REGISTRADA' | 'DEVUELTA_PARCIAL' | 'DEVUELTA' | 'ANULADA';
+export type EstadoCompra = 'REGISTRADA' | 'COMPLETADA' | 'DEVUELTA_PARCIAL' | 'DEVUELTA' | 'ANULADA';
 
 export interface Compra {
   id: number;

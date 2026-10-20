@@ -38,6 +38,7 @@
         <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); cargarCompras()">
           <option value="">Todos los estados</option>
           <option value="REGISTRADA">Registrada</option>
+          <option value="COMPLETADA">Completada</option>
           <option value="DEVUELTA_PARCIAL">Devuelta parcial</option>
           <option value="DEVUELTA">Devuelta</option>
           <option value="ANULADA">Anulada</option>
@@ -143,7 +144,7 @@
         </div>
         <div class="acciones">
           <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
-          @if (c.estado === 'REGISTRADA') {
+          @if (estaVigente(c)) {
             <button type="button" class="btn btn-danger" (click)="abrirAnular(c)">Anular compra</button>
           }
           @if (puedeDevolver(c)) {

@@ -20,6 +20,8 @@ import java.util.List;
 public class Compra {
 
     public static final String REGISTRADA = "REGISTRADA";
+    /** Estado con que ya vienen las compras cargadas antes de la CU23; se trata igual que REGISTRADA. */
+    public static final String COMPLETADA = "COMPLETADA";
     public static final String DEVUELTA_PARCIAL = "DEVUELTA_PARCIAL";
     public static final String DEVUELTA = "DEVUELTA";
     public static final String ANULADA = "ANULADA";
@@ -72,6 +74,11 @@ public class Compra {
 
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CompraDetalle> detalles = new ArrayList<>();
+
+    /** La compra esta vigente: se puede devolver y, si no tiene devoluciones, anular. */
+    public boolean estaVigente() {
+        return REGISTRADA.equals(estado) || COMPLETADA.equals(estado);
+    }
 
     public void agregarDetalle(CompraDetalle detalle) {
         detalle.setCompra(this);
