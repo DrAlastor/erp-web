@@ -199,7 +199,7 @@
   }
 }
 
-/* Topbar Apple Translucent Glass */
+/* Topbar Optimizada 60fps (Sin backdrop-filter blur) */
 .topbar {
   min-height: 70px;
   padding: 14px 32px;
@@ -207,16 +207,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--bg-surface, #FFFFFF);
   border-bottom: 1px solid var(--bg-card-border);
   position: sticky;
   top: 0;
   z-index: 30;
 
   :root.dark & {
-    background: rgba(28, 28, 30, 0.85);
+    background: #1C1C1E;
     border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 
@@ -327,20 +325,21 @@
 }
 
 main {
-  padding: 32px;
-  max-width: 1400px;
-  margin: auto;
+  padding: 24px 32px;
+  max-width: 1680px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 
   @media (max-width: 640px) {
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 }
 
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.45);
   border: 0;
   z-index: 35;
 }

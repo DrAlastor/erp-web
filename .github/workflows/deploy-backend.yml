@@ -1,0 +1,139 @@
+name: Despliegue Backend (AWS ECS Fargate + CloudFront)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Descargar Código Fuente
+        uses: actions/checkout@v4
+
+      - name: 2. Autenticar con AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: 3. Autenticar con Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 4. Construir y Publicar Imagen Docker en Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: erp-backend
+          IMAGE_TAG: deploy-${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest ./backend
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+          echo "IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: 5. Actualizar ECS Fargate y Enrutar CloudFront
+        run: |
+          python3 - << 'EOF'
+          import json
+          import os
+          import subprocess
+          import time
+          from pathlib import Path
+
+          REGION = "us-east-1"
+          CLUSTER = "erp-cluster"
+          SERVICE = "erp-backend-service"
+          TASK_FAMILY = "erp-backend-task"
+          DISTRIBUTION_ID = "E391I4EET1AU1X"
+          SUFIJO_DNS = ".compute-1.amazonaws.com"
+          IMAGE_URI = os.environ["IMAGE_URI"]
+
+          def run_aws(*args):
+              cmd = ["aws", "--region", REGION, "--no-cli-pager", *args]
+              res = subprocess.run(cmd, capture_output=True, text=True)
+              if res.returncode != 0:
+                  raise RuntimeError(f"Error AWS CLI: {res.stderr}\n{res.stdout}")
+              return res.stdout.strip()
+
+          print(f"[*] Obteniendo task definition de {TASK_FAMILY}...")
+          datos = json.loads(run_aws("ecs", "describe-task-definition", "--task-definition", TASK_FAMILY))
+          td = datos["taskDefinition"]
+          for k in ["taskDefinitionArn", "revision", "status", "requiresAttributes", "compatibilities", "registeredAt", "registeredBy"]:
+              td.pop(k, None)
+
+          td["containerDefinitions"][0]["image"] = IMAGE_URI
+          Path("td-temp.json").write_text(json.dumps(td), encoding="utf-8")
+          nuevo = json.loads(run_aws("ecs", "register-task-definition", "--cli-input-json", "file://td-temp.json"))
+          Path("td-temp.json").unlink(missing_ok=True)
+
+          nueva_arn = nuevo["taskDefinition"]["taskDefinitionArn"]
+          nueva_rev = nuevo["taskDefinition"]["revision"]
+          print(f"[+] Nueva revisión registrada: {TASK_FAMILY}:{nueva_rev}")
+
+          print(f"[*] Actualizando servicio {SERVICE}...")
+          run_aws("ecs", "update-service", "--cluster", CLUSTER, "--service", SERVICE, "--task-definition", nueva_arn, "--force-new-deployment")
+
+          print("[*] Esperando que el nuevo task de ECS inicie y obtenga IP pública...")
+          inicio = time.time()
+          public_ip = None
+          while time.time() - inicio < 360:
+              tasks = json.loads(run_aws("ecs", "list-tasks", "--cluster", CLUSTER, "--service-name", SERVICE))
+              task_arns = tasks.get("taskArns", [])
+              if task_arns:
+                  desc = json.loads(run_aws("ecs", "describe-tasks", "--cluster", CLUSTER, "--tasks", *task_arns))
+                  for t in desc.get("tasks", []):
+                      if t.get("taskDefinitionArn") != nueva_arn:
+                          continue
+                      if t.get("lastStatus") == "RUNNING":
+                          for att in t.get("attachments", []):
+                              if att.get("type") == "ElasticNetworkInterface":
+                                  for d in att.get("details", []):
+                                      if d.get("name") == "networkInterfaceId":
+                                          eni_id = d.get("value")
+                                          eni_info = json.loads(run_aws("ec2", "describe-network-interfaces", "--network-interface-ids", eni_id))
+                                          public_ip = eni_info["NetworkInterfaces"][0]["Association"]["PublicIp"]
+                                          break
+                      if public_ip:
+                          break
+              if public_ip:
+                  break
+              time.sleep(10)
+
+          if not public_ip:
+              raise TimeoutError("No se obtuvo IP pública del nuevo task.")
+
+          print(f"[+] Task activo con IP: {public_ip}")
+          dominio = f"ec2-{public_ip.strip().replace('.', '-')}{SUFIJO_DNS}"
+
+          print(f"[*] Actualizando origen de CloudFront ({DISTRIBUTION_ID}) a {dominio}...")
+          cf_datos = json.loads(run_aws("cloudfront", "get-distribution-config", "--id", DISTRIBUTION_ID))
+          etag = cf_datos["ETag"]
+          cfg = cf_datos["DistributionConfig"]
+
+          origen_ant = None
+          for origen in cfg["Origins"]["Items"]:
+              if "s3" not in origen["DomainName"]:
+                  origen_ant = origen["Id"]
+                  origen["Id"] = dominio
+                  origen["DomainName"] = dominio
+
+          for c in cfg.get("CacheBehaviors", {}).get("Items", []):
+              if c["TargetOriginId"] == origen_ant:
+                  c["TargetOriginId"] = dominio
+
+          Path("cf-temp.json").write_text(json.dumps(cfg), encoding="utf-8")
+          run_aws("cloudfront", "update-distribution", "--id", DISTRIBUTION_ID, "--distribution-config", "file://cf-temp.json", "--if-match", etag)
+          Path("cf-temp.json").unlink(missing_ok=True)
+
+          print("[*] Creando invalidación de CloudFront para /api/*...")
+          run_aws("cloudfront", "create-invalidation", "--distribution-id", DISTRIBUTION_ID, "--paths", "/api/*")
+          print("[+] Despliegue completado con éxito.")
+          EOF

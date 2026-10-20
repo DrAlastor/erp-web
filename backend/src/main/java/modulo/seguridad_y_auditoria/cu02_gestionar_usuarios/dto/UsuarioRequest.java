@@ -19,7 +19,7 @@ import java.util.UUID;
  * intento de saltarse la regla quede visible.
  */
 public record UsuarioRequest(
-        @NotBlank @Pattern(regexp = "[a-zA-Z0-9._-]{3,50}") String username,
+        @NotBlank @Pattern(regexp = "^[a-zA-Z0-9._@+-]{3,50}$", message = "El nombre de usuario debe tener entre 3 y 50 caracteres (alfanumérico, punto, guion o @)") String username,
         @NotBlank @Email @Size(max = 100) String email,
         @NotBlank @Size(min = 8, max = 72) String password,
         @NotBlank @Size(max = 150) String fullname,

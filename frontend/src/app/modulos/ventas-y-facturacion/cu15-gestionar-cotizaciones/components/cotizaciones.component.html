@@ -1,0 +1,313 @@
+<div class="header">
+  <div>
+    <h2>Cotizaciones</h2>
+    <p>Arma proformas para tus clientes y conviértelas en pedidos de venta cuando confirmen.</p>
+  </div>
+  @if (vista() === 'lista' && !forbidden()) {
+    <button class="primary" (click)="nueva()">Nueva cotización</button>
+  } @else if (vista() !== 'lista') {
+    <button (click)="volver()">← Volver al listado</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- ============================================================ LISTADO -->
+    @case ('lista') {
+      <form class="filters" (ngSubmit)="load(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="search" maxlength="150" placeholder="Número, cliente o NIT/CI" />
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="estado" (change)="load(true)">
+            <option value="">Todos los estados</option>
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor">{{ e.etiqueta }}</option>
+            }
+          </select>
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+      </form>
+      @if (loading()) {
+        <p role="status">Cargando cotizaciones...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Cotizaciones registradas</caption>
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Válida hasta</th>
+                <th class="num">Total Bs</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of cotizaciones(); track c.id) {
+                <tr>
+                  <td><strong>{{ c.numeroCotizacion }}</strong></td>
+                  <td>{{ c.clienteRazonSocial }}</td>
+                  <td>{{ c.fecha }}</td>
+                  <td>{{ c.fechaVencimiento }}</td>
+                  <td class="num">{{ c.total | number: '1.2-2' }}</td>
+                  <td><span class="badge" [attr.data-estado]="c.estado">{{ etiqueta(c.estado) }}</span></td>
+                  <td class="actions"><button [disabled]="busy()" (click)="abrir(c)">Ver</button></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7">No hay cotizaciones con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} cotizaciones</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ============================================================= EDITOR -->
+    @case ('editor') {
+      <section class="panel" aria-label="Formulario de cotización">
+        <h3>{{ editandoId() ? 'Modificar cotización' : 'Nueva cotización' }}</h3>
+
+        <div class="grid">
+          <div class="field wide">
+            <span class="label">Cliente</span>
+            @if (clienteId) {
+              <div class="chosen">
+                <strong>{{ clienteNombre }}</strong>
+                <button type="button" (click)="clienteId = null">Cambiar</button>
+              </div>
+            } @else {
+              <form class="inline" (ngSubmit)="buscarClientes()">
+                <input name="clienteBusqueda" [(ngModel)]="clienteBusqueda" placeholder="Razón social o NIT/CI" />
+                <button>Buscar</button>
+              </form>
+              @if (clientes().length) {
+                <ul class="picker">
+                  @for (cl of clientes(); track cl.id) {
+                    <li><button type="button" (click)="elegirCliente(cl)">{{ cl.razonSocial }} <small>{{ cl.nitCi }}</small></button></li>
+                  }
+                </ul>
+              }
+            }
+          </div>
+          <label>
+            Validez (días)
+            <input type="number" name="validez" min="1" max="90" [(ngModel)]="validezDias" />
+          </label>
+        </div>
+
+        <div class="table-scroll">
+          <table class="items">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="num">Cantidad</th>
+                <th class="num">Precio Bs</th>
+                <th class="num">Descuento Bs</th>
+                <th class="num">Subtotal Bs</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of renglones(); track $index; let i = $index) {
+                <tr>
+                  <td>
+                    <select [ngModel]="r.productoId" (ngModelChange)="cambiarRenglon(i, 'productoId', $event)" [name]="'p' + i">
+                      <option [ngValue]="null">Elige un producto</option>
+                      @for (p of opciones()?.productos ?? []; track p.id) {
+                        <option [ngValue]="p.id">{{ p.codigo }} · {{ p.nombre }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="num">
+                    <input type="number" min="0.01" step="1" class="short" [name]="'c' + i"
+                      [ngModel]="r.cantidad" (ngModelChange)="cambiarRenglon(i, 'cantidad', $event)" />
+                  </td>
+                  <td class="num">{{ precioDe(r.productoId) | number: '1.2-2' }}</td>
+                  <td class="num">
+                    <input type="number" min="0" step="0.5" class="short" [name]="'d' + i"
+                      [ngModel]="r.descuento" (ngModelChange)="cambiarRenglon(i, 'descuento', $event)" />
+                  </td>
+                  <td class="num">{{ (r.cantidad * precioDe(r.productoId) - (r.descuento || 0)) | number: '1.2-2' }}</td>
+                  <td><button type="button" class="link" (click)="quitarRenglon(i)" [disabled]="renglones().length === 1">Quitar</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="add" (click)="agregarRenglon()">+ Agregar producto</button>
+
+        <div class="summary">
+          <label>
+            Observaciones
+            <textarea name="obs" rows="3" maxlength="1000" [(ngModel)]="observaciones"></textarea>
+          </label>
+          <dl>
+            <dt>Subtotal</dt><dd>{{ vistaPrevia().bruto | number: '1.2-2' }}</dd>
+            <dt>Descuento global</dt>
+            <dd>
+              <input type="number" min="0" step="1" class="short" name="dg"
+                [ngModel]="descuentoGlobal()" (ngModelChange)="descuentoGlobal.set($event)" />
+            </dd>
+            <dt>Descuentos</dt><dd>- {{ vistaPrevia().descuentos | number: '1.2-2' }}</dd>
+            <dt class="total">Total Bs</dt><dd class="total">{{ vistaPrevia().total | number: '1.2-2' }}</dd>
+          </dl>
+        </div>
+        @if (vistaPrevia().excede) {
+          <p class="message error">
+            Los descuentos superan el {{ opciones()?.descuentoMaximoPorcentaje }}% permitido
+            (máximo Bs {{ vistaPrevia().maximo | number: '1.2-2' }}). El sistema no la va a aceptar.
+          </p>
+        }
+        <p class="hint">Los precios son los de lista; el sistema los confirma al guardar.</p>
+
+        <div class="actions">
+          <button class="primary" [disabled]="busy() || vistaPrevia().excede" (click)="guardar(false)">
+            {{ busy() ? 'Guardando...' : 'Emitir cotización' }}
+          </button>
+          <button [disabled]="busy() || vistaPrevia().excede" (click)="guardar(true)">Guardar borrador</button>
+          <button type="button" [disabled]="busy()" (click)="volver()">Cancelar</button>
+        </div>
+      </section>
+    }
+
+    <!-- ============================================================ DETALLE -->
+    @case ('detalle') {
+      @if (seleccionada(); as c) {
+        <section class="panel">
+          <div class="detail-head">
+            <div>
+              <h3>{{ c.numeroCotizacion }} <span class="badge" [attr.data-estado]="c.estado">{{ etiqueta(c.estado) }}</span></h3>
+              <p>
+                <strong>{{ c.clienteRazonSocial }}</strong> · NIT/CI {{ c.clienteNitCi }}<br />
+                Emitida el {{ c.fecha }} · válida hasta {{ c.fechaVencimiento }} ({{ c.validezDias }} días) ·
+                vendedor {{ c.vendedor }}
+              </p>
+            </div>
+          </div>
+
+          @if (pedidoGenerado(); as p) {
+            <p class="message success">
+              Pedido <strong>{{ p.numeroPedido }}</strong> creado por Bs {{ p.total | number: '1.2-2' }}.
+              Queda pendiente de la validación comercial antes de despacharse.
+            </p>
+          }
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th><th>Producto</th><th class="num">Cantidad</th>
+                  <th class="num">Precio Bs</th><th class="num">Desc. Bs</th><th class="num">Subtotal Bs</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (i of c.items; track i.id) {
+                  <tr>
+                    <td>{{ i.productoCodigo }}</td>
+                    <td>{{ i.productoNombre }}</td>
+                    <td class="num">{{ i.cantidad | number: '1.0-2' }}</td>
+                    <td class="num">{{ i.precioUnitario | number: '1.2-2' }}</td>
+                    <td class="num">{{ i.descuento | number: '1.2-2' }}</td>
+                    <td class="num">{{ i.subtotal | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <dl class="totals">
+            <dt>Subtotal</dt><dd>{{ c.subtotal | number: '1.2-2' }}</dd>
+            <dt>Descuentos</dt><dd>- {{ c.descuento | number: '1.2-2' }}</dd>
+            <dt class="total">Total Bs</dt><dd class="total">{{ c.total | number: '1.2-2' }}</dd>
+          </dl>
+          @if (c.observaciones) {
+            <p class="obs">{{ c.observaciones }}</p>
+          }
+
+          <div class="actions">
+            @if (c.estado !== 'BORRADOR' && c.estado !== 'ANULADA') {
+              <button (click)="imprimir(c)">Imprimir proforma</button>
+            }
+            @if (c.estado === 'BORRADOR') {
+              <button class="primary" [disabled]="busy()" (click)="emitir(c)">Emitir</button>
+            }
+            @if (c.modificable) {
+              <button [disabled]="busy()" (click)="editar(c)">Modificar</button>
+            }
+            @if (c.estado === 'EMITIDA' && c.convertible) {
+              <button [disabled]="busy()" (click)="aceptar(c)">Cliente aceptó</button>
+            }
+            @if (c.convertible) {
+              <button class="primary" [disabled]="busy()" (click)="convirtiendo.set(true)">Convertir en pedido</button>
+            }
+            @if (c.estado !== 'CONVERTIDA' && c.estado !== 'ANULADA') {
+              <button class="danger" [disabled]="busy()" (click)="motivo = ''; anulando.set(true)">Anular</button>
+            }
+          </div>
+        </section>
+
+        @if (anulando()) {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="anular-title">
+              <h3 id="anular-title">Anular {{ c.numeroCotizacion }}</h3>
+              <p>La cotización queda anulada y no se puede volver a usar.</p>
+              <label>
+                Motivo
+                <input name="motivo" [(ngModel)]="motivo" maxlength="255" placeholder="Ej.: el cliente desistió" />
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="anulando.set(false)">Cancelar</button>
+                <button class="danger" [disabled]="busy() || !motivo.trim()" (click)="anular()">Anular</button>
+              </div>
+            </section>
+          </div>
+        }
+
+        @if (convirtiendo()) {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="convertir-title">
+              <h3 id="convertir-title">Convertir {{ c.numeroCotizacion }} en pedido</h3>
+              <p>
+                Se crea un pedido por Bs {{ c.total | number: '1.2-2' }} con los mismos productos y precios.
+                Se verifica que el cliente siga activo y dentro de su límite de crédito.
+              </p>
+              <label>
+                Sucursal que atiende el pedido
+                <select name="sucursal" [(ngModel)]="sucursalId">
+                  @for (s of opciones()?.sucursales ?? []; track s.id) {
+                    <option [ngValue]="s.id">{{ s.nombre }}</option>
+                  }
+                </select>
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="convirtiendo.set(false)">Cancelar</button>
+                <button class="primary" [disabled]="busy() || !sucursalId" (click)="convertir()">
+                  {{ busy() ? 'Convirtiendo...' : 'Crear pedido' }}
+                </button>
+              </div>
+            </section>
+          </div>
+        }
+      }
+    }
+  }
+}

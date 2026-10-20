@@ -152,6 +152,14 @@
   border: 1px solid var(--bg-card-border);
   border-radius: 12px;
   background: var(--bg-surface);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 }
 
 table {
@@ -161,7 +169,7 @@ table {
 
   th,
   td {
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--bg-card-border);
   }
 

@@ -1,0 +1,524 @@
+<div class="dashboard-container">
+
+  <!-- ========================================================================= -->
+  <!-- 1. BANNER DE BIENVENIDA -->
+  <!-- ========================================================================= -->
+  <header class="welcome-header">
+    <div class="header-main">
+      <div class="header-tag">
+        <span class="live-dot"></span>
+        <span class="tag-text">SISTEMA ERP &bull; {{ fechaActualFormateada() | uppercase }}</span>
+      </div>
+      <h1 class="welcome-title">
+        Bienvenido, <span class="user-highlight">{{ authService.usuario()?.fullname }}</span>
+      </h1>
+      <p class="welcome-subtitle">
+        Panel de control centralizado y gestión operativa del sistema.
+      </p>
+    </div>
+
+    <div class="header-meta">
+      <div class="role-badge" [attr.data-role]="rolEfectivo()">
+        <span class="badge-icon">
+          @if (rolEfectivo() === 'ADMIN') { ◎ }
+          @else if (rolEfectivo() === 'VENDEDOR') { ↗ }
+          @else if (rolEfectivo() === 'ALMACENERO') { ▦ }
+          @else if (rolEfectivo() === 'CAJERO') { 💳 }
+          @else { 👤 }
+        </span>
+        <div class="role-text">
+          <small>ROL DE TRABAJO</small>
+          <strong>
+            @if (rolEfectivo() === 'ADMIN') { Administrador General }
+            @else if (rolEfectivo() === 'VENDEDOR') { Vendedor / Comercial }
+            @else if (rolEfectivo() === 'ALMACENERO') { Gestión de Almacén }
+            @else if (rolEfectivo() === 'CAJERO') { Facturación y Caja }
+            @else { Portal de Cliente }
+          </strong>
+        </div>
+      </div>
+
+      <!-- Selector de perspectiva para Administradores / Evaluadores -->
+      @if (esAdminReal()) {
+        <div class="perspective-switcher" title="Alternar perspectiva de visualización de roles">
+          <span class="switcher-label">Simular vista:</span>
+          <div class="switcher-pills">
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="vistaSeleccionada() === 'AUTO'"
+              (click)="cambiarVista('AUTO')"
+            >
+              Auto
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="vistaSeleccionada() === 'ADMIN'"
+              (click)="cambiarVista('ADMIN')"
+            >
+              Admin
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="vistaSeleccionada() === 'VENDEDOR'"
+              (click)="cambiarVista('VENDEDOR')"
+            >
+              Ventas
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="vistaSeleccionada() === 'ALMACENERO'"
+              (click)="cambiarVista('ALMACENERO')"
+            >
+              Almacén
+            </button>
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="vistaSeleccionada() === 'CAJERO'"
+              (click)="cambiarVista('CAJERO')"
+            >
+              Caja
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. KPIs Y MÉTRICAS SEGÚN ROL -->
+  <!-- ========================================================================= -->
+  <section class="kpi-grid" aria-label="Métricas del rol">
+
+    <!-- KPI ADMIN -->
+    @if (rolEfectivo() === 'ADMIN') {
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap blue">↗</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Ventas Facturadas del Mes</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">Bs 148,250</strong>
+            <span class="kpi-trend positive">+14.2%</span>
+          </div>
+          <small class="kpi-note">Objetivo comercial alcanzado al 82%</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap emerald">✦</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Margen Comercial Promedio</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">32.4%</strong>
+            <span class="kpi-trend neutral">RN19 OK</span>
+          </div>
+          <small class="kpi-note">Protección de rentabilidad activa</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap amber">!</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock Crítico en Inventario</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">3 Artículos</strong>
+            <span class="kpi-trend alert">Atención</span>
+          </div>
+          <small class="kpi-note">Bajo el umbral mínimo configurado</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap purple">👥</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Equipo y Cuentas Activas</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">18 Usuarios</strong>
+            <span class="kpi-trend positive">100% act.</span>
+          </div>
+          <small class="kpi-note">Personal en sucursales y almacenes</small>
+        </div>
+      </article>
+    }
+
+    <!-- KPI VENDEDOR -->
+    @if (rolEfectivo() === 'VENDEDOR') {
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap blue">≡</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Cotizaciones Abiertas</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">8 Proformas</strong>
+            <span class="kpi-trend neutral">En espera</span>
+          </div>
+          <small class="kpi-note">Listas para concretar pedido formal</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap emerald">↗</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Mis Ventas del Mes</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">Bs 42,800</strong>
+            <span class="kpi-trend positive">85% meta</span>
+          </div>
+          <small class="kpi-note">Faltan Bs 7,200 para el bono comercial</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap purple">👥</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Clientes en Cartera</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">34 Clientes</strong>
+            <span class="kpi-trend positive">Al día</span>
+          </div>
+          <small class="kpi-note">Con crédito vigente y sin mora</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap cyan">🏷</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Tarifas Vigentes</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">3 Listas</strong>
+            <span class="kpi-trend positive">Activas</span>
+          </div>
+          <small class="kpi-note">Mayorista, Minorista y Distribuidor</small>
+        </div>
+      </article>
+    }
+
+    <!-- KPI ALMACENERO -->
+    @if (rolEfectivo() === 'ALMACENERO') {
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap amber">▦</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Despachos por Preparar</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">5 Envíos</strong>
+            <span class="kpi-trend alert">Pendientes</span>
+          </div>
+          <small class="kpi-note">Pendientes de picking y guía de salida</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap red">!</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Artículos Bajo Mínimo</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">3 Productos</strong>
+            <span class="kpi-trend alert">Reponer</span>
+          </div>
+          <small class="kpi-note">Revisar stock en Almacén Central</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap emerald">⇄</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Movimientos Registrados Hoy</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">12 Registros</strong>
+            <span class="kpi-trend positive">Kardex al día</span>
+          </div>
+          <small class="kpi-note">8 entradas proveedor &bull; 4 salidas venta</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap blue">◫</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Almacenes Operativos</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">3 Sucursales</strong>
+            <span class="kpi-trend neutral">Activos</span>
+          </div>
+          <small class="kpi-note">Central, Sucursal Norte, Depósito 2</small>
+        </div>
+      </article>
+    }
+
+    <!-- KPI CAJERO -->
+    @if (rolEfectivo() === 'CAJERO') {
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap emerald">✦</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Cobranza del Día</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">Bs 18,920</strong>
+            <span class="kpi-trend positive">Arqueo OK</span>
+          </div>
+          <small class="kpi-note">Efectivo, QR y Transferencias</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap blue">≡</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Facturas Emitidas SIN</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">24 Facturas</strong>
+            <span class="kpi-trend positive">Sincronizadas</span>
+          </div>
+          <small class="kpi-note">CUF y código QR validado</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap amber">⏱</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Créditos por Cobrar</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">6 Cuentas</strong>
+            <span class="kpi-trend alert">Vencidas</span>
+          </div>
+          <small class="kpi-note">Gestión de cobro pendiente</small>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon-wrap purple">↺</div>
+        <div class="kpi-body">
+          <span class="kpi-label">Devoluciones del Día</span>
+          <div class="kpi-val-row">
+            <strong class="kpi-val">0 Casos</strong>
+            <span class="kpi-trend neutral">Sin incidencias</span>
+          </div>
+          <small class="kpi-note">0 notas de crédito emitidas</small>
+        </div>
+      </article>
+    }
+
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. ACCIONES RÁPIDAS -->
+  <!-- ========================================================================= -->
+  <section class="quick-actions-panel" aria-label="Acciones Frecuentes">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">Accesos Rápidos Frecuentes</h2>
+        <span class="section-desc">Operaciones clave disponibles en un solo clic</span>
+      </div>
+      <span class="quick-badge">Flujo Operativo</span>
+    </div>
+
+    <div class="quick-buttons-row">
+      @if (rolEfectivo() === 'ADMIN') {
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
+          <span class="btn-icon">🏷</span>
+          <div class="btn-info">
+            <strong>Gestionar Precios</strong>
+            <small>Matriz de tarifas y descuentos</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
+          <span class="btn-icon">▦</span>
+          <div class="btn-info">
+            <strong>Catálogo de Artículos</strong>
+            <small>Precios, costos y stock</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'gestionar-empleados']" class="quick-btn">
+          <span class="btn-icon">👥</span>
+          <div class="btn-info">
+            <strong>Personal y Empleados</strong>
+            <small>Cuentas y sucursales</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'consultar-bitacora']" class="quick-btn">
+          <span class="btn-icon">◎</span>
+          <div class="btn-info">
+            <strong>Auditoría y Bitácora</strong>
+            <small>Historial de cambios</small>
+          </div>
+        </a>
+      }
+
+      @if (rolEfectivo() === 'VENDEDOR') {
+        <a [routerLink]="['/app', 'gestionar-cotizaciones']" class="quick-btn">
+          <span class="btn-icon">≡</span>
+          <div class="btn-info">
+            <strong>Nueva Cotización</strong>
+            <small>Emitir proforma comercial</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
+          <span class="btn-icon">🏷</span>
+          <div class="btn-info">
+            <strong>Consultar Listas Precios</strong>
+            <small>Tarifas autorizadas</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'gestionar-clientes']" class="quick-btn">
+          <span class="btn-icon">🤝</span>
+          <div class="btn-info">
+            <strong>Cartera de Clientes</strong>
+            <small>Límites de crédito y NIT</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
+          <span class="btn-icon">🔍</span>
+          <div class="btn-info">
+            <strong>Consultar Stock</strong>
+            <small>Disponibilidad física</small>
+          </div>
+        </a>
+      }
+
+      @if (rolEfectivo() === 'ALMACENERO') {
+        <a [routerLink]="['/app', 'gestionar-despacho-de-venta']" class="quick-btn">
+          <span class="btn-icon">🚚</span>
+          <div class="btn-info">
+            <strong>Despachos de Venta</strong>
+            <small>Picking, empaque y salida</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'movimientos-de-inventario']" class="quick-btn">
+          <span class="btn-icon">⇄</span>
+          <div class="btn-info">
+            <strong>Movimiento Inventario</strong>
+            <small>Entradas, salidas y ajustes</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'datos-maestros-inventario']" class="quick-btn">
+          <span class="btn-icon">▦</span>
+          <div class="btn-info">
+            <strong>Almacenes y Categorías</strong>
+            <small>Datos maestros</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'catalogo-de-articulos']" class="quick-btn">
+          <span class="btn-icon">◫</span>
+          <div class="btn-info">
+            <strong>Stock de Artículos</strong>
+            <small>Existencias por almacén</small>
+          </div>
+        </a>
+      }
+
+      @if (rolEfectivo() === 'CAJERO') {
+        <a [routerLink]="['/app', 'facturacion']" class="quick-btn">
+          <span class="btn-icon">💳</span>
+          <div class="btn-info">
+            <strong>Caja y Facturación</strong>
+            <small>Cobro en caja y emisión SIN</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'gestionar-clientes']" class="quick-btn">
+          <span class="btn-icon">🤝</span>
+          <div class="btn-info">
+            <strong>Consultar Cliente</strong>
+            <small>Historial y datos de NIT</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'gestionar-despacho-de-venta']" class="quick-btn">
+          <span class="btn-icon">≡</span>
+          <div class="btn-info">
+            <strong>Verificar Despacho</strong>
+            <small>Cobro contra entrega</small>
+          </div>
+        </a>
+        <a [routerLink]="['/app', 'precios-y-listas-precio']" class="quick-btn">
+          <span class="btn-icon">🏷</span>
+          <div class="btn-info">
+            <strong>Tarifario y Descuentos</strong>
+            <small>Verificar promociones</small>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. ACTIVIDAD RECIENTE & ESTADO DEL SISTEMA -->
+  <!-- ========================================================================= -->
+  <section class="activity-panel">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">Actividad y Operaciones Recientes</h2>
+        <span class="section-desc">Eventos registrados en los módulos del ERP</span>
+      </div>
+      <span class="badge-status-system">En línea &bull; Tiempo real</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="erp-table">
+        <thead>
+          <tr>
+            <th>Evento / Operación</th>
+            <th>Módulo</th>
+            <th>Referencia</th>
+            <th>Responsable</th>
+            <th>Monto / Cant.</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="event-cell">
+                <span class="event-dot green"></span>
+                <strong>Tarifa Mayorista Actualizada</strong>
+              </div>
+            </td>
+            <td><span class="module-chip">Ventas</span></td>
+            <td><code>LP-MAY26</code></td>
+            <td>Admin Central</td>
+            <td>18 Artículos</td>
+            <td><span class="status-pill success">Margen OK</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="event-cell">
+                <span class="event-dot blue"></span>
+                <strong>Nueva Cotización Comercial</strong>
+              </div>
+            </td>
+            <td><span class="module-chip">Ventas</span></td>
+            <td><code>COT-1004</code></td>
+            <td>Vendedor Zona Sur</td>
+            <td>Bs 12,450</td>
+            <td><span class="status-pill pending">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="event-cell">
+                <span class="event-dot amber"></span>
+                <strong>Despacho en Preparación</strong>
+              </div>
+            </td>
+            <td><span class="module-chip">Despacho</span></td>
+            <td><code>DSP-0082</code></td>
+            <td>Almacén Norte</td>
+            <td>6 Cajas</td>
+            <td><span class="status-pill warning">En Alistamiento</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="event-cell">
+                <span class="event-dot purple"></span>
+                <strong>Ingreso por Compra Proveedor</strong>
+              </div>
+            </td>
+            <td><span class="module-chip">Inventario</span></td>
+            <td><code>MOV-2026-44</code></td>
+            <td>Almacén Central</td>
+            <td>50 Unid.</td>
+            <td><span class="status-pill success">Procesado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>

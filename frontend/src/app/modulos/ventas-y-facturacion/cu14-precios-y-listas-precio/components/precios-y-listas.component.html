@@ -1,0 +1,564 @@
+<div class="pricing-header">
+  <div class="header-titles">
+    <h2>Precios, Tarifas y Descuentos</h2>
+    <p>Administra esquemas de precios comerciales diferenciados (Mayorista, Minorista) y reglas de descuento (RN19).</p>
+  </div>
+  <div class="tabs-nav">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'listas'"
+      (click)="setTab('listas')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+      </svg>
+      <span>Listas de Precios</span>
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'descuentos'"
+      (click)="setTab('descuentos')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="5" x2="5" y2="19"></line>
+        <circle cx="6.5" cy="6.5" r="2.5"></circle>
+        <circle cx="17.5" cy="17.5" r="2.5"></circle>
+      </svg>
+      <span>Políticas de Descuentos</span>
+    </button>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert-box error" role="alert">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ error() }}</span>
+  </div>
+}
+
+@if (success()) {
+  <div class="alert-box success" role="status">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    <span>{{ success() }}</span>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- PESTAÑA 1: LISTAS DE PRECIOS -->
+<!-- ========================================================================= -->
+@if (activeTab() === 'listas') {
+  <div class="section-toolbar">
+    <div class="toolbar-info">
+      <h3>Esquemas Comerciales</h3>
+      <p>Configura listas diferenciadas y personaliza el precio de venta de cada artículo del catálogo.</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openNuevaLista()" [disabled]="busy()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nueva Lista de Precios</span>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando listas de precios comerciales...</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre de la Lista</th>
+            <th>Descripción</th>
+            <th>Clasificación</th>
+            <th>Productos Tarifados</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lista of listas(); track lista.id) {
+            <tr>
+              <td>
+                <span class="badge-code">{{ lista.codigo }}</span>
+              </td>
+              <td>
+                <strong>{{ lista.nombre }}</strong>
+              </td>
+              <td>
+                <span class="text-secondary text-sm">{{ lista.descripcion || 'Sin descripción' }}</span>
+              </td>
+              <td>
+                @if (lista.esPrincipal) {
+                  <span class="badge-pill principal">PREDETERMINADA</span>
+                } @else {
+                  <span class="badge-pill secundaria">Secundaria</span>
+                }
+              </td>
+              <td>
+                <span class="badge-counter">{{ lista.articulosTarifadosCount }} artículos</span>
+              </td>
+              <td>
+                <span class="badge-status" [class.active]="lista.activo" [class.inactive]="!lista.activo">
+                  {{ lista.activo ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button
+                    type="button"
+                    class="btn-action-tarifas"
+                    (click)="openMatriz(lista)"
+                    title="Editar precios de productos en esta lista">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span>Tarifas</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    (click)="openEditarLista(lista)"
+                    title="Editar datos de lista">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    [disabled]="lista.esPrincipal && lista.activo"
+                    (click)="confirmarEstadoLista(lista)"
+                    [title]="lista.activo ? 'Desactivar lista' : 'Activar lista'">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                      <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-state">
+                <p>No hay listas de precios registradas.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+<!-- ========================================================================= -->
+<!-- PESTAÑA 2: DESCUENTOS Y PROMOCIONES -->
+<!-- ========================================================================= -->
+@if (activeTab() === 'descuentos') {
+  <div class="section-toolbar">
+    <div class="toolbar-info">
+      <h3>Reglas de Descuento y Promociones</h3>
+      <p>Define bonificaciones por volumen o campañas temporales para aplicar en ventas y cotizaciones.</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openNuevoDescuento()" [disabled]="busy()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nuevo Descuento</span>
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre de la Promoción</th>
+          <th>Modalidad</th>
+          <th>Valor Aplicable</th>
+          <th>Vigencia Desde</th>
+          <th>Vigencia Hasta</th>
+          <th>Estado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (desc of descuentos(); track desc.id) {
+          <tr>
+            <td><strong>{{ desc.nombre }}</strong></td>
+            <td>
+              <span class="badge-pill" [class.porc]="desc.tipo === 'PORCENTAJE'" [class.fijo]="desc.tipo === 'MONTO_FIJO'">
+                {{ desc.tipo === 'PORCENTAJE' ? 'PORCENTUAL' : 'MONTO FIJO' }}
+              </span>
+            </td>
+            <td>
+              <strong class="text-primary font-mono">
+                {{ desc.tipo === 'PORCENTAJE' ? (desc.valor + '%') : ('Bs ' + (desc.valor | number:'1.2-2')) }}
+              </strong>
+            </td>
+            <td>{{ desc.fechaInicio ? (desc.fechaInicio | date:'dd/MM/yyyy') : 'Permanente' }}</td>
+            <td>{{ desc.fechaFin ? (desc.fechaFin | date:'dd/MM/yyyy') : 'Indefinida' }}</td>
+            <td>
+              <span class="badge-status" [class.active]="desc.activo" [class.inactive]="!desc.activo">
+                {{ desc.activo ? 'Vigente' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="actions-group">
+                <button type="button" class="btn-icon" (click)="openEditarDescuento(desc)" title="Editar regla">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button type="button" class="btn-icon" (click)="cambiarEstadoDescuentoDirecto(desc)" [title]="desc.activo ? 'Desactivar' : 'Activar'">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                    <line x1="12" y1="2" x2="12" y2="12"></line>
+                  </svg>
+                </button>
+                <button type="button" class="btn-icon btn-danger" (click)="confirmarBorradoDescuento(desc)" title="Eliminar regla">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty-state">
+              <p>No hay descuentos o promociones vigentes.</p>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: MATRIZ DE PRECIOS POR PRODUCTO (RN19) -->
+<!-- ========================================================================= -->
+@if (modalMatrizOpen() && listaParaMatriz(); as lista) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-matriz" (click)="$event.stopPropagation()">
+      <div class="modal-card-header">
+        <div>
+          <div class="badge-code">{{ lista.codigo }}</div>
+          <h3 class="modal-title">Tarifas por Producto: {{ lista.nombre }}</h3>
+          <p class="modal-subtitle">Asigna el precio de venta específico para cada producto del catálogo.</p>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Cerrar modal">✕</button>
+      </div>
+
+      <!-- Banner de Regla RN19 -->
+      <div class="rn19-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div>
+          <strong>Regla de Negocio RN19 (Protección de Margen):</strong>
+          <span>El precio unitario de venta nunca puede ser inferior al costo de compra del artículo. El margen de ganancia se recalcula automáticamente en tiempo real.</span>
+        </div>
+      </div>
+
+      <!-- Barra de herramientas de la matriz -->
+      <div class="matriz-tools">
+        <div class="search-box">
+          <input
+            type="text"
+            [(ngModel)]="filtroMatriz"
+            placeholder="Filtrar por SKU, nombre o categoría..." />
+        </div>
+        <button type="button" class="btn-secondary" (click)="aplicarPreciosCatalogo()" title="Restablecer todos los precios al valor base del catálogo">
+          Cargar Precios Base
+        </button>
+      </div>
+
+      <!-- Tabla editable de la matriz -->
+      <div class="matriz-scroll">
+        <table class="matriz-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th class="text-right">Costo Compra</th>
+              <th class="text-right">Precio Catálogo</th>
+              <th class="text-right">Precio en Lista (Bs)</th>
+              <th class="text-right">Margen (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of matrizFiltrada; track item.productoId) {
+              <tr [class.row-invalid]="item.esInvalido">
+                <td><span class="badge-code">{{ item.codigoSku }}</span></td>
+                <td><strong>{{ item.nombre }}</strong></td>
+                <td><span class="badge-cat">{{ item.categoriaNombre }}</span></td>
+                <td class="text-right font-mono">Bs {{ item.costoCompra | number:'1.2-2' }}</td>
+                <td class="text-right font-mono text-muted">Bs {{ item.precioCatalogo | number:'1.2-2' }}</td>
+                <td class="text-right">
+                  <div class="price-input-wrapper">
+                    <span>Bs</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      [(ngModel)]="item.nuevoPrecio"
+                      (ngModelChange)="onPrecioChange(item)"
+                      [class.input-error]="item.esInvalido" />
+                  </div>
+                  @if (item.esInvalido) {
+                    <small class="error-msg">Inferior al costo</small>
+                  }
+                </td>
+                <td class="text-right">
+                  <span
+                    class="badge-margin"
+                    [class.margin-good]="item.margenCalculadoPorc >= 20"
+                    [class.margin-fair]="item.margenCalculadoPorc > 0 && item.margenCalculadoPorc < 20"
+                    [class.margin-danger]="item.margenCalculadoPorc <= 0">
+                    {{ item.margenCalculadoPorc }}%
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer de la Matriz -->
+      <div class="modal-card-footer">
+        <span class="text-muted text-sm">{{ matrizProductos().length }} productos disponibles</span>
+        <div class="actions">
+          <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="busy()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary" (click)="guardarMatrizPrecios()" [disabled]="busy()">
+            {{ busy() ? 'Guardando tarifas...' : 'Guardar Tarifas (RN19)' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: CREAR / EDITAR LISTA DE PRECIOS -->
+<!-- ========================================================================= -->
+@if (modalListaOpen()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="client-card-modal" (click)="$event.stopPropagation()">
+      <div class="modal-card-header">
+        <div>
+          <h3 class="modal-title">{{ selectedLista() ? 'Editar Lista de Precios' : 'Nueva Lista de Precios' }}</h3>
+          <p class="modal-subtitle">Define las propiedades generales de la lista comercial.</p>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form (ngSubmit)="guardarLista()">
+        <div class="modal-card-body">
+          @if (!selectedLista()) {
+            <div class="form-field">
+              <label for="lista-codigo">Código Único *</label>
+              <input
+                id="lista-codigo"
+                name="codigo"
+                [(ngModel)]="listaCodigo"
+                required
+                maxlength="30"
+                placeholder="Ej. LISTA-DISTRIBUIDOR" />
+            </div>
+          }
+          <div class="form-field">
+            <label for="lista-nombre">Nombre de la Lista *</label>
+            <input
+              id="lista-nombre"
+              name="nombre"
+              [(ngModel)]="listaNombre"
+              required
+              maxlength="100"
+              placeholder="Ej. Precios Mayoristas y Distribuidores" />
+          </div>
+          <div class="form-field">
+            <label for="lista-descripcion">Descripción Comercial</label>
+            <textarea
+              id="lista-descripcion"
+              name="descripcion"
+              [(ngModel)]="listaDescripcion"
+              rows="3"
+              maxlength="255"
+              placeholder="Ej. Tarifa con descuento especial por volumen para compras al por mayor."></textarea>
+          </div>
+          <div class="form-checkbox">
+            <input
+              type="checkbox"
+              id="lista-principal"
+              name="esPrincipal"
+              [(ngModel)]="listaEsPrincipal" />
+            <label for="lista-principal">
+              <strong>Establecer como lista predeterminada</strong>
+              <small>Esta lista se usará por defecto en cotizaciones y ventas si el cliente no tiene una asignada.</small>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-card-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="busy()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="busy()">
+            {{ busy() ? 'Guardando...' : (selectedLista() ? 'Actualizar Lista' : 'Crear Lista') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: CREAR / EDITAR DESCUENTO -->
+<!-- ========================================================================= -->
+@if (modalDescuentoOpen()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="client-card-modal" (click)="$event.stopPropagation()">
+      <div class="modal-card-header">
+        <div>
+          <h3 class="modal-title">{{ selectedDescuento() ? 'Editar Descuento' : 'Nueva Regla de Descuento' }}</h3>
+          <p class="modal-subtitle">Parametriza promociones y bonificaciones automáticas.</p>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <form (ngSubmit)="guardarDescuento()">
+        <div class="modal-card-body">
+          <div class="form-field">
+            <label for="desc-nombre">Nombre de la Promoción *</label>
+            <input
+              id="desc-nombre"
+              name="descNombre"
+              [(ngModel)]="descNombre"
+              required
+              maxlength="100"
+              placeholder="Ej. Descuento Fin de Año Rog Strix" />
+          </div>
+          <div class="form-row">
+            <div class="form-field flex-1">
+              <label for="desc-tipo">Tipo de Descuento</label>
+              <select id="desc-tipo" name="descTipo" [(ngModel)]="descTipo">
+                <option value="PORCENTAJE">Porcentual (%)</option>
+                <option value="MONTO_FIJO">Monto Fijo (Bs)</option>
+              </select>
+            </div>
+            <div class="form-field flex-1">
+              <label for="desc-valor">Valor ({{ descTipo === 'PORCENTAJE' ? '%' : 'Bs' }}) *</label>
+              <input
+                id="desc-valor"
+                type="number"
+                step="0.01"
+                min="0.01"
+                name="descValor"
+                [(ngModel)]="descValor"
+                required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field flex-1">
+              <label for="desc-inicio">Fecha de Inicio (Opcional)</label>
+              <input
+                id="desc-inicio"
+                type="date"
+                name="descFechaInicio"
+                [(ngModel)]="descFechaInicio" />
+            </div>
+            <div class="form-field flex-1">
+              <label for="desc-fin">Fecha de Fin (Opcional)</label>
+              <input
+                id="desc-fin"
+                type="date"
+                name="descFechaFin"
+                [(ngModel)]="descFechaFin" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-card-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="busy()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="busy()">
+            {{ busy() ? 'Guardando...' : (selectedDescuento() ? 'Actualizar Regla' : 'Guardar Regla') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- DIÁLOGO: CAMBIAR ESTADO LISTA -->
+<!-- ========================================================================= -->
+@if (statusConfirmLista(); as lista) {
+  <div class="modal-backdrop" (click)="statusConfirmLista.set(null)">
+    <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-icon" [class.danger]="lista.activo" [class.success]="!lista.activo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+          <line x1="12" y1="2" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <h3 class="dialog-title">{{ lista.activo ? 'Desactivar Lista de Precios' : 'Activar Lista de Precios' }}</h3>
+      <p class="dialog-text">¿Deseas {{ lista.activo ? 'desactivar' : 'activar' }} la lista <strong>{{ lista.nombre }}</strong>?</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" (click)="statusConfirmLista.set(null)" [disabled]="busy()">Cancelar</button>
+        <button type="button" class="btn-primary" [class.btn-danger]="lista.activo" (click)="ejecutarCambioEstadoLista()" [disabled]="busy()">
+          {{ busy() ? 'Procesando...' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- DIÁLOGO: ELIMINAR DESCUENTO -->
+<!-- ========================================================================= -->
+@if (deleteConfirmDescuento(); as d) {
+  <div class="modal-backdrop" (click)="deleteConfirmDescuento.set(null)">
+    <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-icon danger">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </div>
+      <h3 class="dialog-title">Eliminar Regla de Descuento</h3>
+      <p class="dialog-text">¿Estás seguro de eliminar la promoción <strong>{{ d.nombre }}</strong>?</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" (click)="deleteConfirmDescuento.set(null)" [disabled]="busy()">Cancelar</button>
+        <button type="button" class="btn-primary btn-danger" (click)="ejecutarBorradoDescuento()" [disabled]="busy()">
+          {{ busy() ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

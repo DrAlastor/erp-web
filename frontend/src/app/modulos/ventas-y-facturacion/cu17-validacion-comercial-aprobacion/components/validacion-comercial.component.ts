@@ -63,6 +63,12 @@ export class ValidacionComercialComponent implements OnInit {
           this.totalPaginas.set(page.totalPages);
           this.totalPedidos.set(page.totalElements);
           this.loading.set(false);
+          if (page.content.length > 0 && !this.seleccionado()) {
+            this.abrir(page.content[0]);
+          } else if (page.content.length === 0 && this.estado === 'PENDIENTE') {
+            this.estado = 'TODOS';
+            this.cargar();
+          }
         },
         error: (e) => {
           this.loading.set(false);

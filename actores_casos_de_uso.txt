@@ -1,0 +1,53 @@
+
+MÓDULO 1 — Usuarios & Seguridad
+CU01 - Gestionar Acceso al Sistema                                       // Administrador / Vendedor / Cajero / Almacenero
+CU02 - Gestionar Usuarios                                                // Administrador
+CU03 - Gestionar Roles y Permisos                                        // Administrador
+CU04 - Gestionar Empleados                                               // Administrador
+CU05 - Gestionar Empresas, Sucursales y Configuración                    // Administrador
+CU06 - Personalizar Apariencia                                           // Administrador
+CU07 - Gestionar Backups y Restore                                       // Administrador
+CU08 - Consultar Bitácora                                                // Administrador
+
+MÓDULO 2 — Catálogo e Inventario
+CU09 - Gestionar Datos Maestros de Inventario                            // Almacenero / Administrador
+CU10 - Gestionar Catálogo de Artículos                                   // Almacenero / Administrador / Vendedor
+CU11 - Gestionar Movimientos de Inventario                               // Almacenero / Administrador
+CU12 - Consultar Kardex                                                  // Almacenero / Administrador
+
+MÓDULO 3 — Ventas & Facturación
+CU13 - Gestionar Clientes                                                // Vendedor / Administrador
+CU14 - Gestionar Precios y Listas de Precio                              // Administrador / Vendedor
+CU15 - Gestionar Cotizaciones                                            // Vendedor / Administrador / Cliente
+CU16 - Gestionar Pedidos de Venta                                        // Vendedor / Administrador / Cliente
+CU17 - Validación Comercial                                              // Administrador / Vendedor
+CU18 - Gestionar Despacho de Venta                                       // Almacenero / Administrador
+CU19 - Registrar Venta, Facturación y Anulación                          // Cajero / Administrador
+CU20 - Gestionar Devoluciones y Notas de Crédito                         // Cajero / Almacenero / Administrador
+
+MÓDULO 4 — Compras & Proveedores
+CU21 - Gestionar Proveedores                                             // Administrador / Almacenero
+CU22 - Gestionar Órdenes de Compra                                       // Administrador / Almacenero
+CU23 - Registrar Compra y Devolución de Proveedores                      // Almacenero / Administrador
+CU24 - Gestionar Cuentas por Pagar                                       // Administrador / Cajero
+
+MÓDULO 5 — Contabilidad & Finanzas
+CU25 - Gestionar Plan de Cuentas                                         // Administrador
+CU26 - Gestionar Periodos Contables                                      // Administrador
+CU27 - Gestionar Asientos Contables                                      // Administrador
+CU28 - Integración Contable Automática                                   // Administrador
+CU29 - Gestionar Cuentas por Cobrar y Cobros                             // Cajero / Administrador
+CU30 - Consultar Libros Contables                                        // Administrador
+CU31 - Consultar Información Financiera                                  // Administrador
+
+MÓDULO 6 — Tesorería & Cajas
+CU32 - Apertura de Caja                                                  // Cajero / Administrador
+CU33 - Venta en Caja (POS)                                               // Cajero / Administrador
+CU34 - Registrar Movimiento de Caja                                      // Cajero / Administrador
+CU35 - Cierre, Arqueo y Consulta de Caja                                 // Cajero / Administrador
+
+MÓDULO 7 — Reportes
+CU36 - Dashboard Ejecutivo                                               // Administrador
+CU37 - Gestionar Reportes Predefinidos                                   // Administrador / Vendedor / Almacenero / Cajero
+CU38 - Gestionar Reportes QBE                                            // Administrador
+CU39 - Gestionar Reportes por Voz                                        // Administrador / Vendedor

@@ -1,0 +1,86 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="pedido-detalle-title">
+    <header class="modal-header">
+      <h3 id="pedido-detalle-title">Pedido {{ pedido()?.numeroPedido ?? '' }}</h3>
+      <button type="button" class="close-btn" aria-label="Cerrar" [disabled]="busy()" (click)="closed.emit()">✕</button>
+    </header>
+
+    @if (loading()) {
+      <p role="status">Cargando pedido...</p>
+    } @else if (pedido(); as p) {
+      <dl class="info">
+        <div><dt>Estado</dt><dd><span class="badge" [class]="claseEstado(p.estado)">{{ p.estado }}</span></dd></div>
+        <div><dt>Fecha</dt><dd class="mono">{{ p.fecha }}</dd></div>
+        <div><dt>Cliente</dt><dd>{{ p.clienteRazonSocial }} <span class="cell-sub">NIT/CI {{ p.clienteNitCi }}</span></dd></div>
+        <div><dt>Sucursal</dt><dd>{{ p.sucursalNombre }}</dd></div>
+        <div><dt>Vendedor</dt><dd>{{ p.vendedorNombre || 'Sin asignar' }}</dd></div>
+        <div class="wide"><dt>Observaciones</dt><dd>{{ p.observaciones || 'Sin observaciones' }}</dd></div>
+      </dl>
+
+      <div class="table-scroll">
+        <table>
+          <caption class="sr-only">Productos del pedido</caption>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="num">Cantidad</th>
+              <th class="num">Precio unit.</th>
+              <th class="num">Descuento</th>
+              <th class="num">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of p.detalles; track d.id) {
+              <tr>
+                <td><strong>{{ d.productoNombre }}</strong><span class="cell-sub">{{ d.productoCodigo }}</span></td>
+                <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
+                <td class="num">Bs. {{ d.precioUnitario | number: '1.2-2' }}</td>
+                <td class="num">Bs. {{ d.descuento | number: '1.2-2' }}</td>
+                <td class="num"><strong>Bs. {{ d.subtotal | number: '1.2-2' }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div><span>Subtotal</span><strong>Bs. {{ p.subtotal | number: '1.2-2' }}</strong></div>
+        <div><span>Descuento</span><strong>Bs. {{ p.descuento | number: '1.2-2' }}</strong></div>
+        <div class="grand"><span>Total</span><strong>Bs. {{ p.total | number: '1.2-2' }}</strong></div>
+      </div>
+
+      @if (accion(); as a) {
+        <div class="confirm-panel" [class.danger-panel]="a === 'anular'">
+          <label>
+            Motivo de anulación *
+            <textarea rows="2" maxlength="255" [(ngModel)]="motivo" [disabled]="busy()"
+              placeholder="Describe por qué se anula el pedido"></textarea>
+          </label>
+          <div class="actions end">
+            <button type="button" [disabled]="busy()" (click)="accion.set(null)">Volver</button>
+            <button type="button" [class]="a === 'anular' ? 'danger' : 'primary'"
+              [disabled]="busy() || (a === 'anular' && !motivo.trim())" (click)="ejecutar()">
+              {{ busy() ? 'Procesando...' : 'Anular pedido' }}
+            </button>
+          </div>
+        </div>
+      }
+    }
+
+    @if (error()) {
+      <p class="message error" role="alert">{{ error() }}</p>
+    }
+
+    <footer class="modal-footer">
+      @if (pedido(); as p) {
+        @if (!accion() && p.estado === 'PENDIENTE') {
+          <button type="button" class="btn-action-edit" *siPermiso="'COMERCIAL_MODIFICAR'" (click)="editar.emit(p.id)">Editar pedido</button>
+        }
+        @if (!accion() && (p.estado === 'PENDIENTE' || p.estado === 'APROBADO')) {
+          <button type="button" class="danger" *siPermiso="'COMERCIAL_ANULAR'" (click)="iniciar('anular')">Anular</button>
+        }
+      }
+      <button type="button" [disabled]="busy()" (click)="closed.emit()">Cerrar</button>
+    </footer>
+  </section>
+</div>

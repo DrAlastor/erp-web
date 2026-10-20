@@ -46,7 +46,13 @@ export class MovimientoInventarioComponent implements OnInit {
 
   // Modales
   readonly modalNuevoAbierto = signal(false);
+  readonly modalMinimoAbierto = signal(false);
   readonly movimientoSeleccionado = signal<MovimientoInventarioResponse | null>(null);
+  readonly stockSeleccionado = signal<StockAlmacenResponse | null>(null);
+
+  // Formulario Stock Mínimo
+  formNuevoMinimo: number | null = null;
+  formAplicarGlobal: boolean = false;
 
   // Paginación
   readonly pageMovimientos = signal(0);
@@ -308,6 +314,53 @@ export class MovimientoInventarioComponent implements OnInit {
     if (tipo === 'ENTRADA' || tipo === 'AJUSTE_POSITIVO') return 'tipo-entrada';
     if (tipo === 'SALIDA' || tipo === 'AJUSTE_NEGATIVO') return 'tipo-salida';
     return 'tipo-ajuste';
+  }
+
+  abrirModalMinimo(stk: StockAlmacenResponse): void {
+    if (!this.puedeRegistrar()) return;
+    this.stockSeleccionado.set(stk);
+    this.formNuevoMinimo = stk.stockMinimo;
+    this.formAplicarGlobal = false;
+    this.modalMinimoAbierto.set(true);
+    this.error.set('');
+    this.success.set('');
+  }
+
+  cerrarModalMinimo(): void {
+    this.modalMinimoAbierto.set(false);
+    this.stockSeleccionado.set(null);
+  }
+
+  guardarStockMinimo(): void {
+    const stk = this.stockSeleccionado();
+    if (!stk) return;
+
+    if (this.formNuevoMinimo === null || this.formNuevoMinimo < 0) {
+      this.error.set('El stock mínimo debe ser un número mayor o igual a 0.');
+      return;
+    }
+
+    this.busy.set(true);
+    this.error.set('');
+
+    this.api.actualizarStockMinimo(stk.id, {
+      nuevoStockMinimo: this.formNuevoMinimo,
+      aplicarATodosAlmacenes: this.formAplicarGlobal
+    })
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (resp) => {
+          this.busy.set(false);
+          this.cerrarModalMinimo();
+          this.success.set(`¡Stock mínimo de '${resp.productoNombre}' actualizado a ${resp.stockMinimo} ${resp.unidadMedida}!`);
+          this.cargarStock();
+          this.cargarAlertas();
+        },
+        error: (err) => {
+          this.busy.set(false);
+          this.manejarError(err);
+        }
+      });
   }
 
   private manejarError(err: unknown): void {

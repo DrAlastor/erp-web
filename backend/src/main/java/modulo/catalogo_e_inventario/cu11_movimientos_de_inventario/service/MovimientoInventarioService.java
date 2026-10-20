@@ -34,6 +34,8 @@ public class MovimientoInventarioService {
     private final ProductoRepository productoRepository;
     private final AlmacenRepository almacenRepository;
     private final MovimientoInventarioMapper mapper;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final modulo.notificaciones.service.NotificacionService notificacionService;
 
     /**
      * HU-06: Registra de forma atómica e inmutable un movimiento de inventario (Kardex)
@@ -145,6 +147,23 @@ public class MovimientoInventarioService {
         KardexMovimiento guardado = kardexRepository.save(movimiento);
         log.info("Movimiento Kardex #{} registrado con éxito. Nuevo stock: {}", guardado.getId(), nuevoStock);
 
+        BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo() : BigDecimal.ZERO;
+        if (min.compareTo(BigDecimal.ZERO) > 0 && nuevoStock.compareTo(min) <= 0) {
+            try {
+                jdbcTemplate.update(
+                        "INSERT INTO NOTIFICACIONES (USUARIO_ID, TITULO, MENSAJE, TIPO, FECHA_CREACION, LEIDO) VALUES (?, ?, ?, ?, ?, ?)",
+                        1L,
+                        "Alerta de Stock Mínimo",
+                        String.format("El producto '%s' (%s) en el almacén '%s' ha alcanzado o bajado de su stock mínimo (%s u). Saldo actual: %s u.",
+                                producto.getNombre(), producto.getCodigoSku(), almacen.getNombre(), min.stripTrailingZeros().toPlainString(), nuevoStock.stripTrailingZeros().toPlainString()),
+                        "ALERTA",
+                        fechaMovimiento,
+                        false
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
         return mapper.toMovimientoResponse(guardado);
     }
 
@@ -254,5 +273,46 @@ public class MovimientoInventarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Tipo de movimiento no válido: '" + tipo + "'. Los tipos permitidos son: ENTRADA, SALIDA, AJUSTE_POSITIVO, AJUSTE_NEGATIVO, AJUSTE.");
         }
+    }
+
+    /**
+     * CRUD Stock Mínimo: Modifica el umbral de reserva mínima para un almacén o globalmente para todas las unidades.
+     */
+    @Transactional
+    public StockAlmacenResponse actualizarStockMinimo(Long stockId, ActualizarStockMinimoRequest request) {
+        StockAlmacen stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Registro de stock no encontrado (ID: " + stockId + ")."));
+
+        BigDecimal nuevoMinimo = request.getNuevoStockMinimo();
+        if (nuevoMinimo == null || nuevoMinimo.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El stock mínimo no puede ser negativo.");
+        }
+
+        stock.setStockMinimo(nuevoMinimo);
+        stock.setUltimaActualizacion(LocalDateTime.now());
+        StockAlmacen guardado = stockRepository.save(stock);
+
+        Producto prod = stock.getProducto();
+        if (Boolean.TRUE.equals(request.getAplicarATodosAlmacenes())) {
+            prod.setStockMinimo(nuevoMinimo);
+            productoRepository.save(prod);
+            stockRepository.actualizarStockMinimoPorProducto(prod.getId(), nuevoMinimo);
+        }
+
+        BigDecimal actual = stock.getCantidadActual() != null ? stock.getCantidadActual() : BigDecimal.ZERO;
+        if (nuevoMinimo.compareTo(BigDecimal.ZERO) > 0 && actual.compareTo(nuevoMinimo) <= 0) {
+            try {
+                notificacionService.notificar(
+                        1L,
+                        "Alerta de Stock Mínimo",
+                        String.format("El producto '%s' (%s) en el almacén '%s' ha quedado en o por debajo de su nuevo stock mínimo (%s u). Saldo actual: %s u.",
+                                prod.getNombre(), prod.getCodigoSku(), stock.getAlmacen().getNombre(),
+                                nuevoMinimo.stripTrailingZeros().toPlainString(), actual.stripTrailingZeros().toPlainString()),
+                        "ALERTA"
+                );
+            } catch (Exception ignored) {}
+        }
+
+        return mapper.toStockResponse(guardado);
     }
 }

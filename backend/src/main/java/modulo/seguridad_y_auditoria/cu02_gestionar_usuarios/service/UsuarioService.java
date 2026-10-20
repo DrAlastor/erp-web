@@ -68,15 +68,41 @@ public class UsuarioService {
     private final modulo.seguridad_y_auditoria.compartido.repository.RolRepository rolRepository;
 
     /** Listado paginado con búsqueda y filtros, sin datos sensibles. */
-    public Page<UsuarioResponse> list(String search, UUID role, Boolean enable, int page, int size) {
+    public Page<UsuarioResponse> list(String search, String role, Boolean enable, int page, int size) {
         UUID empresaId = UsuarioActual.obtener().empresaId();
+        Integer targetRolId = resolverRolId(role);
         Page<Usuario> cuentas = usuarioGestionRepository.findAll(
-                UsuarioSpecifications.filtrar(search, role, enable, empresaId),
+                UsuarioSpecifications.filtrar(search, targetRolId, enable, empresaId),
                 PageRequest.of(page, size, Sort.by("id")));
 
         Map<Long, List<RolAsignadoDto>> rolesPorUsuario = rolesDeLaPagina(cuentas, empresaId);
         return cuentas.map(cuenta -> usuarioMapper.toResponse(cuenta,
                 rolesPorUsuario.getOrDefault(cuenta.getId(), List.of())));
+    }
+
+    public Page<UsuarioResponse> list(String search, UUID role, Boolean enable, int page, int size) {
+        return list(search, role != null ? role.toString() : null, enable, page, size);
+    }
+
+    private Integer resolverRolId(String roleParam) {
+        if (roleParam == null || roleParam.trim().isBlank()) {
+            return null;
+        }
+        String clean = roleParam.trim();
+        try {
+            int parsed = Integer.parseInt(clean);
+            if (rolRepository.existsById(parsed)) {
+                return parsed;
+            }
+        } catch (NumberFormatException ignored) {}
+
+        for (modulo.seguridad_y_auditoria.compartido.entity.Rol r : rolRepository.findAll()) {
+            UUID uuid = UUID.nameUUIDFromBytes(r.getNombre().getBytes());
+            if (uuid.toString().equalsIgnoreCase(clean) || r.getNombre().equalsIgnoreCase(clean)) {
+                return r.getId();
+            }
+        }
+        return -1;
     }
 
     /** Roles de la empresa, para los filtros del listado. */
@@ -108,13 +134,24 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario o correo ya pertenece a otra cuenta");
         }
 
-        for (UUID rolId : request.rolesIds()) {
-            Rol rol = rolRepositorio.findByIdAndEmpresaId(rolId, empresaId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Rol inexistente en la empresa"));
-            if (!rol.isActivo()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede asignar un rol inactivo");
+        modulo.seguridad_y_auditoria.compartido.entity.Rol rolAsignado = null;
+        if (request.rolesIds() != null && !request.rolesIds().isEmpty()) {
+            List<modulo.seguridad_y_auditoria.compartido.entity.Rol> todosLosRoles = rolRepository.findAll();
+            for (UUID rolId : request.rolesIds()) {
+                for (modulo.seguridad_y_auditoria.compartido.entity.Rol r : todosLosRoles) {
+                    if (UUID.nameUUIDFromBytes(r.getNombre().getBytes()).equals(rolId)) {
+                        if (Boolean.FALSE.equals(r.getActivo())) {
+                            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede asignar un rol inactivo: " + r.getNombre());
+                        }
+                        rolAsignado = r;
+                        break;
+                    }
+                }
+                if (rolAsignado != null) break;
             }
+        }
+        if (rolAsignado == null) {
+            rolAsignado = rolRepository.findAll().stream().findFirst().orElse(null);
         }
 
         if (request.empleadoId() != null) {
@@ -126,26 +163,16 @@ public class UsuarioService {
         Usuario usuario = usuarioMapper.toEntity(request, empresaId, actor);
         usuario.setPassword(passwordEncoder.encode(request.password()));
         usuario.setRbacInicializado(true);
-
-        // Asignar el rol principal a la entidad compartida para integridad referencial en BD
-        if (request.rolesIds() != null && !request.rolesIds().isEmpty()) {
-            UUID primerRolUuid = request.rolesIds().iterator().next();
-            rolRepositorio.findByIdAndEmpresaId(primerRolUuid, empresaId).ifPresent(r -> {
-                rolRepository.findAll().stream()
-                        .filter(cr -> cr.getNombre().equalsIgnoreCase(r.getNombre()))
-                        .findFirst()
-                        .ifPresent(usuario::setRol);
-            });
-        }
-        if (usuario.getRol() == null) {
-            rolRepository.findAll().stream().findFirst().ifPresent(usuario::setRol);
-        }
+        usuario.setRol(rolAsignado);
+        usuario.setActivo(true);
+        usuario.setNivelUsuario("GERENCIA");
+        usuario.setFechaCreacion(java.time.LocalDateTime.now());
 
         usuarioGestionRepository.saveAndFlush(usuario);
 
         try {
-            for (UUID rolId : request.rolesIds()) {
-                servicioAsignaciones.asignar(empresaId, usuario.getId(), rolId != null ? rolId.toString() : null, UsuarioActual.obtener());
+            if (rolAsignado != null) {
+                servicioAsignaciones.asignar(empresaId, usuario.getId(), String.valueOf(rolAsignado.getId()), UsuarioActual.obtener());
             }
         } catch (ReglaDeNegocio | RecursoNoEncontrado ex) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, ex.getMessage(), ex);

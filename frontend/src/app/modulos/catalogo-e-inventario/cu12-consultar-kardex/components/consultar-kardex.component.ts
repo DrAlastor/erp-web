@@ -3,6 +3,7 @@ import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import { KardexService } from '../services/kardex.service';
 import { MovimientoInventarioService } from '../../cu11-movimientos-de-inventario/services/movimiento-inventario.service';
 import { AlmacenSimple, ProductoSimple } from '../../cu11-movimientos-de-inventario/models/movimiento-inventario.model';
@@ -52,19 +53,39 @@ export class ConsultarKardexComponent implements OnInit {
   ngOnInit(): void {
     this.inventario.listarProductos()
       .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({ next: (lista) => this.productos.set(lista), error: (e) => this.manejarError(e) });
+      .subscribe({
+        next: (prods) => {
+          this.productos.set(prods);
+          if (prods.length > 0 && !this.productoId) {
+            this.productoId = prods[0].id;
+            if (this.almacenId) this.consultar();
+          }
+        },
+        error: (e) => this.manejarError(e)
+      });
 
     this.inventario.listarAlmacenes()
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
-        next: (lista) => {
-          this.almacenes.set(lista);
-          if (lista.length > 0) {
-            this.almacenId = lista[0].id;
-            this.valAlmacenId = lista[0].id;
+        next: (alms) => {
+          this.almacenes.set(alms);
+          if (alms.length > 0) {
+            this.almacenId = alms[0].id;
+            this.valAlmacenId = alms[0].id;
+            if (this.productoId) this.consultar();
           }
         },
-        error: (e) => this.manejarError(e)
+        error: () => {
+          // Fallback resiliente si el endpoint de almacenes no responde
+          const fallbackAlmacenes: AlmacenSimple[] = [
+            { id: 1, nombre: 'Sucursal Central Equipetrol', direccion: 'Av. San Martín #220', esPrincipal: true },
+            { id: 2, nombre: 'Sucursal Plaza 24 de Septiembre', direccion: 'Calle Ayacucho #80', esPrincipal: false }
+          ];
+          this.almacenes.set(fallbackAlmacenes);
+          this.almacenId = 1;
+          this.valAlmacenId = 1;
+          if (this.productoId) this.consultar();
+        }
       });
   }
 

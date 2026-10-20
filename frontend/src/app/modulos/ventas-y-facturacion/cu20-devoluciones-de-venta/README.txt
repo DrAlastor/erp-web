@@ -1,4 +1,4 @@
-Aqui se desarrollara el CU20 - Gestionar Devoluciones de Venta
+CU20 - Gestionar Devoluciones y Notas de Crédito (HU-20)
 MÓDULO 3 — Ventas & Facturación
 
-Descripcion: Espacio de desarrollo para las vistas, componentes y servicios frontend del caso de uso CU20.
+Descripcion: Vista devoluciones.component (pestañas Nueva devolución y Notas de crédito) y su servicio.

@@ -26,6 +26,28 @@ import java.math.RoundingMode;
 public class MovimientoInventarioMapper {
 
     public MovimientoInventarioResponse toMovimientoResponse(KardexMovimiento movimiento) {
+        BigDecimal costoUnitario = movimiento.getCostoUnitario();
+        if (costoUnitario == null || costoUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+            if (movimiento.getProducto() != null) {
+                if (movimiento.getProducto().getCostoPromedio() != null && movimiento.getProducto().getCostoPromedio().compareTo(BigDecimal.ZERO) > 0) {
+                    costoUnitario = movimiento.getProducto().getCostoPromedio();
+                } else if (movimiento.getProducto().getPrecioVenta() != null && movimiento.getProducto().getPrecioVenta().compareTo(BigDecimal.ZERO) > 0) {
+                    costoUnitario = movimiento.getProducto().getPrecioVenta();
+                }
+            }
+        }
+        if (costoUnitario == null) costoUnitario = BigDecimal.ZERO;
+
+        BigDecimal saldoCantidad = movimiento.getSaldoCantidad();
+        if (saldoCantidad == null) {
+            saldoCantidad = movimiento.getCantidad() != null ? movimiento.getCantidad() : BigDecimal.ZERO;
+        }
+
+        BigDecimal saldoValorado = movimiento.getSaldoValorado();
+        if (saldoValorado == null || saldoValorado.compareTo(BigDecimal.ZERO) <= 0) {
+            saldoValorado = saldoCantidad.multiply(costoUnitario).setScale(2, RoundingMode.HALF_UP);
+        }
+
         return MovimientoInventarioResponse.builder()
                 .id(movimiento.getId())
                 .productoId(movimiento.getProducto().getId())
@@ -36,9 +58,9 @@ public class MovimientoInventarioMapper {
                 .almacenNombre(movimiento.getAlmacen().getNombre())
                 .tipoMovimiento(movimiento.getTipoMovimiento())
                 .cantidad(movimiento.getCantidad())
-                .costoUnitario(movimiento.getCostoUnitario())
-                .saldoCantidad(movimiento.getSaldoCantidad())
-                .saldoValorado(movimiento.getSaldoValorado())
+                .costoUnitario(costoUnitario)
+                .saldoCantidad(saldoCantidad)
+                .saldoValorado(saldoValorado)
                 .referenciaDoc(movimiento.getReferenciaDoc())
                 .motivo(movimiento.getMotivo())
                 .fecha(movimiento.getFecha())
@@ -46,10 +68,17 @@ public class MovimientoInventarioMapper {
                 .build();
     }
 
-    /** Existencia por almacén con la marca de stock bajo mínimo. */
+    /** Existencia por almacén con la marca de stock bajo mínimo y saldo valorado real. */
     public StockAlmacenResponse toStockResponse(StockAlmacen stock) {
         BigDecimal actual = cantidadDe(stock);
-        int minimo = stockMinimoDe(stock.getProducto());
+        int minimo = stockMinimoDe(stock);
+
+        BigDecimal costo = stock.getProducto().getCostoPromedio();
+        if (costo == null || costo.compareTo(BigDecimal.ZERO) <= 0) {
+            costo = stock.getProducto().getPrecioVenta() != null ? stock.getProducto().getPrecioVenta() : BigDecimal.ZERO;
+        }
+
+        BigDecimal saldoValorado = actual.multiply(costo).setScale(2, RoundingMode.HALF_UP);
 
         return StockAlmacenResponse.builder()
                 .id(stock.getId())
@@ -59,7 +88,8 @@ public class MovimientoInventarioMapper {
                 .codigoBarra(stock.getProducto().getCodigoBarra())
                 .unidadMedida(stock.getProducto().getUnidadMedida())
                 .precioVenta(stock.getProducto().getPrecioVenta())
-                .costoPromedio(stock.getProducto().getCostoPromedio())
+                .costoPromedio(costo)
+                .saldoValorado(saldoValorado)
                 .stockMinimo(minimo)
                 .almacenId(stock.getAlmacen().getId())
                 .almacenNombre(stock.getAlmacen().getNombre())
@@ -75,7 +105,7 @@ public class MovimientoInventarioMapper {
      */
     public AlertaStockMinimoResponse toAlertaResponse(StockAlmacen stock) {
         BigDecimal actual = cantidadDe(stock);
-        int minimo = stockMinimoDe(stock.getProducto());
+        int minimo = stockMinimoDe(stock);
         BigDecimal minDecimal = BigDecimal.valueOf(minimo);
 
         String criticidad;
@@ -125,6 +155,13 @@ public class MovimientoInventarioMapper {
 
     private BigDecimal cantidadDe(StockAlmacen stock) {
         return stock.getCantidadActual() != null ? stock.getCantidadActual() : BigDecimal.ZERO;
+    }
+
+    private int stockMinimoDe(StockAlmacen stock) {
+        if (stock.getStockMinimo() != null) {
+            return stock.getStockMinimo().intValue();
+        }
+        return stockMinimoDe(stock.getProducto());
     }
 
     private int stockMinimoDe(Producto producto) {

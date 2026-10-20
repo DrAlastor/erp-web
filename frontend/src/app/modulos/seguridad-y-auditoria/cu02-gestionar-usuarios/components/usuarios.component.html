@@ -92,37 +92,88 @@
     </div>
   }
   @if (selected(); as user) {
-    <section class="detail" aria-label="Detalle de usuario">
-      <h3>Detalle de {{ user.username }}</h3>
-      <p>Roles: {{ roleNames(user) }} · Estado: {{ user.enable ? 'Activo' : 'Inactivo' }}</p>
-      <p>
-        Creación:
-        {{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Sin registro' }}
-      </p>
-      <form #edit="ngForm" (ngSubmit)="save()">
-        <label
-          >Nombre completo<input
-            name="fullname"
-            [(ngModel)]="fullname"
-            required
-            maxlength="150" /></label
-        ><label
-          >Correo<input
-            type="email"
-            name="email"
-            [(ngModel)]="email"
-            required
-            email
-            maxlength="100"
-        /></label>
-        <p>El nombre de usuario, la contraseña y los roles no se modifican desde esta pantalla.</p>
-        <div class="actions">
-          <button class="primary" [disabled]="edit.invalid || busy()">
-            {{ busy() ? 'Guardando...' : 'Guardar cambios' }}</button
-          ><button type="button" [disabled]="busy()" (click)="selected.set(null)">Cancelar</button>
+    <div class="modal-backdrop" (click)="selected.set(null)">
+      <div class="modal-card modal-detalle" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-header-info">
+            <div class="user-avatar-badge">
+              {{ (user.fullname || user.username).substring(0, 2).toUpperCase() }}
+            </div>
+            <div>
+              <h3>{{ user.fullname || user.username }}</h3>
+              <p class="user-subhead">
+                <span>{{ user.email }}</span>
+                <span class="dot-sep">·</span>
+                <span class="badge" [class.inactive]="!user.enable">
+                  {{ user.enable ? 'Activo' : 'Inactivo' }}
+                </span>
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" (click)="selected.set(null)">✕</button>
+        </header>
+
+        <div class="modal-body-form">
+          <div class="user-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Rol del Sistema</span>
+              <span class="meta-value">{{ roleNames(user) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Usuario (Login)</span>
+              <span class="meta-value font-mono">{{ user.username }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Fecha de Registro</span>
+              <span class="meta-value">
+                {{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Sin registro' }}
+              </span>
+            </div>
+          </div>
+
+          <form #edit="ngForm" (ngSubmit)="save()" autocomplete="off">
+            <div class="form-group">
+              <label>Nombre Completo <span class="required">*</span></label>
+              <input
+                type="text"
+                name="fullname"
+                [(ngModel)]="fullname"
+                required
+                maxlength="150"
+                placeholder="Nombre completo"
+              />
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+              <label>Correo Electrónico <span class="required">*</span></label>
+              <input
+                type="email"
+                name="email"
+                [(ngModel)]="email"
+                required
+                email
+                maxlength="100"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+
+            <div class="user-note-box">
+              <span class="info-icon">ℹ</span>
+              <span>El nombre de usuario, la contraseña y los roles se administran de forma independiente.</span>
+            </div>
+
+            <footer class="modal-footer" style="margin-top: 20px; margin-left: -24px; margin-right: -24px; margin-bottom: -20px;">
+              <button type="button" class="btn-cancelar" [disabled]="busy()" (click)="selected.set(null)">
+                Cancelar
+              </button>
+              <button type="submit" class="btn-guardar primary" [disabled]="edit.invalid || busy()">
+                {{ busy() ? 'Guardando...' : 'Guardar Cambios' }}
+              </button>
+            </footer>
+          </form>
         </div>
-      </form>
-    </section>
+      </div>
+    </div>
   }
   @if (confirmation(); as user) {
     <div class="modal-backdrop">
@@ -157,7 +208,11 @@
           <button type="button" class="btn-close" (click)="cerrarModalCrear()">✕</button>
         </header>
 
-        <form (ngSubmit)="guardarNuevoUsuario()" class="modal-body-form">
+        @if (error()) {
+          <p class="message error modal-error-banner" role="alert">{{ error() }}</p>
+        }
+
+        <form (ngSubmit)="guardarNuevoUsuario()" class="modal-body-form" autocomplete="off">
           <!-- Selector de Empleado -->
           <div class="form-group">
             <label>Colaborador de la Empresa <span class="required">*</span></label>
@@ -177,24 +232,24 @@
           <div class="form-row">
             <div class="form-group">
               <label>Nombre Completo <span class="required">*</span></label>
-              <input type="text" [(ngModel)]="crearFullname" name="crearFullname" required placeholder="Ej. Carlos Roca" />
+              <input type="text" [(ngModel)]="crearFullname" name="crearFullname" required placeholder="Ej. Carlos Roca" autocomplete="off" />
             </div>
 
             <div class="form-group">
               <label>Correo Electrónico <span class="required">*</span></label>
-              <input type="email" [(ngModel)]="crearEmail" name="crearEmail" required placeholder="carlos.roca@asustech.bo" />
+              <input type="email" [(ngModel)]="crearEmail" name="crearEmail" required placeholder="carlos.roca@asustech.bo" autocomplete="off" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label>Nombre de Usuario <span class="required">*</span></label>
-              <input type="text" [(ngModel)]="crearUsername" name="crearUsername" required placeholder="carlos.roca" />
+              <input type="text" [(ngModel)]="crearUsername" name="crearUsername" required placeholder="carlos.roca o admin@asustech.bo" autocomplete="off" />
             </div>
 
             <div class="form-group">
               <label>Contraseña Inicial <span class="required">*</span></label>
-              <input type="password" [(ngModel)]="crearPassword" name="crearPassword" required placeholder="Mínimo 8 caracteres" />
+              <input type="password" [(ngModel)]="crearPassword" name="crearPassword" required placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
             </div>
           </div>
 

@@ -1,0 +1,91 @@
+@use '../../ventas-comun';
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.chosen {
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+.inline input {
+  flex: 1;
+}
+
+.picker {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 10px;
+  max-height: 220px;
+  overflow: auto;
+
+  button {
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-main);
+
+    &:hover {
+      background: var(--bg-subtle);
+    }
+  }
+
+  small {
+    color: var(--text-muted);
+    margin-left: 6px;
+    font-family: var(--font-mono);
+  }
+}
+
+.items {
+  td:first-child {
+    width: 100%;
+  }
+
+  select {
+    min-width: 220px;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+  }
+}
+
+.add {
+  margin-top: 10px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.detail-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 650px) {
+  .grid,
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}

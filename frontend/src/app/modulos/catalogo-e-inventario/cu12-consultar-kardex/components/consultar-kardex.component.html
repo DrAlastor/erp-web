@@ -27,7 +27,7 @@
     <form class="filters-bar" (ngSubmit)="consultar()">
       <label class="flex-grow">
         Producto
-        <select [(ngModel)]="productoId" name="producto">
+        <select [(ngModel)]="productoId" name="producto" (change)="consultar()">
           <option value="">Selecciona un producto</option>
           @for (prod of productos(); track prod.id) {
             <option [value]="prod.id">{{ prod.nombre }} ({{ prod.codigoSku }})</option>
@@ -36,7 +36,7 @@
       </label>
       <label>
         Almacén
-        <select [(ngModel)]="almacenId" name="almacen">
+        <select [(ngModel)]="almacenId" name="almacen" (change)="consultar()">
           @for (alm of almacenes(); track alm.id) {
             <option [value]="alm.id">{{ alm.nombre }}</option>
           }
@@ -44,7 +44,7 @@
       </label>
       <label>
         Método de costeo
-        <select [(ngModel)]="metodo" name="metodo">
+        <select [(ngModel)]="metodo" name="metodo" (change)="consultar()">
           <option value="PROMEDIO">Promedio Ponderado</option>
           <option value="PEPS">PEPS / FIFO</option>
         </select>

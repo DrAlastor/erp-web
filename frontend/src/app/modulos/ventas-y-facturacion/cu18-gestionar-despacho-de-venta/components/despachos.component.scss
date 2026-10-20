@@ -1,0 +1,137 @@
+@use '../../ventas-comun';
+
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-top: 20px;
+  border-radius: 12px;
+  background: var(--bg-subtle);
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+
+    &.active {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+.message.error {
+  margin-top: 16px;
+}
+
+.faltantes {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-weight: 400;
+}
+
+.provisional {
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px dashed rgba(255, 149, 0, 0.6);
+  border-radius: 14px;
+  background: rgba(255, 149, 0, 0.06);
+
+  h3 {
+    font-size: 14px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 149, 0, 0.25);
+  }
+}
+
+.order {
+  margin-bottom: 20px;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  p {
+    margin: 2px 0 0;
+  }
+}
+
+tr.done td {
+  color: var(--text-muted);
+}
+
+.short-stock {
+  color: var(--destructive);
+  font-weight: 600;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed var(--bg-card-border);
+  border-radius: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.obs-field {
+  margin-top: 16px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+dl.facts {
+  grid-template-columns: max-content 1fr;
+  justify-content: start;
+  margin: 12px 0 20px;
+
+  dd {
+    text-align: left;
+  }
+}
+
+@media (max-width: 650px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

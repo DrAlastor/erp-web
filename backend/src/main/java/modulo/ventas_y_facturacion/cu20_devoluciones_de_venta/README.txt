@@ -1,4 +1,5 @@
-Aqui se desarrollara el CU20 - Gestionar Devoluciones de Venta
+CU20 - Gestionar Devoluciones y Notas de Crédito (HU-20)
 MÓDULO 3 — Ventas & Facturación
 
-Descripcion: Espacio de desarrollo para el backend del caso de uso CU20.
+Descripcion: Backend del caso de uso CU20. Endpoints GET /api/ventas/buscar y /api/notas-credito:
+nota de crédito, reingreso al Kardex, ajuste de cuentas por cobrar o caja y asiento de ajuste fiscal.

@@ -141,4 +141,17 @@ public class MovimientoInventarioController {
     public ResponseEntity<List<AlmacenSimpleResponse>> listarAlmacenes() {
         return ResponseEntity.ok(service.listarAlmacenesActivos());
     }
+
+    /**
+     * CRUD Stock Mínimo: Modifica el stock mínimo para una existencia en almacén o globalmente.
+     */
+    @PutMapping("/stock/{stockId}/minimo")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
+    public ResponseEntity<StockAlmacenResponse> actualizarStockMinimo(
+            @PathVariable Long stockId,
+            @Valid @RequestBody ActualizarStockMinimoRequest request
+    ) {
+        StockAlmacenResponse response = service.actualizarStockMinimo(stockId, request);
+        return ResponseEntity.ok(response);
+    }
 }
