@@ -1,0 +1,71 @@
+<div class="table-scroll" [attr.aria-busy]="loading()">
+  <table>
+    <caption class="sr-only">Cuotas de cuentas por pagar a proveedores</caption>
+    <thead>
+      <tr>
+        <th>Proveedor</th>
+        <th>Factura / cuota</th>
+        <th>Vencimiento</th>
+        <th class="num">Monto</th>
+        <th class="num">Pagado</th>
+        <th class="num">Saldo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        @for (f of filasSkeleton; track f) {
+          <tr aria-hidden="true">
+            <td colspan="8"><span class="skeleton row"></span></td>
+          </tr>
+        }
+      } @else {
+        @for (c of cuentas(); track c.id) {
+          @let estado = estadoVisible(c);
+          <tr [class.fila-vencida]="estado === 'VENCIDA'">
+            <td>
+              <strong>{{ c.proveedorRazonSocial }}</strong>
+              <span class="cell-sub">NIT/CI {{ c.proveedorNitCi }}</span>
+            </td>
+            <td class="mono">{{ c.numeroFactura }} <span class="cell-sub">Cuota {{ c.numeroCuota }}</span></td>
+            <td class="mono">
+              {{ c.fechaVencimiento }}
+              @if (estado === 'VENCIDA') {
+                <span class="atraso">{{ c.diasVencido }} {{ c.diasVencido === 1 ? 'día' : 'días' }} de atraso</span>
+              }
+            </td>
+            <td class="num">Bs. {{ c.montoTotal | number: '1.2-2' }}</td>
+            <td class="num">Bs. {{ c.montoPagado | number: '1.2-2' }}</td>
+            <td class="num"><strong>Bs. {{ c.saldo | number: '1.2-2' }}</strong></td>
+            <td><span class="badge" [class]="claseEstado(estado)">{{ estado }}</span></td>
+            <td>
+              <div class="actions">
+                <button type="button" class="btn-action-view" (click)="ver.emit(c.id)"
+                  [attr.aria-label]="'Ver detalle de la cuota ' + c.numeroCuota + ' de ' + c.numeroFactura">Ver</button>
+                @if (c.saldo > 0) {
+                  <button type="button" class="btn-action-edit" *siPermiso="'CONTABILIDAD_CREAR'" (click)="pagar.emit(c.id)"
+                    [attr.aria-label]="'Registrar pago de la cuota ' + c.numeroCuota + ' de ' + c.numeroFactura">Pagar</button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">
+              {{ filtrado() ? 'No hay cuentas por pagar con estos filtros.' : 'Aún no hay cuentas por pagar registradas. Genera cuotas desde una compra a crédito.' }}
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
+<nav class="pagination" aria-label="Paginación de cuentas por pagar">
+  <span>{{ total() }} cuotas</span>
+  <div>
+    <button type="button" [disabled]="page() === 0 || loading()" (click)="navegar.emit(-1)">Anterior</button>
+    <span>Página {{ pages() ? page() + 1 : 0 }} de {{ pages() }}</span>
+    <button type="button" [disabled]="page() + 1 >= pages() || loading()" (click)="navegar.emit(1)">Siguiente</button>
+  </div>
+</nav>

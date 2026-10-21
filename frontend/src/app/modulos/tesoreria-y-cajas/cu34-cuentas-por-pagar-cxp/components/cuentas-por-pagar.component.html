@@ -1,0 +1,71 @@
+<div class="cxp-header">
+  <div>
+    <h2>Cuentas por pagar</h2>
+    <p>Controla las cuotas con proveedores, registra pagos y anticipa los vencimientos.</p>
+  </div>
+  @if (!forbidden()) {
+    <button type="button" class="primary" *siPermiso="'CONTABILIDAD_CREAR'" (click)="success.set(''); generando.set(true)">
+      + Generar cuotas desde compra
+    </button>
+  }
+</div>
+
+@if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+  </div>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  <app-cxp-resumen [refresco]="refresco()" (proveedorSeleccionado)="filtrarProveedor($event)" />
+
+  <form class="filters" (ngSubmit)="load(true)" role="search" aria-label="Filtrar cuentas por pagar">
+    <label class="grow">
+      Buscar
+      <input name="search" type="search" [(ngModel)]="search" maxlength="150" placeholder="Proveedor, NIT/CI o N° de factura" />
+    </label>
+    <label>
+      Estado
+      <select name="estado" [(ngModel)]="estado" (change)="load(true)">
+        @for (f of filtros; track f.value) {
+          <option [value]="f.value">{{ f.label }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Proveedor
+      <select name="proveedorId" [ngModel]="proveedorId" (ngModelChange)="proveedorId = $event; load(true)">
+        <option [ngValue]="null">Todos los proveedores</option>
+        @for (p of proveedores(); track p.id) {
+          <option [ngValue]="p.id">{{ p.razonSocial }}</option>
+        }
+      </select>
+    </label>
+    <button type="submit" class="primary" [disabled]="loading()">Buscar</button>
+    @if (search || estado || proveedorId) {
+      <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+  </form>
+
+  <app-cxp-tabla
+    [cuentas]="cuentas()"
+    [loading]="loading()"
+    [filtrado]="!!(search || estado || proveedorId)"
+    [page]="page"
+    [pages]="pages()"
+    [total]="total()"
+    (ver)="detalle.set({ id: $event, pagar: false })"
+    (pagar)="success.set(''); detalle.set({ id: $event, pagar: true })"
+    (navegar)="navigate($event)" />
+
+  @if (detalle(); as d) {
+    <app-cxp-detalle [cuentaId]="d.id" [iniciarPago]="d.pagar" (changed)="onChanged($event)" (closed)="detalle.set(null)" />
+  }
+  @if (generando()) {
+    <app-cxp-generar-cuotas (generado)="onGenerado($event)" (closed)="generando.set(false)" />
+  }
+}

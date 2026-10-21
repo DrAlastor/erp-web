@@ -1,0 +1,68 @@
+@use 'dashboard-base';
+
+:host {
+  margin-top: 0;
+}
+
+.panel {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.estados {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .badge {
+    justify-self: start;
+  }
+}
+
+.barra {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--text-dim);
+  }
+}
+
+.extra {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--bg-card-border);
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 16px;
+  }
+}

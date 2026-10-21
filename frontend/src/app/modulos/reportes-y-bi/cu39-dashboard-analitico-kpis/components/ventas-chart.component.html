@@ -1,0 +1,44 @@
+<section class="panel" aria-labelledby="dash-ventas-title">
+  <div class="panel-head">
+    <div>
+      <p class="eyebrow">Últimos 30 días</p>
+      <h3 id="dash-ventas-title">Ventas diarias</h3>
+    </div>
+    @if (!loading() && ventas(); as v) {
+      <div class="resumen">
+        <strong class="mono-val">Bs. {{ total30() | number: '1.2-2' }}</strong>
+        <small [class]="claseVariacion(v.variacionPct)">{{ textoVariacion(v.variacionPct) }}</small>
+      </div>
+    }
+  </div>
+  <app-bloque-estado nombre="Ventas diarias" [loading]="loading()" [disponible]="!!ventas()" [filas]="5"
+    [vacio]="sinVentas()" vacioTexto="No se registraron ventas en los últimos 30 días.">
+    <div class="chart">
+      <span class="max mono-val" aria-hidden="true">Bs. {{ maximo() | number: '1.0-0' }}</span>
+      <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" preserveAspectRatio="none" role="img"
+        [attr.aria-label]="'Ventas diarias de los últimos ' + serie().length + ' días; máximo Bs. ' + (maximo() | number: '1.2-2')">
+        <line x1="0" [attr.y1]="alto / 2" [attr.x2]="ancho" [attr.y2]="alto / 2" class="guia" />
+        <line x1="0" [attr.y1]="alto - 0.5" [attr.x2]="ancho" [attr.y2]="alto - 0.5" class="base" />
+        @for (b of barras(); track b.fecha; let ultimo = $last) {
+          <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.ancho" [attr.height]="b.alto" rx="2"
+            [class.hoy]="ultimo" [class.cero]="b.total === 0">
+            <title>{{ fechaCorta(b.fecha) }}: Bs. {{ b.total | number: '1.2-2' }}</title>
+          </rect>
+        }
+      </svg>
+      <div class="eje-x" aria-hidden="true">
+        @for (e of etiquetasX(); track e.x) {
+          <span [style.left.%]="e.x">{{ e.texto }}</span>
+        }
+      </div>
+    </div>
+    <table class="sr-only">
+      <caption>Ventas por día</caption>
+      <tbody>
+        @for (p of serie(); track p.fecha) {
+          <tr><th scope="row">{{ p.fecha }}</th><td>Bs. {{ p.total | number: '1.2-2' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </app-bloque-estado>
+</section>

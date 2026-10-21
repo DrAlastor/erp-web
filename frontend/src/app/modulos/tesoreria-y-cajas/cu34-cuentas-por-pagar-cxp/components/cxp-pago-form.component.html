@@ -1,0 +1,75 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="cxp-pago-title"
+    aria-describedby="cxp-pago-desc" appModalFoco (cerrar)="cerrar()">
+    <header class="modal-header">
+      <div>
+        <h3 id="cxp-pago-title">Registrar pago</h3>
+        <p id="cxp-pago-desc">
+          {{ cuenta().proveedorRazonSocial }} · Factura {{ cuenta().numeroFactura }} · cuota {{ cuenta().numeroCuota }}
+        </p>
+      </div>
+      <button type="button" class="close-btn" aria-label="Cerrar" [disabled]="busy()" (click)="cerrar()">✕</button>
+    </header>
+
+    <div class="saldo">
+      <span>Saldo pendiente</span>
+      <strong>Bs. {{ cuenta().saldo | number: '1.2-2' }}</strong>
+    </div>
+
+    <form class="form-grid" (ngSubmit)="guardar()" id="cxp-pago-form">
+      <label>
+        Forma de pago *
+        <select name="formaPagoId" [ngModel]="formaPagoId() ?? ''" (ngModelChange)="formaPagoId.set($event ? +$event : null)"
+          [disabled]="busy() || formasCargando()" [class.invalid]="intentado() && !formaPagoId()" required>
+          <option value="">{{ formasCargando() ? 'Cargando formas de pago...' : 'Selecciona una forma de pago' }}</option>
+          @for (f of formas(); track f.id) {
+            <option [value]="f.id">{{ f.nombre }}</option>
+          }
+        </select>
+      </label>
+      <div class="field">
+        <label for="cxp-pago-monto">Monto (Bs.) *</label>
+        <div class="inline">
+          <input id="cxp-pago-monto" name="monto" type="number" min="0.01" step="0.01" [max]="cuenta().saldo" required
+            [ngModel]="monto()" (ngModelChange)="onMonto($event)" [disabled]="busy()"
+            [class.invalid]="intentado() && !!validacion()" aria-describedby="cxp-pago-restante" />
+          <button type="button" [disabled]="busy()" (click)="pagarSaldo()">Pagar saldo</button>
+        </div>
+        <small id="cxp-pago-restante" class="hint">
+          Saldo después del pago: Bs. {{ saldoRestante() | number: '1.2-2' }}
+        </small>
+      </div>
+      <label>
+        Fecha de pago
+        <input name="fechaPago" type="date" [max]="hoy" [(ngModel)]="fechaPago" [disabled]="busy()" />
+      </label>
+      <label>
+        N° de recibo
+        <input name="numeroRecibo" maxlength="50" [(ngModel)]="numeroRecibo" [disabled]="busy()" placeholder="Opcional" />
+      </label>
+      <label class="wide">
+        Transacción externa
+        <input name="transaccionExterna" maxlength="100" [(ngModel)]="transaccionExterna" [disabled]="busy()"
+          placeholder="N° de transferencia o comprobante bancario (opcional)" />
+      </label>
+      <label class="wide">
+        Observaciones
+        <textarea name="observaciones" rows="2" maxlength="500" [(ngModel)]="observaciones" [disabled]="busy()"></textarea>
+      </label>
+    </form>
+
+    @if (intentado() && validacion()) {
+      <p class="message error" role="alert">{{ validacion() }}</p>
+    }
+    @if (error()) {
+      <p class="message error" role="alert">{{ error() }}</p>
+    }
+
+    <footer class="modal-footer">
+      <button type="button" [disabled]="busy()" (click)="cerrar()">Cancelar</button>
+      <button type="submit" form="cxp-pago-form" class="primary" [disabled]="busy()">
+        {{ busy() ? 'Registrando...' : 'Registrar pago' }}
+      </button>
+    </footer>
+  </section>
+</div>

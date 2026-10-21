@@ -102,6 +102,10 @@
       <app-facturacion />
       } @else if (fn.id === 'devoluciones-y-notas-de-credito' || fn.id === 'devoluciones' || fn.id === 'cu20-devoluciones-de-venta' || fn.id === 'cu20-gestionar-devoluciones-y-notas-de-credito') {
       <app-devoluciones />
+      } @else if (fn.id === 'gestionar-cuentas-por-pagar' || fn.id === 'cu24-gestionar-cuentas-por-pagar') {
+      <app-cuentas-por-pagar />
+      } @else if (fn.id === 'dashboard-ejecutivo' || fn.id === 'cu36-dashboard-ejecutivo') {
+      <app-dashboard-ejecutivo />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

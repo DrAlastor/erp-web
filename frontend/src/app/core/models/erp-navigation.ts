@@ -61,7 +61,7 @@ export const ERP_MODULES: ErpModule[] = [
       { id: 'gestionar-proveedores', slug: 'gestionar-proveedores', name: 'Gestionar Proveedores', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
       { id: 'gestionar-ordenes-de-compra', slug: 'gestionar-ordenes-de-compra', name: 'Gestionar Órdenes de Compra', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
       { id: 'registrar-compra-y-devolucion', slug: 'registrar-compra-y-devolucion', name: 'Registrar Compra y Devolución de Proveedores', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'gestionar-cuentas-por-pagar', slug: 'gestionar-cuentas-por-pagar', name: 'Gestionar Cuentas por Pagar', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] }
+      { id: 'gestionar-cuentas-por-pagar', slug: 'gestionar-cuentas-por-pagar', name: 'Gestionar Cuentas por Pagar', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'CONTADOR', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] }
     ]
   },
   {
@@ -94,7 +94,7 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Reportes',
     icon: '◰',
     functions: [
-      { id: 'dashboard-ejecutivo', slug: 'dashboard-ejecutivo', name: 'Dashboard Ejecutivo', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'dashboard-ejecutivo', slug: 'dashboard-ejecutivo', name: 'Dashboard Ejecutivo', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO'] },
       { id: 'gestionar-reportes-predefinidos', slug: 'gestionar-reportes-predefinidos', name: 'Gestionar Reportes Predefinidos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'ALMACENERO', 'CAJERO'] },
       { id: 'gestionar-reportes-qbe', slug: 'gestionar-reportes-qbe', name: 'Gestionar Reportes QBE', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
       { id: 'gestionar-reportes-por-voz', slug: 'gestionar-reportes-por-voz', name: 'Gestionar Reportes por Voz', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] }

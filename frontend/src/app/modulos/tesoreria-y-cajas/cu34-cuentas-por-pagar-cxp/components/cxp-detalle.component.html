@@ -1,0 +1,78 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="cxp-detalle-title"
+    appModalFoco (cerrar)="cerrar()">
+    <header class="modal-header">
+      <h3 id="cxp-detalle-title">
+        Cuenta por pagar
+        @if (cuenta(); as c) { · {{ c.numeroFactura }} cuota {{ c.numeroCuota }} }
+      </h3>
+      <button type="button" class="close-btn" aria-label="Cerrar" (click)="cerrar()">✕</button>
+    </header>
+
+    @if (loading()) {
+      <div aria-busy="true" role="status" aria-label="Cargando cuenta por pagar">
+        <span class="skeleton bloque"></span>
+        <span class="skeleton bloque corto"></span>
+      </div>
+    } @else if (cuenta(); as c) {
+      @let estado = estadoVisible(c);
+      <dl class="info">
+        <div><dt>Estado</dt><dd><span class="badge" [class]="claseEstado(estado)">{{ estado }}</span>
+          @if (estado === 'VENCIDA') { <span class="atraso">{{ c.diasVencido }} días de atraso</span> }</dd></div>
+        <div><dt>Vencimiento</dt><dd class="mono">{{ c.fechaVencimiento }}</dd></div>
+        <div><dt>Proveedor</dt><dd>{{ c.proveedorRazonSocial }} <span class="cell-sub">NIT/CI {{ c.proveedorNitCi }}</span></dd></div>
+        <div><dt>Compra</dt><dd class="mono">{{ c.numeroFactura }} <span class="cell-sub">{{ c.fechaCompra }}</span></dd></div>
+        <div><dt>Total de la compra</dt><dd class="mono">Bs. {{ c.totalCompra | number: '1.2-2' }}</dd></div>
+        <div><dt>Sucursal</dt><dd>{{ c.sucursalNombre }}</dd></div>
+      </dl>
+
+      <div class="totals">
+        <div><span>Monto de la cuota</span><strong>Bs. {{ c.montoTotal | number: '1.2-2' }}</strong></div>
+        <div><span>Pagado</span><strong>Bs. {{ c.montoPagado | number: '1.2-2' }}</strong></div>
+        <div class="grand"><span>Saldo</span><strong>Bs. {{ c.saldo | number: '1.2-2' }}</strong></div>
+      </div>
+
+      <h4 class="section-title">Historial de pagos</h4>
+      <div class="table-scroll">
+        <table>
+          <caption class="sr-only">Pagos registrados para esta cuota, del más reciente al más antiguo</caption>
+          <thead>
+            <tr><th>Fecha</th><th>Forma de pago</th><th>Recibo / transacción</th><th>Registrado por</th><th class="num">Monto</th></tr>
+          </thead>
+          <tbody>
+            @for (p of c.pagos; track p.id) {
+              <tr>
+                <td class="mono">{{ p.fechaPago }}</td>
+                <td>{{ p.formaPagoNombre }}
+                  @if (p.observaciones) { <span class="cell-sub obs">{{ p.observaciones }}</span> }</td>
+                <td class="mono">{{ p.numeroRecibo || '—' }}
+                  @if (p.transaccionExterna) { <span class="cell-sub">{{ p.transaccionExterna }}</span> }</td>
+                <td>{{ p.usuarioNombre || '—' }}</td>
+                <td class="num"><strong>Bs. {{ p.monto | number: '1.2-2' }}</strong></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty">Esta cuota aún no tiene pagos registrados.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    }
+
+    @if (error()) {
+      <p class="message error" role="alert">{{ error() }}</p>
+    }
+
+    <footer class="modal-footer">
+      @if (cuenta(); as c) {
+        @if (c.saldo > 0) {
+          <button type="button" class="primary" *siPermiso="'CONTABILIDAD_CREAR'" (click)="pagando.set(true)">Registrar pago</button>
+        }
+      }
+      <button type="button" (click)="cerrar()">Cerrar</button>
+    </footer>
+  </section>
+  @if (pagando() && cuenta(); as c) {
+    <app-cxp-pago-form [cuenta]="c" (pagado)="onPagado($event)" (closed)="pagando.set(false)" />
+  }
+</div>
