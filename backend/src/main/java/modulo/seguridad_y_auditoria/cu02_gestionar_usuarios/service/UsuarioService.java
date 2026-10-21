@@ -13,11 +13,8 @@ import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.mapper.UsuarioMapper
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.UsuarioGestionRepository;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.UsuarioSpecifications;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.dto.RolAsignadoDto;
-import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.entity.Rol;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.exception.RecursoNoEncontrado;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.exception.ReglaDeNegocio;
-import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.repository.RolRepositorio;
-import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.repository.UsuarioRolRepositorio;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioActual;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAsignaciones;
 
@@ -57,8 +54,6 @@ public class UsuarioService {
     private static final int MAX_BYTES_CONTRASENA = 72;
 
     private final UsuarioGestionRepository usuarioGestionRepository;
-    private final UsuarioRolRepositorio usuarioRolRepositorio;
-    private final RolRepositorio rolRepositorio;
     private final ServicioAsignaciones servicioAsignaciones;
     private final UsuarioAuditoriaService auditoria;
     private final SesionService sesionService;

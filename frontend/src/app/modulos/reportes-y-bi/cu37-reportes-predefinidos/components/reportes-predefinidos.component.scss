@@ -1,0 +1,261 @@
+:host {
+  display: block;
+}
+
+.bajada {
+  max-width: 64ch;
+  margin-bottom: 1.25rem;
+  font-size: 0.925rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.estado {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.tablero {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Catálogo ---------- */
+
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 14px;
+}
+
+.grupo {
+  margin: 0.5rem 0.4rem 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+
+  &:first-child {
+    margin-top: 0.2rem;
+  }
+}
+
+.reporte {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+
+  &.elegido {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+  }
+}
+
+/* ---------- Detalle ---------- */
+
+.detalle {
+  padding: 1.1rem 1.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 14px;
+  min-width: 0;
+}
+
+.detalle-encabezado {
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 650;
+    color: var(--text-main);
+  }
+
+  p {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 150px;
+  font-size: 0.8rem;
+  font-weight: 550;
+  color: var(--text-main);
+
+  &.corto {
+    min-width: 0;
+    width: 90px;
+  }
+
+  input,
+  select {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
+}
+
+.error {
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  background: var(--destructive-light);
+  color: var(--destructive);
+  font-size: 0.875rem;
+}
+
+.resultado-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid var(--bg-card-border);
+  border-radius: 12px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 0.55rem 0.75rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-subtle);
+    font-size: 0.75rem;
+    font-weight: 650;
+    color: var(--text-secondary);
+  }
+
+  tbody tr + tr td {
+    border-top: 1px solid var(--bg-card-border);
+  }
+
+  tbody tr:hover td {
+    background: var(--primary-light);
+  }
+
+  tfoot td {
+    border-top: 2px solid var(--text-main);
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .vacio {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    white-space: normal;
+  }
+}
+
+.pie {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.boton-principal,
+.boton-secundario {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.boton-principal {
+  background: var(--primary);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+}
+
+.boton-secundario {
+  background: var(--bg-subtle);
+  border-color: var(--bg-card-border);
+  color: var(--text-main);
+}

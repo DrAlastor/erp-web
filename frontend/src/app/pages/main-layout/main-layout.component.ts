@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } 
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
-import { ThemeService } from '../../core/services/theme.service';
 import { UsuariosComponent } from '../../modulos/seguridad-y-auditoria/cu02-gestionar-usuarios/components/usuarios.component';
 import { MovimientoInventarioComponent } from '../../modulos/catalogo-e-inventario/cu11-movimientos-de-inventario/components/movimiento-inventario.component';
 import { CatalogoComponent } from '../../modulos/catalogo-e-inventario/cu10-catalogo-de-articulos/components/catalogo.component';
@@ -25,6 +24,9 @@ import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-re
 import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
 
 import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
+import { PersonalizarAparienciaComponent } from '../../modulos/seguridad-y-auditoria/cu06-personalizar-apariencia/components/personalizar-apariencia.component';
+import { AparienciaService } from '../../modulos/seguridad-y-auditoria/cu06-personalizar-apariencia/services/apariencia.service';
+import { ReportesPredefinidosComponent } from '../../modulos/reportes-y-bi/cu37-reportes-predefinidos/components/reportes-predefinidos.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -32,7 +34,8 @@ import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-p
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
-    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
+    PersonalizarAparienciaComponent, ReportesPredefinidosComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,10 +44,12 @@ export class MainLayoutComponent {
   readonly permisos = inject(PermisosService);
   readonly modules = ERP_MODULES;
   readonly authService = inject(AuthService);
-  readonly themeService = inject(ThemeService);
+  readonly apariencia = inject(AparienciaService);
 
   constructor() {
     this.permisos.cargar().subscribe({ error: () => this.permisos.limpiar() });
+    // CU06: la apariencia de la empresa; si falla se queda la marca NexoERP.
+    this.apariencia.cargar().subscribe({ error: () => {} });
     effect(() => {
       const mod = this.selectedModule();
       if (mod) {

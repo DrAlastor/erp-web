@@ -1,0 +1,219 @@
+<header class="encabezado">
+  <p class="bajada">
+    Define cómo ven el sistema todos los usuarios de tu empresa: logo, colores, tema y
+    preferencias visuales. Los cambios se ven en vivo y se aplican a todos al guardar.
+  </p>
+  @if (apariencia().fechaModificacion) {
+    <p class="ultima-edicion">
+      Última modificación: {{ apariencia().fechaModificacion?.replace('T', ' ')?.slice(0, 16) }}
+      @if (apariencia().modificadoPor) { · {{ apariencia().modificadoPor }} }
+    </p>
+  }
+</header>
+
+@if (!puedeEditar()) {
+  <p class="solo-lectura" role="note">
+    Estás viendo la apariencia de la empresa en modo de solo lectura. Para cambiarla se necesita el
+    permiso <code>SEGURIDAD_MODIFICAR</code> (rol Administrador).
+  </p>
+}
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (aviso()) {
+  <p class="aviso" role="status">{{ aviso() }}</p>
+}
+
+@if (cargando()) {
+  <p class="estado">Cargando apariencia…</p>
+} @else {
+  <div class="tablero">
+    <form class="ajustes" [formGroup]="formulario" (ngSubmit)="guardar()">
+      <!-- Logo -->
+      <section class="bloque">
+        <h2>Logo corporativo</h2>
+        <p class="ayuda">PNG, JPG, WEBP o SVG de hasta 512 KB. Se muestra en el menú lateral del panel.</p>
+        <div class="logo">
+          <div class="logo-vista">
+            <img [src]="logoUrl() ?? 'erp-logo.png'" alt="Logo actual de la empresa" />
+          </div>
+          <div class="logo-acciones">
+            <label class="boton-secundario" [class.deshabilitado]="!puedeEditar() || subiendoLogo()">
+              {{ subiendoLogo() ? 'Subiendo…' : (apariencia().tieneLogo ? 'Cambiar logo' : 'Subir logo') }}
+              <input type="file" class="oculto" [accept]="tiposLogo" [disabled]="!puedeEditar() || subiendoLogo()"
+                (change)="elegirLogo($event)" />
+            </label>
+            @if (apariencia().tieneLogo) {
+              <button type="button" class="boton-texto" [disabled]="!puedeEditar() || subiendoLogo()" (click)="quitarLogo()">
+                Quitar logo
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Paleta -->
+      <section class="bloque">
+        <h2>Paleta de colores</h2>
+        <p class="ayuda">Elige una paleta o define cada color. Los tonos de hover y selección se calculan solos.</p>
+        <div class="paletas" role="list">
+          @for (paleta of paletas; track paleta.nombre) {
+            <button type="button" class="paleta" role="listitem" [class.activa]="paletaActiva(paleta)"
+              [disabled]="!puedeEditar()" (click)="aplicarPaleta(paleta)" [attr.aria-pressed]="paletaActiva(paleta)">
+              <span class="muestras" aria-hidden="true">
+                <span [style.background]="paleta.primario"></span>
+                <span [style.background]="paleta.secundario"></span>
+                <span [style.background]="paleta.acento"></span>
+              </span>
+              {{ paleta.nombre }}
+            </button>
+          }
+        </div>
+        <div class="colores">
+          <label class="color">
+            <span>Primario</span>
+            <span class="color-campos">
+              <input type="color" formControlName="colorPrimario" aria-label="Elegir color primario" />
+              <input type="text" formControlName="colorPrimario" maxlength="7" spellcheck="false" />
+            </span>
+            <small>Botones, enlaces y selección</small>
+            @if (invalido('colorPrimario')) { <small class="campo-error">Formato #RRGGBB</small> }
+          </label>
+          <label class="color">
+            <span>Secundario</span>
+            <span class="color-campos">
+              <input type="color" formControlName="colorSecundario" aria-label="Elegir color secundario" />
+              <input type="text" formControlName="colorSecundario" maxlength="7" spellcheck="false" />
+            </span>
+            <small>Botones invertidos y contrastes</small>
+            @if (invalido('colorSecundario')) { <small class="campo-error">Formato #RRGGBB</small> }
+          </label>
+          <label class="color">
+            <span>Acento</span>
+            <span class="color-campos">
+              <input type="color" formControlName="colorAcento" aria-label="Elegir color de acento" />
+              <input type="text" formControlName="colorAcento" maxlength="7" spellcheck="false" />
+            </span>
+            <small>Detalles destacados de la marca</small>
+            @if (invalido('colorAcento')) { <small class="campo-error">Formato #RRGGBB</small> }
+          </label>
+        </div>
+      </section>
+
+      <!-- Tema y preferencias -->
+      <section class="bloque">
+        <h2>Tema y preferencias visuales</h2>
+        <p class="ayuda">El tema lo define la empresa para todos sus usuarios.</p>
+
+        <fieldset class="opciones">
+          <legend>Tema</legend>
+          <label class="opcion"><input type="radio" formControlName="tema" value="CLARO" /> Claro</label>
+          <label class="opcion"><input type="radio" formControlName="tema" value="OSCURO" /> Oscuro</label>
+        </fieldset>
+
+        <fieldset class="opciones">
+          <legend>Tamaño de fuente</legend>
+          @for (t of tamanos; track t.valor) {
+            <label class="opcion"><input type="radio" formControlName="tamanoFuente" [value]="t.valor" /> {{ t.etiqueta }}</label>
+          }
+        </fieldset>
+
+        <fieldset class="opciones">
+          <legend>Bordes</legend>
+          @for (b of estilosBordes; track b.valor) {
+            <label class="opcion">
+              <input type="radio" formControlName="bordes" [value]="b.valor" />
+              <span class="borde-muestra" [style.border-radius.px]="b.medio" aria-hidden="true"></span>
+              {{ b.etiqueta }}
+            </label>
+          }
+        </fieldset>
+
+        <label class="campo">
+          <span>Tipografía</span>
+          <select formControlName="tipografia">
+            @for (t of tipografias; track t.valor) {
+              <option [value]="t.valor">{{ t.etiqueta }}</option>
+            }
+          </select>
+        </label>
+      </section>
+
+      <!-- Factura -->
+      <section class="bloque">
+        <h2>Encabezado y pie de factura</h2>
+        <p class="ayuda">Texto que acompaña a los comprobantes de la empresa.</p>
+        <label class="campo">
+          <span>Encabezado</span>
+          <textarea formControlName="encabezadoFactura" rows="2" maxlength="500"
+            placeholder="Ej.: MI EMPRESA S.R.L. - NIT: 1234567 - Santa Cruz, Bolivia"></textarea>
+          <small class="contador">{{ vista().encabezadoFactura.length }}/500</small>
+        </label>
+        <label class="campo">
+          <span>Pie</span>
+          <textarea formControlName="pieFactura" rows="2" maxlength="500"
+            placeholder="Ej.: Gracias por su compra."></textarea>
+          <small class="contador">{{ vista().pieFactura.length }}/500</small>
+        </label>
+      </section>
+
+      @if (puedeEditar()) {
+        <footer class="acciones">
+          <button type="submit" class="boton-principal" [disabled]="guardando() || formulario.invalid || !hayCambios()">
+            {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+          </button>
+          <button type="button" class="boton-texto" [disabled]="guardando() || !hayCambios()" (click)="cancelar()">
+            Cancelar
+          </button>
+          <span class="separador"></span>
+          @if (confirmandoRestablecer()) {
+            <span class="confirmar">
+              ¿Volver a la marca NexoERP? Se quitan los colores, preferencias y el logo.
+              <button type="button" class="boton-peligro" (click)="restablecer()">Sí, restablecer</button>
+              <button type="button" class="boton-texto" (click)="confirmandoRestablecer.set(false)">No</button>
+            </span>
+          } @else {
+            <button type="button" class="boton-texto" [disabled]="guardando()" (click)="confirmandoRestablecer.set(true)">
+              Restablecer marca NexoERP
+            </button>
+          }
+        </footer>
+      }
+    </form>
+
+    <!-- Vista previa -->
+    <aside class="vista-previa" aria-label="Vista previa">
+      <p class="eyebrow">Vista previa</p>
+      <div class="muestra-panel" [class.oscuro]="vista().tema === 'OSCURO'">
+        <div class="muestra-menu">
+          <img [src]="logoUrl() ?? 'erp-logo.png'" alt="" width="28" height="28" />
+          <span>Nexo<b [style.color]="vista().colorAcento">ERP</b></span>
+        </div>
+        <div class="muestra-contenido">
+          <span class="muestra-item" [style.background]="vista().colorPrimario + '1A'" [style.color]="vista().colorPrimario">
+            Función seleccionada
+          </span>
+          <button type="button" tabindex="-1" class="muestra-boton"
+            [style.background]="vista().colorPrimario" [style.color]="textoBotonPrimario()">
+            Botón principal
+          </button>
+          <button type="button" tabindex="-1" class="muestra-boton secundario"
+            [style.background]="vista().colorSecundario" [style.color]="'#FFFFFF'">
+            Secundario
+          </button>
+        </div>
+      </div>
+
+      <div class="muestra-factura">
+        <div class="factura-cabecera">
+          <img [src]="logoUrl() ?? 'erp-logo.png'" alt="" width="36" height="36" />
+          <p>{{ vista().encabezadoFactura || 'Encabezado de la factura' }}</p>
+        </div>
+        <div class="factura-cuerpo" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <p class="factura-pie">{{ vista().pieFactura || 'Pie de la factura' }}</p>
+      </div>
+    </aside>
+  </div>
+}

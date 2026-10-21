@@ -25,6 +25,22 @@ export class ThemeService {
     }
   }
 
+  /**
+   * Aplica el tema que impone la empresa (CU06) sin guardarlo como preferencia, para que
+   * landing y login sigan con el tema que eligió la persona.
+   */
+  aplicarSinGuardar(theme: Theme): void {
+    this.theme.set(theme);
+    this.applyToDocument(theme);
+  }
+
+  /** Vuelve al tema guardado en el navegador; se usa al cerrar sesión. */
+  restaurarPreferencia(): void {
+    const stored = this.readStoredTheme();
+    this.theme.set(stored);
+    this.applyToDocument(stored);
+  }
+
   private applyToDocument(theme: Theme): void {
     try {
       document.documentElement.classList.toggle('dark', theme === 'dark');

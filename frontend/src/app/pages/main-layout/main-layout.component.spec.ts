@@ -2,13 +2,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, NEVER } from 'rxjs';
 import { signal } from '@angular/core';
 import { MainLayoutComponent } from './main-layout.component';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ERP_MODULES } from '../../core/models/erp-navigation';
 import { environment } from '../../../environments/environment';
+import { AparienciaService } from '../../modulos/seguridad-y-auditoria/cu06-personalizar-apariencia/services/apariencia.service';
 
 describe('Panel de control compartido', () => {
   const params = new BehaviorSubject(convertToParamMap({}));
@@ -39,6 +40,7 @@ describe('Panel de control compartido', () => {
           },
         },
         { provide: ThemeService, useValue: { isDark: () => false, toggle: () => {} } },
+        { provide: AparienciaService, useValue: { cargar: () => NEVER, logoUrl: signal(null) } },
       ],
     }).compileComponents();
   });

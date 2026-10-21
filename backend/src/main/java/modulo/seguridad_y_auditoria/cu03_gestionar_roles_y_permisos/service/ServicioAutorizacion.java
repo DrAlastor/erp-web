@@ -4,7 +4,6 @@ import modulo.seguridad_y_auditoria.compartido.entity.Rol;
 import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.catalogo.CatalogoPermisos;
-import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.repository.UsuarioRolRepositorio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,25 +24,17 @@ public class ServicioAutorizacion {
 
     private final UsuarioRepository usuarioRepository;
     private final ServicioRoles servicioRoles;
-    private final UsuarioRolRepositorio usuarioRolRepositorio;
     private final JdbcTemplate jdbcTemplate;
 
     /** Permisos efectivos cacheados por usuario. */
     private final Map<Long, Set<String>> cachePorUsuario = new ConcurrentHashMap<>();
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ServicioAutorizacion(UsuarioRepository usuarioRepository,
                                 ServicioRoles servicioRoles,
-                                UsuarioRolRepositorio usuarioRolRepositorio,
                                 JdbcTemplate jdbcTemplate) {
         this.usuarioRepository = usuarioRepository;
         this.servicioRoles = servicioRoles;
-        this.usuarioRolRepositorio = usuarioRolRepositorio;
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public ServicioAutorizacion(UsuarioRolRepositorio usuarioRolRepositorio) {
-        this(null, null, usuarioRolRepositorio, null);
     }
 
     /**
@@ -97,13 +88,6 @@ public class ServicioAutorizacion {
     }
 
     private Set<String> leerDeLaBase(Long usuarioId) {
-        if (usuarioRepository == null) {
-            if (usuarioRolRepositorio != null) {
-                return Set.copyOf(new LinkedHashSet<>(usuarioRolRepositorio.findCodigosDePermisosEfectivos(usuarioId)));
-            }
-            return Set.of();
-        }
-
         Set<String> perms = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
@@ -214,6 +198,14 @@ public class ServicioAutorizacion {
                 perms.add("INVENTARIO_CREAR");
                 perms.add("INVENTARIO_MODIFICAR");
             }
+        } else if (f.contains("proveedor") || f.contains("compra")) {
+            // Va antes que ventas: "Registrar Compra y Devolucion de Proveedores" contiene
+            // "devolucion" y no debe dar permisos de facturación.
+            perms.add("INVENTARIO_CONSULTAR");
+            if (edicion) {
+                perms.add("INVENTARIO_CREAR");
+                perms.add("INVENTARIO_MODIFICAR");
+            }
         } else if (f.contains("cliente") || f.contains("precio") || f.contains("cotizacion") || f.contains("pedido")) {
             perms.add("COMERCIAL_CONSULTAR");
             if (edicion) {
@@ -236,12 +228,6 @@ public class ServicioAutorizacion {
             if (edicion) {
                 perms.add("FACTURACION_CREAR");
                 perms.add("COMERCIAL_CREAR");
-            }
-        } else if (f.contains("proveedor") || f.contains("compra")) {
-            perms.add("INVENTARIO_CONSULTAR");
-            if (edicion) {
-                perms.add("INVENTARIO_CREAR");
-                perms.add("INVENTARIO_MODIFICAR");
             }
         } else if (f.contains("cuenta") || f.contains("contable") || f.contains("asiento") || f.contains("financiera")) {
             perms.add("CONTABILIDAD_CONSULTAR");
