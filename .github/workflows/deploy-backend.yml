@@ -63,6 +63,9 @@ jobs:
                   raise RuntimeError(f"Error AWS CLI: {res.stderr}\n{res.stdout}")
               return res.stdout.strip()
 
+          identidad = json.loads(run_aws("sts", "get-caller-identity"))
+          print(f"[*] AWS Autenticado como Cuenta: {identidad.get('Account')}, ARN: {identidad.get('Arn')}")
+
           print(f"[*] Obteniendo task definition de {TASK_FAMILY}...")
           datos = json.loads(run_aws("ecs", "describe-task-definition", "--task-definition", TASK_FAMILY))
           td = datos["taskDefinition"]
@@ -76,23 +79,87 @@ jobs:
 
           nueva_arn = nuevo["taskDefinition"]["taskDefinitionArn"]
           nueva_rev = nuevo["taskDefinition"]["revision"]
-          print(f"[+] Nueva revisión registrada: {TASK_FAMILY}:{nueva_rev}")
+          print(f"[+] Nueva revisión registrada: {TASK_FAMILY}:{nueva_rev} ({nueva_arn})")
 
-          print(f"[*] Actualizando servicio {SERVICE}...")
-          run_aws("ecs", "update-service", "--cluster", CLUSTER, "--service", SERVICE, "--task-definition", nueva_arn, "--force-new-deployment")
+          # Diagnóstico de Clusters ECS
+          clusters = json.loads(run_aws("ecs", "list-clusters")).get("clusterArns", [])
+          cluster_names = [c.split("/")[-1] for c in clusters]
+          print(f"[*] Clusters ECS disponibles: {cluster_names}")
+
+          if CLUSTER not in cluster_names:
+              if cluster_names:
+                  print(f"[*] Cluster '{CLUSTER}' no encontrado directamente. Usando cluster existente: '{cluster_names[0]}'")
+                  CLUSTER = cluster_names[0]
+              else:
+                  print(f"[*] Creando cluster ECS '{CLUSTER}'...")
+                  run_aws("ecs", "create-cluster", "--cluster-name", CLUSTER)
+
+          # Diagnóstico de Servicios en el Cluster
+          servicios = json.loads(run_aws("ecs", "list-services", "--cluster", CLUSTER)).get("serviceArns", [])
+          servicio_names = [s.split("/")[-1] for s in servicios]
+          print(f"[*] Servicios en cluster '{CLUSTER}': {servicio_names}")
+
+          if SERVICE not in servicio_names:
+              candidatos = [s for s in servicio_names if "backend" in s.lower() or "erp" in s.lower()]
+              if candidatos:
+                  SERVICE = candidatos[0]
+                  print(f"[*] Detectado servicio ECS coincidente: '{SERVICE}'. Actualizando...")
+                  run_aws("ecs", "update-service", "--cluster", CLUSTER, "--service", SERVICE, "--task-definition", nueva_arn, "--force-new-deployment")
+              else:
+                  print(f"[!] El servicio '{SERVICE}' no existe en el cluster '{CLUSTER}'. Creándolo automáticamente en ECS Fargate...")
+                  subnets_info = json.loads(run_aws("ec2", "describe-subnets"))
+                  subnet_ids = [s["SubnetId"] for s in subnets_info.get("Subnets", []) if s.get("MapPublicIpOnLaunch", True)]
+                  if not subnet_ids:
+                      subnet_ids = [s["SubnetId"] for s in subnets_info.get("Subnets", [])]
+
+                  sgs_info = json.loads(run_aws("ec2", "describe-security-groups"))
+                  sg_id = None
+                  for sg in sgs_info.get("SecurityGroups", []):
+                      gn = sg.get("GroupName", "").lower()
+                      if "erp" in gn or "backend" in gn:
+                          sg_id = sg["GroupId"]
+                          break
+                  if not sg_id and sgs_info.get("SecurityGroups"):
+                      sg_id = sgs_info["SecurityGroups"][0]["GroupId"]
+
+                  try:
+                      run_aws("ec2", "authorize-security-group-ingress",
+                              "--group-id", sg_id,
+                              "--protocol", "tcp",
+                              "--port", "8080",
+                              "--cidr", "0.0.0.0/0")
+                  except Exception as e:
+                      print(f"[*] Nota regla ingress SG: {e}")
+
+                  print(f"[*] Subnets: {subnet_ids[:2]} | SecurityGroup: {sg_id}")
+                  net_cfg = f"awsvpcConfiguration={{subnets=[{','.join(subnet_ids[:2])}],securityGroups=[{sg_id}],assignPublicIp=ENABLED}}"
+                  run_aws("ecs", "create-service",
+                          "--cluster", CLUSTER,
+                          "--service-name", SERVICE,
+                          "--task-definition", nueva_arn,
+                          "--desired-count", "1",
+                          "--launch-type", "FARGATE",
+                          "--network-configuration", net_cfg)
+                  print(f"[+] Servicio '{SERVICE}' creado con éxito en '{CLUSTER}'.")
+          else:
+              print(f"[*] Actualizando servicio '{SERVICE}' en cluster '{CLUSTER}'...")
+              run_aws("ecs", "update-service", "--cluster", CLUSTER, "--service", SERVICE, "--task-definition", nueva_arn, "--force-new-deployment")
 
           print("[*] Esperando que el nuevo task de ECS inicie y obtenga IP pública...")
           inicio = time.time()
           public_ip = None
-          while time.time() - inicio < 360:
+          while time.time() - inicio < 420:
               tasks = json.loads(run_aws("ecs", "list-tasks", "--cluster", CLUSTER, "--service-name", SERVICE))
               task_arns = tasks.get("taskArns", [])
               if task_arns:
                   desc = json.loads(run_aws("ecs", "describe-tasks", "--cluster", CLUSTER, "--tasks", *task_arns))
                   for t in desc.get("tasks", []):
-                      if t.get("taskDefinitionArn") != nueva_arn:
+                      arn_td = t.get("taskDefinitionArn", "")
+                      status = t.get("lastStatus")
+                      print(f"    ...Task {t.get('taskArn', '').split('/')[-1]}: status={status}, TD={arn_td.split('/')[-1]}")
+                      if arn_td != nueva_arn and not nueva_arn.endswith(arn_td):
                           continue
-                      if t.get("lastStatus") == "RUNNING":
+                      if status == "RUNNING":
                           for att in t.get("attachments", []):
                               if att.get("type") == "ElasticNetworkInterface":
                                   for d in att.get("details", []):
