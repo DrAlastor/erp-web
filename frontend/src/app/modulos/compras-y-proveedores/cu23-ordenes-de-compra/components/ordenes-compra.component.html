@@ -1,0 +1,340 @@
+<div class="header">
+  <div>
+    <h2>Órdenes de compra</h2>
+    <p>Pide mercadería a tus proveedores; el Administrador aprueba cada orden antes de enviarla.</p>
+  </div>
+  @if (vista() === 'lista' && !forbidden()) {
+    <button class="primary" (click)="nueva()">Nueva orden</button>
+  } @else if (vista() !== 'lista') {
+    <button (click)="volver()">← Volver al listado</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- ============================================================ LISTADO -->
+    @case ('lista') {
+      <form class="filters" (ngSubmit)="load(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="search" maxlength="150" placeholder="Número, proveedor o NIT" />
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="estado" (change)="load(true)">
+            <option value="">Todos</option>
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor">{{ e.etiqueta }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Proveedor
+          <select name="proveedor" [(ngModel)]="proveedorFiltro" (change)="load(true)">
+            <option [ngValue]="null">Todos</option>
+            @for (p of opciones()?.proveedores ?? []; track p.id) {
+              <option [ngValue]="p.id">{{ p.razonSocial }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Desde
+          <input type="date" name="desde" [(ngModel)]="desde" (change)="load(true)" />
+        </label>
+        <label>
+          Hasta
+          <input type="date" name="hasta" [(ngModel)]="hasta" (change)="load(true)" />
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+      </form>
+      @if (loading()) {
+        <p role="status">Cargando órdenes de compra...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Órdenes de compra</caption>
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Proveedor</th>
+                <th>Fecha</th>
+                <th>Entrega</th>
+                <th class="num">Total Bs</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of ordenes(); track o.id) {
+                <tr>
+                  <td><strong>{{ o.numeroOrden }}</strong></td>
+                  <td>{{ o.proveedor }}</td>
+                  <td>{{ o.fecha }}</td>
+                  <td>{{ o.fechaEntrega || '—' }}</td>
+                  <td class="num">{{ o.total | number: '1.2-2' }}</td>
+                  <td><span class="badge" [attr.data-estado]="o.estado">{{ etiqueta(o.estado) }}</span></td>
+                  <td class="actions"><button [disabled]="busy()" (click)="abrir(o)">Ver</button></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7">No hay órdenes de compra con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} órdenes</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ============================================================= EDITOR -->
+    @case ('editor') {
+      <section class="panel" aria-label="Formulario de orden de compra">
+        <h3>{{ editandoId() ? 'Modificar orden de compra' : 'Nueva orden de compra' }}</h3>
+
+        <div class="grid">
+          <label>
+            Proveedor (sólo activos)
+            <select name="proveedorId" [(ngModel)]="proveedorId">
+              <option [ngValue]="null">Elige un proveedor</option>
+              @for (p of opciones()?.proveedores ?? []; track p.id) {
+                <option [ngValue]="p.id">
+                  {{ p.razonSocial }} · NIT {{ p.nitCi }} · {{ p.condicionPago === 'CREDITO' ? p.diasCredito + ' días' : 'contado' }}
+                </option>
+              }
+            </select>
+          </label>
+          <label>
+            Entrega esperada
+            <input type="date" name="fechaEntrega" [min]="hoy" [(ngModel)]="fechaEntrega" />
+          </label>
+        </div>
+
+        <div class="table-scroll">
+          <table class="items">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="num">Cantidad</th>
+                <th class="num">Costo unit. Bs</th>
+                <th class="num">Subtotal Bs</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of renglones(); track $index; let i = $index) {
+                <tr>
+                  <td>
+                    <select [ngModel]="r.productoId" (ngModelChange)="cambiarRenglon(i, 'productoId', $event)" [name]="'p' + i">
+                      <option [ngValue]="null">Elige un producto</option>
+                      @for (p of opciones()?.productos ?? []; track p.id) {
+                        <option [ngValue]="p.id">{{ p.codigo }} · {{ p.nombre }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="num">
+                    <input type="number" min="0.01" step="1" class="short" [name]="'c' + i"
+                      [ngModel]="r.cantidad" (ngModelChange)="cambiarRenglon(i, 'cantidad', $event)" />
+                  </td>
+                  <td class="num">
+                    <input type="number" min="0.01" step="0.5" class="short" [name]="'k' + i"
+                      [ngModel]="r.costoUnitario" (ngModelChange)="cambiarRenglon(i, 'costoUnitario', $event)" />
+                  </td>
+                  <td class="num">{{ subtotalDe(r) | number: '1.2-2' }}</td>
+                  <td><button type="button" class="link" (click)="quitarRenglon(i)" [disabled]="renglones().length === 1">Quitar</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="row-actions">
+          <button type="button" (click)="agregarRenglon()">+ Agregar producto</button>
+          <button type="button" (click)="abrirSugerencias()">Sugerir productos bajo stock mínimo</button>
+        </div>
+
+        <div class="summary">
+          <label>
+            Observaciones
+            <textarea name="obs" rows="3" maxlength="1000" [(ngModel)]="observaciones"
+              [placeholder]="editandoId() ? 'Se agregan a las observaciones que ya tiene la orden' : ''"></textarea>
+          </label>
+          <dl>
+            <dt>Subtotal</dt><dd>{{ vistaPrevia().subtotal | number: '1.2-2' }}</dd>
+            <dt>Descuento</dt>
+            <dd>
+              <input type="number" min="0" step="1" class="short" name="descuento"
+                [ngModel]="descuento()" (ngModelChange)="descuento.set($event)" />
+            </dd>
+            <dt class="total">Total Bs</dt><dd class="total">{{ vistaPrevia().total | number: '1.2-2' }}</dd>
+          </dl>
+        </div>
+        @for (p of problemas(); track p) {
+          <p class="message error">{{ p }}</p>
+        }
+        <p class="hint">Los totales se vuelven a calcular en el servidor al guardar. La orden no mueve stock: eso pasa al registrar la compra.</p>
+
+        <div class="actions">
+          <button class="primary" [disabled]="busy() || problemas().length > 0" (click)="guardar(false)">
+            {{ busy() ? 'Guardando...' : 'Registrar y enviar a aprobación' }}
+          </button>
+          <button [disabled]="busy() || problemas().length > 0" (click)="guardar(true)">Guardar borrador</button>
+          <button type="button" [disabled]="busy()" (click)="volver()">Cancelar</button>
+        </div>
+      </section>
+
+      @if (dialogo() === 'sugerencias') {
+        <div class="modal-backdrop">
+          <section class="confirmation wide" role="dialog" aria-modal="true" aria-labelledby="sug-title">
+            <h3 id="sug-title">Productos bajo stock mínimo</h3>
+            <label>
+              Sucursal
+              <select name="sucursal" [(ngModel)]="sucursalId" (change)="buscarSugerencias()">
+                @for (s of opciones()?.sucursales ?? []; track s.id) {
+                  <option [ngValue]="s.id">{{ s.nombre }}</option>
+                }
+              </select>
+            </label>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th></th><th>Producto</th><th class="num">Stock</th><th class="num">Mínimo</th>
+                    <th class="num">Pedir</th><th class="num">Último costo</th></tr>
+                </thead>
+                <tbody>
+                  @for (s of sugerencias(); track s.productoId) {
+                    <tr>
+                      <td><input type="checkbox" [checked]="elegidas().has(s.productoId)"
+                        (change)="alternarSugerencia(s.productoId)" [attr.aria-label]="'Agregar ' + s.producto" /></td>
+                      <td>{{ s.codigo }} · {{ s.producto }}</td>
+                      <td class="num">{{ s.stockDisponible | number: '1.0-2' }}</td>
+                      <td class="num">{{ s.stockMinimo | number: '1.0-2' }}</td>
+                      <td class="num">{{ s.cantidadSugerida | number: '1.0-2' }}</td>
+                      <td class="num">{{ s.ultimoCosto | number: '1.2-2' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="6">No hay productos por debajo del mínimo en esta sucursal.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="actions">
+              <button type="button" (click)="dialogo.set(null)">Cancelar</button>
+              <button class="primary" [disabled]="elegidas().size === 0" (click)="aceptarSugerencias()">
+                Agregar {{ elegidas().size }} producto(s)
+              </button>
+            </div>
+          </section>
+        </div>
+      }
+    }
+
+    <!-- ============================================================ DETALLE -->
+    @case ('detalle') {
+      @if (seleccionada(); as o) {
+        <section class="panel">
+          <div class="detail-head">
+            <div>
+              <h3>{{ o.numeroOrden }} <span class="badge" [attr.data-estado]="o.estado">{{ etiqueta(o.estado) }}</span></h3>
+              <p>
+                <strong>{{ o.proveedor }}</strong> · NIT {{ o.proveedorNit }} ·
+                {{ o.proveedorCondicionPago === 'CREDITO' ? 'crédito a ' + o.proveedorDiasCredito + ' días' : 'contado' }}<br />
+                Registrada el {{ o.fecha }} por {{ o.creadoPor }} · entrega esperada {{ o.fechaEntrega || 'a coordinar' }}
+              </p>
+            </div>
+          </div>
+
+          @if (o.estado === 'PENDIENTE' && admin() && o.registradaPorMi) {
+            <p class="message info">La registraste tú: la debe aprobar otro Administrador.</p>
+          }
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Código</th><th>Producto</th><th class="num">Cantidad</th>
+                  <th class="num">Costo unit. Bs</th><th class="num">Subtotal Bs</th></tr>
+              </thead>
+              <tbody>
+                @for (d of o.detalles; track d.id) {
+                  <tr>
+                    <td>{{ d.codigo }}</td>
+                    <td>{{ d.producto }}</td>
+                    <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
+                    <td class="num">{{ d.costoUnitario | number: '1.2-2' }}</td>
+                    <td class="num">{{ d.subtotal | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <dl>
+            <dt>Subtotal</dt><dd>{{ o.subtotal | number: '1.2-2' }}</dd>
+            <dt>Descuento</dt><dd>- {{ o.descuento | number: '1.2-2' }}</dd>
+            <dt class="total">Total Bs</dt><dd class="total">{{ o.total | number: '1.2-2' }}</dd>
+          </dl>
+          @if (o.observaciones) {
+            <p class="obs">{{ o.observaciones }}</p>
+          }
+
+          <div class="actions">
+            @if (o.estado === 'APROBADA' || o.estado === 'ENVIADA') {
+              <button (click)="imprimir(o)">Imprimir / PDF</button>
+            }
+            @if (modificable(o)) {
+              <button [disabled]="busy()" (click)="editar(o)">Modificar</button>
+            }
+            @if (o.estado === 'BORRADOR') {
+              <button class="primary" [disabled]="busy()" (click)="solicitarAprobacion(o)">Enviar a aprobación</button>
+            }
+            @if (admin()) {
+              @if (o.estado === 'PENDIENTE') {
+                <button class="primary" [disabled]="busy() || o.registradaPorMi" (click)="aprobar(o)">Aprobar</button>
+                <button [disabled]="busy()" (click)="pedirMotivo('rechazar')">Rechazar</button>
+              }
+              @if (o.estado === 'APROBADA') {
+                <button class="primary" [disabled]="busy()" (click)="enviar(o)">Marcar como enviada</button>
+              }
+              @if (o.estado !== 'RECIBIDA' && o.estado !== 'ANULADA') {
+                <button class="danger" [disabled]="busy()" (click)="pedirMotivo('anular')">Anular</button>
+              }
+            }
+          </div>
+        </section>
+
+        @if (dialogo() === 'rechazar' || dialogo() === 'anular') {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="motivo-title">
+              <h3 id="motivo-title">{{ dialogo() === 'rechazar' ? 'Rechazar' : 'Anular' }} {{ o.numeroOrden }}</h3>
+              <p>
+                {{ dialogo() === 'rechazar'
+                  ? 'La orden vuelve a borrador con el motivo para que quien la registró la corrija.'
+                  : 'La orden queda anulada y no se puede volver a usar: si hace falta, se emite otra.' }}
+              </p>
+              <label>
+                Motivo
+                <input name="motivo" [(ngModel)]="motivo" maxlength="255" placeholder="Ej.: costos desactualizados" />
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="dialogo.set(null)">Cancelar</button>
+                <button class="danger" [disabled]="busy() || !motivo.trim()" (click)="confirmarMotivo()">
+                  {{ dialogo() === 'rechazar' ? 'Rechazar' : 'Anular' }}
+                </button>
+              </div>
+            </section>
+          </div>
+        }
+      }
+    }
+  }
+}

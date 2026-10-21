@@ -1,0 +1,72 @@
+// Estilos de Compras y Proveedores (CU21 proveedores, órdenes de compra).
+// Reutilizan la línea visual de ventas y agregan los estados propios de compras.
+@use '../ventas-y-facturacion/ventas-comun';
+
+.badge {
+  &[data-estado='ACTIVO'],
+  &[data-estado='RECIBIDA'],
+  &[data-estado='PAGADA'] {
+    background: rgba(52, 199, 89, 0.12);
+    color: #1b7a3e;
+  }
+
+  &[data-estado='APROBADA'],
+  &[data-estado='ENVIADA'],
+  &[data-estado='REGISTRADA'] {
+    background: rgba(0, 122, 255, 0.12);
+    color: var(--primary);
+  }
+
+  &[data-estado='INACTIVO'] {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--destructive);
+  }
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.detail-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h4 {
+  margin: 24px 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field-error {
+  color: var(--destructive);
+  font-size: 11px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 16px;
+  margin: 16px 0 4px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+
+    .wide {
+      grid-column: auto;
+    }
+  }
+}

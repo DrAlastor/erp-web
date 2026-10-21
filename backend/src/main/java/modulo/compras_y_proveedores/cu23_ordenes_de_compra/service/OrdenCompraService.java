@@ -262,9 +262,10 @@ public class OrdenCompraService {
         }
         orden.setProveedor(proveedor);
         orden.setFechaEntrega(peticion.fechaEntrega());
-        orden.setObservaciones(peticion.observaciones() == null || peticion.observaciones().isBlank()
-                ? orden.getObservaciones()
-                : peticion.observaciones().trim());
+        // Se agregan, no se reemplazan: así no se pierden los motivos de un rechazo anterior.
+        if (peticion.observaciones() != null && !peticion.observaciones().isBlank()) {
+            orden.anotar(peticion.observaciones().trim());
+        }
 
         Set<Long> vistos = new HashSet<>();
         for (ItemOrdenCompraRequest item : peticion.items()) {

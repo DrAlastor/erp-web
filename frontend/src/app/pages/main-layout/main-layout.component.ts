@@ -25,6 +25,8 @@ import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-re
 import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
 
 import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
+import { ProveedoresComponent } from '../../modulos/compras-y-proveedores/cu21-gestionar-proveedores/components/proveedores.component';
+import { OrdenesCompraComponent } from '../../modulos/compras-y-proveedores/cu23-ordenes-de-compra/components/ordenes-compra.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -32,7 +34,8 @@ import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-p
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
-    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
+    ProveedoresComponent, OrdenesCompraComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

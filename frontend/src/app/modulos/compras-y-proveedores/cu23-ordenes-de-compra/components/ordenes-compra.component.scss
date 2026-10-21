@@ -1,0 +1,70 @@
+@use '../../compras-comun';
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 16px;
+  margin: 16px 0 20px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+.items {
+  td:first-child {
+    width: 100%;
+  }
+
+  select {
+    min-width: 220px;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+  }
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.info {
+  background: rgba(0, 122, 255, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.confirmation.wide {
+  max-width: 760px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 650px) {
+  .grid,
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}
