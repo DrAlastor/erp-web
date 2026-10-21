@@ -1,0 +1,36 @@
+<section class="kpi-grid" aria-label="Indicadores clave">
+  @let v = ventas();
+  <app-kpi-card etiqueta="Ventas de hoy" icono="↗" [loading]="loading()"
+    [valor]="v ? 'Bs. ' + (v.hoy | number: '1.2-2') : null"
+    [nota]="v ? 'Ventas facturadas, sin anuladas' : ''" />
+
+  <app-kpi-card etiqueta="Ventas del mes" icono="◷" [loading]="loading()"
+    [valor]="v ? 'Bs. ' + (v.mesActual | number: '1.2-2') : null"
+    [chip]="v && v.variacionPct !== null ? (v.variacionPct > 0 ? '+' : '') + (v.variacionPct | number: '1.1-1') + ' %' : ''"
+    [chipClase]="claseVariacion(v?.variacionPct)"
+    [nota]="v ? v.cantidadMes + ' ventas · ticket Bs. ' + (v.ticketPromedioMes | number: '1.2-2') : ''" />
+
+  @let c = cobrar();
+  <app-kpi-card etiqueta="Por cobrar" icono="⇣" [loading]="loading()"
+    [tono]="c && c.vencido > 0 ? 'aviso' : ''"
+    [valor]="c ? 'Bs. ' + (c.saldoTotal | number: '1.2-2') : null"
+    [nota]="c ? 'Vencido Bs. ' + (c.vencido | number: '1.2-2') + ' (' + c.cantidadVencidas + ')' : ''" />
+
+  @let p = pagar();
+  <app-kpi-card etiqueta="Por pagar" icono="⇡" [loading]="loading()"
+    [tono]="p && p.vencido > 0 ? 'alerta' : p && p.porVencer7Dias > 0 ? 'aviso' : ''"
+    [valor]="p ? 'Bs. ' + (p.saldoTotal | number: '1.2-2') : null"
+    [nota]="p ? 'Vencido Bs. ' + (p.vencido | number: '1.2-2') + ' · 7 días Bs. ' + (p.porVencer7Dias | number: '1.2-2') : ''" />
+
+  @let i = inventario();
+  <app-kpi-card etiqueta="Stock bajo mínimo" icono="▦" [loading]="loading()"
+    [tono]="i && i.sinStock > 0 ? 'alerta' : i && i.bajoStockMinimo > 0 ? 'aviso' : 'ok'"
+    [valor]="i ? (i.bajoStockMinimo | number) + ' productos' : null"
+    [nota]="i ? i.sinStock + ' sin stock · ' + i.productosActivos + ' activos' : ''" />
+
+  @let k = caja();
+  <app-kpi-card etiqueta="Caja de hoy (neto)" icono="▣" [loading]="loading()"
+    [tono]="k && netoCaja() < 0 ? 'aviso' : ''"
+    [valor]="k ? 'Bs. ' + (netoCaja() | number: '1.2-2') : null"
+    [nota]="k ? k.turnosAbiertos + ' turnos abiertos · +' + (k.ingresosHoy | number: '1.2-2') + ' / −' + (k.egresosHoy | number: '1.2-2') : ''" />
+</section>

@@ -1,0 +1,28 @@
+<section class="panel" aria-labelledby="dash-alertas-title">
+  <div class="panel-head">
+    <h3 id="dash-alertas-title">Alertas</h3>
+    @if (!loading() && items().length) { <small>{{ items().length }} por revisar</small> }
+  </div>
+  <app-bloque-estado nombre="Alertas" [loading]="loading()" [disponible]="alertas() !== null" [filas]="3"
+    [vacio]="!items().length" vacioTexto="✓ Sin alertas: la operación está en orden.">
+    <ul class="alertas">
+      @for (a of items(); track $index) {
+        <li>
+          @if (a.ruta) {
+            <a class="alerta" [class]="a.severidad.toLowerCase()" [routerLink]="['/app', a.ruta]"
+              [attr.aria-label]="a.etiqueta + ', severidad ' + a.severidad.toLowerCase() + ': ' + a.mensaje + '. Ir a la función'">
+              <span class="sev" aria-hidden="true"></span>
+              <span class="texto"><strong>{{ a.etiqueta }}</strong>{{ a.mensaje }}</span>
+              <span class="ir" aria-hidden="true">→</span>
+            </a>
+          } @else {
+            <div class="alerta" [class]="a.severidad.toLowerCase()">
+              <span class="sev" aria-hidden="true"></span>
+              <span class="texto"><strong>{{ a.etiqueta }}</strong>{{ a.mensaje }}</span>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  </app-bloque-estado>
+</section>

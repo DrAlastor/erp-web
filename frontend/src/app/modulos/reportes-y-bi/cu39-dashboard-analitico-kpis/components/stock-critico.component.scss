@@ -1,0 +1,47 @@
+@use 'dashboard-base';
+
+:host {
+  margin-top: 0;
+}
+
+.panel {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.panel-head small strong {
+  color: var(--text-main);
+}
+
+th,
+td {
+  padding: 9px 12px;
+}
+
+.agotado td:first-child {
+  box-shadow: inset 3px 0 0 var(--destructive);
+}
+
+.agotado .num:nth-child(2) {
+  color: var(--destructive);
+  font-weight: 700;
+}
+
+.ver-mas {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}

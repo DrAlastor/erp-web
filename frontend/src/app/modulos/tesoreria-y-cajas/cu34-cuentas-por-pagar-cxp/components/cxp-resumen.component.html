@@ -1,0 +1,74 @@
+@if (loading() && !resumen()) {
+  <div class="kpis" aria-busy="true" aria-label="Cargando resumen de cuentas por pagar">
+    @for (p of placeholders; track p) {
+      <div class="card"><span class="skeleton line-sm"></span><span class="skeleton line-lg"></span></div>
+    }
+  </div>
+} @else if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>No se pudo cargar el resumen: {{ error() }}</span>
+    <button type="button" class="retry" (click)="cargar()">Reintentar</button>
+  </div>
+} @else if (resumen(); as r) {
+  <section class="kpis" aria-label="Resumen de cuentas por pagar">
+    <article class="card">
+      <p class="eyebrow">Saldo por pagar</p>
+      <strong class="kpi-val">Bs. {{ r.saldoTotal | number: '1.2-2' }}</strong>
+      <small>{{ r.cantidadPendientes }} cuotas con saldo</small>
+    </article>
+    <article class="card" [class.alerta]="r.vencido > 0">
+      <p class="eyebrow">Vencido</p>
+      <strong class="kpi-val">Bs. {{ r.vencido | number: '1.2-2' }}</strong>
+      <small>{{ r.cantidadVencidas }} cuotas vencidas</small>
+    </article>
+    <article class="card" [class.aviso]="r.porVencer7Dias > 0">
+      <p class="eyebrow">Por vencer (7 días)</p>
+      <strong class="kpi-val">Bs. {{ r.porVencer7Dias | number: '1.2-2' }}</strong>
+      <small>Planifica estos pagos esta semana</small>
+    </article>
+    <article class="card">
+      <p class="eyebrow">Pagado en el mes</p>
+      <strong class="kpi-val ok">Bs. {{ r.pagadoMes | number: '1.2-2' }}</strong>
+      <small>Pagos registrados a proveedores</small>
+    </article>
+  </section>
+
+  <div class="detalle">
+    <section class="card" aria-labelledby="cxp-antiguedad-title">
+      <p class="eyebrow" id="cxp-antiguedad-title">Antigüedad de la deuda vencida</p>
+      @if (r.vencido > 0) {
+        <div class="aging-bar" role="img"
+          [attr.aria-label]="'Vencido por rango: ' + segmentos()[0].pct + '% 0-30 días, ' + segmentos()[1].pct + '% 31-60, ' + segmentos()[2].pct + '% 61-90, ' + segmentos()[3].pct + '% más de 90'">
+          @for (s of segmentos(); track s.rango) {
+            @if (s.pct > 0) {
+              <span [class]="'seg r' + $index" [style.width.%]="s.pct" [title]="s.rango + ' días: Bs. ' + (s.monto | number: '1.2-2')"></span>
+            }
+          }
+        </div>
+        <ul class="leyenda">
+          @for (s of segmentos(); track s.rango) {
+            <li><i [class]="'dot r' + $index" aria-hidden="true"></i>{{ s.rango }} días
+              <strong>Bs. {{ s.monto | number: '1.2-2' }}</strong><span>{{ s.cantidad }} cuotas</span></li>
+          }
+        </ul>
+      } @else {
+        <p class="vacio">Sin deuda vencida. ¡Todo al día con los proveedores!</p>
+      }
+    </section>
+
+    <section class="card" aria-labelledby="cxp-top-title">
+      <p class="eyebrow" id="cxp-top-title">Proveedores con mayor saldo</p>
+      @for (p of r.topProveedores; track p.proveedorId) {
+        <button type="button" class="top-row" (click)="proveedorSeleccionado.emit(p)"
+          [attr.aria-label]="'Filtrar cuentas de ' + p.razonSocial">
+          <span class="nombre">{{ p.razonSocial }}</span>
+          <span class="barra" aria-hidden="true"><span [style.width.%]="(p.saldo / maxProveedor()) * 100"></span></span>
+          <strong>Bs. {{ p.saldo | number: '1.2-2' }}</strong>
+        </button>
+      } @empty {
+        <p class="vacio">No hay proveedores con saldo pendiente.</p>
+      }
+    </section>
+  </div>
+}

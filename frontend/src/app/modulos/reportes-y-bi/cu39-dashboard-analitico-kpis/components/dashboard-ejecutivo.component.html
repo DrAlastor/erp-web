@@ -1,0 +1,54 @@
+<header class="dash-header">
+  <div>
+    <p class="eyebrow fecha">{{ fechaHoy }}</p>
+    <h2>Dashboard ejecutivo</h2>
+    <p>Ventas, cartera, inventario y caja de la empresa en una sola vista.</p>
+  </div>
+  @if (!forbidden()) {
+    <div class="controles">
+      @if (sucursales().length) {
+        <label>
+          Sucursal
+          <select name="sucursalId" [ngModel]="sucursalId" (ngModelChange)="cambiarSucursal($event)" [disabled]="loading()">
+            <option [ngValue]="null">Todas las sucursales</option>
+            @for (s of sucursales(); track s.id) {
+              <option [ngValue]="s.id">{{ s.nombre }}</option>
+            }
+          </select>
+        </label>
+      }
+      <button type="button" class="primary" [disabled]="loading()" (click)="cargar()" [attr.aria-busy]="loading()">
+        <span aria-hidden="true" [class.girando]="loading()">↻</span> {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+      </button>
+    </div>
+  }
+</header>
+
+@if (actualizado() && !loading()) {
+  <p class="actualizado" role="status">Datos generados a las {{ actualizado() }}</p>
+}
+
+@if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}{{ data() ? ' Se muestran los últimos datos obtenidos.' : '' }}</span>
+    @if (!forbidden()) {
+      <button type="button" class="reintentar" (click)="cargar()">Reintentar</button>
+    }
+  </div>
+}
+
+@if (!forbidden() && (data() || loading())) {
+  <div class="dash" [attr.aria-busy]="loading()">
+    <app-kpi-fila [data]="data()" [loading]="cargandoBloques()" />
+    <div class="fila principal">
+      <app-ventas-chart [ventas]="data()?.ventas ?? null" [loading]="cargandoBloques()" />
+      <app-alertas-panel [alertas]="data()?.alertas ?? null" [loading]="cargandoBloques()" />
+    </div>
+    <div class="fila tres">
+      <app-top-productos [productos]="data()?.ventas?.topProductos ?? null" [loading]="cargandoBloques()" />
+      <app-pedidos-estado [comercial]="data()?.comercial ?? null" [loading]="cargandoBloques()" />
+      <app-stock-critico [inventario]="data()?.inventario ?? null" [loading]="cargandoBloques()" />
+    </div>
+  </div>
+}

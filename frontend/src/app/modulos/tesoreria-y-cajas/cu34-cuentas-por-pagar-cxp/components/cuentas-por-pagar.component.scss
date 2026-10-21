@@ -1,0 +1,47 @@
+@use 'cxp-base';
+
+:host {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.cxp-header,
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cxp-header {
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.filters {
+  align-items: end;
+  flex-wrap: wrap;
+  margin: 24px 0;
+
+  input,
+  select {
+    min-width: 170px;
+  }
+
+  .grow {
+    flex: 1 1 280px;
+  }
+}
+
+@media (max-width: 650px) {
+  .cxp-header,
+  .filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cxp-header .primary,
+  .filters button {
+    width: 100%;
+  }
+}

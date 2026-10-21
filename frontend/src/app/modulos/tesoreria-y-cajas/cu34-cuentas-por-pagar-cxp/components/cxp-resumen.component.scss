@@ -1,0 +1,165 @@
+@use 'cxp-base';
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &.alerta {
+      border-color: rgba(255, 59, 48, 0.35);
+
+      .kpi-val {
+        color: var(--destructive);
+      }
+    }
+
+    &.aviso .kpi-val {
+      color: #b45309;
+    }
+  }
+
+  small {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+.kpi-val {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+
+  &.ok {
+    color: #1b7a3e;
+  }
+}
+
+.line-sm {
+  width: 50%;
+  height: 10px;
+  margin-bottom: 10px;
+}
+
+.line-lg {
+  width: 80%;
+  height: 22px;
+}
+
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.aging-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--bg-subtle);
+  margin: 6px 0 14px;
+}
+
+.r0 { background: #ffcc00; }
+.r1 { background: var(--warning); }
+.r2 { background: #ff6b3d; }
+.r3 { background: var(--destructive); }
+
+.leyenda {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  strong {
+    font-family: var(--font-mono);
+    color: var(--text-main);
+  }
+
+  span {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 8px;
+  text-align: left;
+  background: transparent;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-subtle);
+  }
+
+  .nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .barra {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--bg-subtle);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      background: var(--primary);
+    }
+  }
+
+  strong {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+}
+
+.vacio {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.alert-banner .retry {
+  margin-left: auto;
+}
+
+@media (max-width: 800px) {
+  .detalle {
+    grid-template-columns: 1fr;
+  }
+}

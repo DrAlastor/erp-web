@@ -1,0 +1,70 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="cxp-generar-title"
+    appModalFoco (cerrar)="cerrar()">
+    <header class="modal-header">
+      <div>
+        <h3 id="cxp-generar-title">Generar cuotas desde compra</h3>
+        <p>Divide el total de una compra a crédito en cuotas por pagar al proveedor.</p>
+      </div>
+      <button type="button" class="close-btn" aria-label="Cerrar" [disabled]="busy()" (click)="cerrar()">✕</button>
+    </header>
+
+    <div class="field">
+      <span class="field-label" id="cxp-compra-label">Compra a crédito *</span>
+      <app-compra-selector [compra]="compra()" (compraChange)="onCompra($event)" [disabled]="busy()"
+        [invalid]="intentado() && !compra()" />
+    </div>
+
+    <div class="form-grid">
+      <label>
+        N° de cuotas *
+        <input type="number" min="1" max="24" step="1" [ngModel]="numeroCuotas()" (ngModelChange)="numeroCuotas.set(entero($event))"
+          [disabled]="busy()" [class.invalid]="numeroCuotas() < 1 || numeroCuotas() > 24" />
+      </label>
+      <label>
+        Primer vencimiento
+        <input type="date" [ngModel]="primerVencimiento()" (ngModelChange)="primerVencimiento.set($event)"
+          [disabled]="busy() || !compra()" aria-describedby="cxp-venc-hint" />
+        <small id="cxp-venc-hint" class="hint">Sugerido: fecha de compra + días de crédito del proveedor.</small>
+      </label>
+      <label>
+        Días entre cuotas *
+        <input type="number" min="1" max="365" step="1" [ngModel]="diasEntreCuotas()" (ngModelChange)="diasEntreCuotas.set(entero($event))"
+          [disabled]="busy()" [class.invalid]="diasEntreCuotas() < 1 || diasEntreCuotas() > 365" />
+      </label>
+    </div>
+
+    <h4 class="section-title">Vista previa</h4>
+    @if (cuotas().length) {
+      <div class="table-scroll">
+        <table>
+          <caption class="sr-only">Vista previa de las cuotas que se generarán</caption>
+          <thead><tr><th>Cuota</th><th>Vencimiento</th><th class="num">Monto</th></tr></thead>
+          <tbody>
+            @for (c of cuotas(); track c.numero) {
+              <tr><td>{{ c.numero }} de {{ cuotas().length }}</td><td class="mono">{{ c.fechaVencimiento }}</td>
+                <td class="num">Bs. {{ c.monto | number: '1.2-2' }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">La última cuota absorbe el redondeo. El backend confirma montos y fechas definitivos.</p>
+    } @else {
+      <p class="vacio">{{ compra() ? validacion() || 'Indica la fecha del primer vencimiento.' : 'Selecciona una compra para ver el plan de cuotas.' }}</p>
+    }
+
+    @if (intentado() && validacion()) {
+      <p class="message error" role="alert">{{ validacion() }}</p>
+    }
+    @if (error()) {
+      <p class="message error" role="alert">{{ error() }}</p>
+    }
+
+    <footer class="modal-footer">
+      <button type="button" [disabled]="busy()" (click)="cerrar()">Cancelar</button>
+      <button type="button" class="primary" [disabled]="busy() || (intentado() && !cuotas().length)" (click)="confirmar()">
+        {{ busy() ? 'Generando...' : cuotas().length ? 'Confirmar ' + cuotas().length + ' cuotas' : 'Generar cuotas' }}
+      </button>
+    </footer>
+  </section>
+</div>

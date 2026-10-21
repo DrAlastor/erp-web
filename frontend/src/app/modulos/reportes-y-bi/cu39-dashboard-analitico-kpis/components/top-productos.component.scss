@@ -1,0 +1,80 @@
+@use 'dashboard-base';
+
+:host {
+  margin-top: 0;
+}
+
+.panel {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+.pos {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+
+  small {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+.linea {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+
+  strong {
+    font-size: 12px;
+  }
+}
+
+.nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barra {
+  height: 6px;
+  margin: 5px 0 3px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+  }
+}

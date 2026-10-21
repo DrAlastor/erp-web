@@ -1,0 +1,33 @@
+@if (compra(); as c) {
+  <div class="chosen" [class.invalid]="invalid()">
+    <div>
+      <strong>{{ c.numeroFactura }}</strong> · {{ c.proveedorRazonSocial }}
+      <span class="cell-sub">Compra del {{ c.fecha }} · {{ c.diasCredito ?? 30 }} días de crédito</span>
+    </div>
+    <strong class="mono">Bs. {{ c.total | number: '1.2-2' }}</strong>
+    <button type="button" [disabled]="disabled()" (click)="compra.set(null)" aria-label="Cambiar compra seleccionada">Cambiar</button>
+  </div>
+} @else {
+  <input #q type="search" placeholder="Buscar por N° de factura o proveedor" maxlength="150"
+    aria-label="Buscar compra a crédito sin cuenta por pagar" [disabled]="disabled()" [class.invalid]="invalid()"
+    (input)="buscar(q.value)" />
+  <ul class="resultados" role="listbox" aria-label="Compras a crédito sin cuenta por pagar" [attr.aria-busy]="buscando()">
+    @if (buscando()) {
+      <li class="estado" role="status">Buscando compras...</li>
+    } @else if (error()) {
+      <li class="estado error-text" role="alert">{{ error() }}</li>
+    } @else {
+      @for (r of resultados(); track r.compraId) {
+        <li role="option" aria-selected="false">
+          <button type="button" [disabled]="disabled()" (click)="compra.set(r)">
+            <span><strong>{{ r.numeroFactura }}</strong> · {{ r.proveedorRazonSocial }}
+              <span class="cell-sub">{{ r.fecha }}</span></span>
+            <span class="mono">Bs. {{ r.total | number: '1.2-2' }}</span>
+          </button>
+        </li>
+      } @empty {
+        <li class="estado">No hay compras a crédito pendientes de generar cuotas.</li>
+      }
+    }
+  </ul>
+}

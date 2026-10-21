@@ -34,6 +34,8 @@ import { ProveedoresComponent } from '../../modulos/compras-y-proveedores/cu21-g
 import { OrdenesCompraComponent } from '../../modulos/compras-y-proveedores/cu23-ordenes-de-compra/components/ordenes-compra.component';
 import { ReportesPorVozComponent } from '../../modulos/reportes-y-bi/cu39-reportes-por-comando-de-voz/components/reportes-por-voz.component';
 import { ConstructorQbeComponent } from '../../modulos/reportes-y-bi/cu38-constructor-reportes-qbe/components/constructor-qbe.component';
+import { CuentasPorPagarComponent } from '../../modulos/tesoreria-y-cajas/cu34-cuentas-por-pagar-cxp/components/cuentas-por-pagar.component';
+import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-dashboard-analitico-kpis/components/dashboard-ejecutivo.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -43,7 +45,8 @@ import { ConstructorQbeComponent } from '../../modulos/reportes-y-bi/cu38-constr
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
     ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
     BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,
-    ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent],
+    ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
+    CuentasPorPagarComponent, DashboardEjecutivoComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
