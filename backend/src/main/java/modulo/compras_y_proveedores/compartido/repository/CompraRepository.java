@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+@Repository("compraCompartidoRepository")
 public interface CompraRepository extends JpaRepository<Compra, Long> {
 
     /** Bloquea la compra para que dos usuarios no generen sus cuotas a la vez. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT c FROM Compra c WHERE c.id = :id")
+    @Query("SELECT c FROM CompraCompartido c WHERE c.id = :id")
     Optional<Compra> findParaActualizar(@Param("id") Long id);
 }

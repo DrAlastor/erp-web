@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
  * y la reutilizaran la CU21 (gestionar proveedores) y la CU23 (ordenes de compra).
  * {@code diasCredito} da el vencimiento por defecto de las cuotas por pagar.
  */
-@Entity(name = "Proveedor")
+@Entity(name = "ProveedorCompartido")
 @Table(name = "proveedores")
 @Getter
 @Setter

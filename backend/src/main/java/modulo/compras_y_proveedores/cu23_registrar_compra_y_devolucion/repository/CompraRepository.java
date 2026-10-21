@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+@Repository("compraCu23Repository")
 public interface CompraRepository extends JpaRepository<Compra, Integer> {
 
     boolean existsByProveedorIdAndNumeroFacturaIgnoreCaseAndEstadoNot(Integer proveedorId, String numeroFactura, String estado);

@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
+@Repository("proveedorCu21Repository")
 public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
 
     @Query("select p from Proveedor p "

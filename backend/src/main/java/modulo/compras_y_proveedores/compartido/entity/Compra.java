@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  * Valores de los datos semilla de ERP_Asus: {@code tipoPago} CREDITO / CONTADO y
  * {@code estado} COMPLETADA; la anulacion se representa con ANULADA.
  */
-@Entity(name = "Compra")
+@Entity(name = "CompraCompartido")
 @Table(name = "compras")
 @Getter
 @Setter
