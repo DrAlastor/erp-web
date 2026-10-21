@@ -16,3 +16,14 @@ export interface Articulo {
   activo: boolean;
   fechaCreacion?: string;
 }
+
+export interface ArticuloRequest {
+  sku: string;
+  nombre: string;
+  descripcion?: string | null;
+  precio: number;
+  stock?: number | null;
+  imagenUrl?: string | null;
+  categoriaId?: number | null;
+  activo?: boolean;
+}

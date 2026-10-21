@@ -24,6 +24,10 @@ public class UsuarioAuditoriaService {
     /** Registra la acción dentro de la transacción de quien la llama. */
     @Transactional
     public void registrar(String accion, String actor, Long usuarioId, String ip) {
-        bitacoraLogRepository.save(new BitacoraLog(accion, actor, usuarioId, ip));
+        try {
+            bitacoraLogRepository.save(new BitacoraLog(accion, actor, usuarioId, ip));
+        } catch (Exception ignored) {
+            // No interrumpir la operación principal de la cuenta si la tabla de bitácora no está disponible
+        }
     }
 }

@@ -37,11 +37,17 @@ export interface StockAlmacenResponse {
   unidadMedida: string;
   precioVenta: number;
   costoPromedio: number;
+  saldoValorado?: number;
   stockMinimo: number;
   almacenId: number;
   almacenNombre: string;
   cantidadActual: number;
   bajoStockMinimo: boolean;
+}
+
+export interface ActualizarStockMinimoRequest {
+  nuevoStockMinimo: number;
+  aplicarATodosAlmacenes?: boolean;
 }
 
 export interface AlertaStockMinimoResponse {

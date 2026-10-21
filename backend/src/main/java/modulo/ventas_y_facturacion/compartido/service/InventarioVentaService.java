@@ -33,6 +33,7 @@ public class InventarioVentaService {
 
     private final StockVentaRepository stockRepository;
     private final KardexMovimientoRepository kardexRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     /** Descuenta stock de la sucursal; rechaza la operación si no alcanza. */
     public void registrarSalida(Almacen sucursal, Producto producto, BigDecimal cantidad,
@@ -82,6 +83,25 @@ public class InventarioVentaService {
                 .usuarioId(usuarioId.intValue())
                 .unidadMedidaId(producto.getUnidadMedidaId() != null ? producto.getUnidadMedidaId() : 1)
                 .build());
+
+        BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo()
+                : (producto.getStockMinimo() != null ? producto.getStockMinimo() : BigDecimal.ZERO);
+        if (min.compareTo(BigDecimal.ZERO) > 0 && nuevoSaldo.compareTo(min) <= 0) {
+            try {
+                jdbcTemplate.update(
+                        "INSERT INTO NOTIFICACIONES (USUARIO_ID, TITULO, MENSAJE, TIPO, FECHA_CREACION, LEIDO) VALUES (?, ?, ?, ?, ?, ?)",
+                        usuarioId != null ? usuarioId : 1L,
+                        "Alerta de Stock Mínimo",
+                        String.format("El producto '%s' (%s) en la sucursal '%s' ha alcanzado o bajado de su stock mínimo de reposición (%s u). Saldo actual disponible: %s u.",
+                                producto.getNombre(), producto.getCodigoSku(), sucursal.getNombre(), min.stripTrailingZeros().toPlainString(), nuevoSaldo.stripTrailingZeros().toPlainString()),
+                        "ALERTA",
+                        ahora,
+                        false
+                );
+            } catch (Exception ignored) {
+                // Previene interrumpir la transacción principal si la tabla no estuviera disponible
+            }
+        }
     }
 
     private static ResponseStatusException sinStock(Almacen sucursal, Producto producto,

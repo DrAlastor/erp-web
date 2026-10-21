@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ import {
   styleUrl: './devoluciones.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DevolucionesComponent {
+export class DevolucionesComponent implements OnInit {
   private readonly api = inject(NotaCreditoService);
   private readonly destroy = inject(DestroyRef);
 
@@ -51,6 +51,11 @@ export class DevolucionesComponent {
   search = '';
   page = 0;
 
+  ngOnInit(): void {
+    this.buscarVentas();
+    this.cargarNotas();
+  }
+
   cambiarTab(tab: 'nueva' | 'historial'): void {
     this.tab.set(tab);
     this.error.set('');
@@ -59,23 +64,19 @@ export class DevolucionesComponent {
   }
 
   buscarVentas(): void {
-    if (!this.numeroFactura && !this.nitCliente.trim()) {
-      this.error.set('Indica el número del comprobante o el NIT/CI del cliente.');
-      return;
-    }
     this.loading.set(true);
     this.error.set('');
     this.success.set('');
     this.venta.set(null);
     this.api
-      .buscarVentas(this.numeroFactura, this.nitCliente.trim())
+      .buscarVentas(this.numeroFactura || null, this.nitCliente.trim())
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (ventas) => {
           this.loading.set(false);
           this.forbidden.set(false);
           this.ventas.set(ventas);
-          if (ventas.length === 1) this.elegir(ventas[0]);
+          if (ventas.length > 0) this.elegir(ventas[0]);
         },
         error: (err) => {
           this.loading.set(false);

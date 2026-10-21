@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Siembra los usuarios de acceso inicial garantizando que tanto el superadministrador
  * central como los administradores de la empresa cuenten con credenciales válidas y roles activos.
@@ -25,30 +27,47 @@ public class InitializerSeeder implements ApplicationRunner {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        // Obtener rol administrador principal (ID 1 'ADMINISTRADOR' o 'ADMIN')
+        // 0. Asegurar columna username en tabla usuario de la base de datos
+        try {
+            jdbcTemplate.execute("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS username VARCHAR(100)");
+            jdbcTemplate.execute("UPDATE usuario SET username = split_part(email, '@', 1) WHERE username IS NULL OR username = ''");
+        } catch (Exception ex) {
+            log.warn("Nota sobre columna username en InitializerSeeder: {}", ex.getMessage());
+        }
+
+        // Obtener roles requeridos
         Rol adminRol = rolRepository.findByNombre("ADMINISTRADOR")
                 .or(() -> rolRepository.findByNombre("ADMIN"))
                 .orElseGet(() -> rolRepository.save(crearRolAdmin()));
+        Rol ventasRol = rolRepository.findByNombre("VENDEDOR").orElse(adminRol);
+        Rol cajeroRol = rolRepository.findByNombre("CAJERO").orElse(adminRol);
+        Rol almacenRol = rolRepository.findByNombre("ALMACENERO").orElse(adminRol);
 
-        // 1. Sembrar o actualizar Superadmin (superadmin@nexoerp.com / Admin2026!)
+        // 1. Sembrar Superadmin solo si no existe
         asegurarUsuario("superadmin@nexoerp.com", "Admin2026!", "Superadmin Central", "SUPERADMIN", adminRol);
 
-        // 2. Sembrar o verificar Administrador ASUS (admin@asustech.bo / Asus2026!)
+        // 2. Sembrar Administrador ASUS solo si no existe
         asegurarUsuario("admin@asustech.bo", "Asus2026!", "Administrador ASUS Tech", "GERENCIA", adminRol);
 
-        // 3. Sembrar o verificar Administrador General ERP (admin@erp.com / Admin123!)
+        // 3. Sembrar Administrador General ERP solo si no existe
         asegurarUsuario("admin@erp.com", "Admin123!", "Administrador General", "GERENCIA", adminRol);
+
+        // 4. Sembrar usuarios operativos ASUS Tech solo si no existen
+        asegurarUsuario("ventas@asustech.bo", "Ventas2026!", "Alejandro Paz Vaca", "VENTAS", ventasRol);
+        asegurarUsuario("caja@asustech.bo", "Caja2026!", "Laura Morales Justiniano", "CAJA", cajeroRol);
+        asegurarUsuario("almacen@asustech.bo", "Almacen2026!", "Roberto Vaca Mendez", "ALMACEN", almacenRol);
     }
 
     private void asegurarUsuario(String email, String plainPassword, String fullname, String nivel, Rol rol) {
         var opt = usuarioRepository.findByEmailIgnoreCase(email);
         if (opt.isEmpty()) {
             Usuario u = new Usuario();
-            u.setEmail(email);
+            u.setEmail(email.toLowerCase().trim());
             u.setUsername(email.split("@")[0]);
             u.setPassword(passwordEncoder.encode(plainPassword));
             u.setFullname(fullname);
@@ -56,10 +75,15 @@ public class InitializerSeeder implements ApplicationRunner {
             u.setEnable(true);
             u.setRol(rol);
             usuarioRepository.save(u);
-            log.info("Usuario creado: {} (Rol: {})", email, rol.getNombre());
+            log.info("Usuario inicial sembrado: {} (Rol: {})", email, rol.getNombre());
         } else {
+            // El usuario ya existe en la base de datos: NO MODIFICAR SU CONTRASEÑA
             Usuario u = opt.get();
             boolean modificado = false;
+            if (u.getUsername() == null || u.getUsername().isBlank()) {
+                u.setUsername(email.split("@")[0]);
+                modificado = true;
+            }
             if (u.getRol() == null) {
                 u.setRol(rol);
                 modificado = true;
@@ -67,12 +91,6 @@ public class InitializerSeeder implements ApplicationRunner {
             if (!Boolean.TRUE.equals(u.getActivo())) {
                 u.setActivo(true);
                 modificado = true;
-            }
-            // Asegurar que la contraseña coincida con la requerida si no valida
-            if (!passwordEncoder.matches(plainPassword, u.getPassword())) {
-                u.setPassword(passwordEncoder.encode(plainPassword));
-                modificado = true;
-                log.info("Contraseña de {} sincronizada correctamente.", email);
             }
             if (modificado) {
                 usuarioRepository.save(u);

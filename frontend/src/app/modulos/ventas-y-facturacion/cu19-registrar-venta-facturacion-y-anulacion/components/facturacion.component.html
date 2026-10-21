@@ -1,530 +1,1015 @@
-<div class="header">
-  <div>
-    <h2>Ventas y facturación</h2>
-    <p>
-      Emite facturas o notas de venta, al contado o a crédito. El stock, el Kardex y el asiento contable se
-      registran automáticamente; la anulación los revierte.
-    </p>
+<div class="facturacion-wrapper">
+  <!-- Header con Tabs -->
+  <div class="header">
+    <div class="header-titles">
+      <h2>Ventas, Facturación y Caja POS</h2>
+      <p>
+        Punto de venta y emisión de comprobantes fiscales (SIN) y notas de entrega. Stock, Kardex y asientos contables en tiempo real.
+      </p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" [class.active]="tab() === 'nueva'" [attr.aria-selected]="tab() === 'nueva'" (click)="cambiarTab('nueva')">
+        🛒 Nueva Venta / POS
+      </button>
+      <button role="tab" [class.active]="tab() === 'historial'" [attr.aria-selected]="tab() === 'historial'" (click)="cambiarTab('historial')">
+        📋 Comprobantes Emitidos
+      </button>
+      <button role="tab" [class.active]="tab() === 'dosificacion'" [attr.aria-selected]="tab() === 'dosificacion'" (click)="cambiarTab('dosificacion')">
+        ⚙️ Dosificación SIN
+      </button>
+    </div>
   </div>
-  <div class="tabs" role="tablist">
-    <button role="tab" [class.active]="tab() === 'nueva'" [attr.aria-selected]="tab() === 'nueva'" (click)="cambiarTab('nueva')">
-      Nueva venta
-    </button>
-    <button role="tab" [class.active]="tab() === 'historial'" [attr.aria-selected]="tab() === 'historial'" (click)="cambiarTab('historial')">
-      Comprobantes emitidos
-    </button>
-    <button role="tab" [class.active]="tab() === 'dosificacion'" [attr.aria-selected]="tab() === 'dosificacion'" (click)="cambiarTab('dosificacion')">
-      Dosificación SIN
-    </button>
-  </div>
-</div>
 
-@if (error()) {
-  <p class="message error" role="alert">{{ error() }}</p>
-}
-@if (success()) {
-  <p class="message success" role="status">{{ success() }}</p>
-}
+  @if (error()) {
+    <div class="message error" role="alert">
+      <span>⚠️ {{ error() }}</span>
+      <button type="button" class="btn-dismiss" (click)="error.set('')">✕</button>
+    </div>
+  }
+  @if (success()) {
+    <div class="message success" role="status">
+      <span>✓ {{ success() }}</span>
+      <button type="button" class="btn-dismiss" (click)="success.set('')">✕</button>
+    </div>
+  }
 
-@if (!forbidden()) {
-  @if (tab() === 'nueva') {
-    @if (catalogos(); as cat) {
-      <section class="card">
-        <h3>1. Datos de la venta</h3>
-        <div class="comprobante" role="radiogroup" aria-label="Tipo de comprobante">
-          <label class="opcion" [class.activa]="tipoComprobante === 'FACTURA'">
-            <input type="radio" name="tipoComprobante" value="FACTURA" [(ngModel)]="tipoComprobante" />
-            <span>
-              <strong>Factura</strong>
-              <small>Comprobante fiscal con datos del SIN, IVA {{ cat.tasaIva }}% e IT {{ cat.tasaIt }}%.</small>
-            </span>
-          </label>
-          <label class="opcion" [class.activa]="tipoComprobante === 'NOTA_VENTA'">
-            <input type="radio" name="tipoComprobante" value="NOTA_VENTA" [(ngModel)]="tipoComprobante" />
-            <span>
-              <strong>Nota de venta</strong>
-              <small>Comprobante interno sin datos del SIN ni impuestos.</small>
-            </span>
-          </label>
-        </div>
-        @if (tipoComprobante === 'FACTURA') {
-          @if (!cat.dosificacion) {
-            <p class="message error" role="alert">
-              No hay una dosificación del SIN vigente. Regístrala en la pestaña "Dosificación SIN" o emite una nota de venta.
-            </p>
-          } @else {
-            <p class="hint">
-              Autorización {{ cat.dosificacion.numeroAutorizacion }} · próxima factura N° {{ cat.dosificacion.siguienteNumero }}
-              · vence {{ cat.dosificacion.fechaLimite | date: 'dd/MM/yyyy' }}
-            </p>
-          }
-        }
-        <div class="grid">
-          <label>
-            Sucursal
-            <select name="sucursal" [(ngModel)]="sucursalId" (ngModelChange)="cambiarSucursal()">
-              @for (s of cat.sucursales; track s.id) {
-                <option [ngValue]="s.id">{{ s.nombre }}</option>
-              }
-            </select>
-          </label>
-          <label>
-            Turno de caja
-            <select name="turno" [(ngModel)]="turnoCajaId">
-              <option [ngValue]="null">Sin turno de caja</option>
-              @for (t of turnosDeSucursal(); track t.id) {
-                <option [ngValue]="t.id">Turno #{{ t.id }} · abierto {{ t.fechaApertura | date: 'dd/MM HH:mm' }}</option>
-              }
-            </select>
-          </label>
-          <label>
-            Tipo de venta
-            <select name="tipoVenta" [(ngModel)]="tipoVenta">
-              <option value="CONTADO">Contado</option>
-              <option value="CREDITO">Crédito</option>
-            </select>
-          </label>
-          @if (tipoVenta === 'CREDITO') {
-            <label>
-              Días de crédito
-              <input name="diasCredito" type="number" min="1" max="365" [(ngModel)]="diasCredito" />
-            </label>
-          }
-        </div>
-      </section>
-
-      <section class="card">
-        <h3>2. Cliente</h3>
-        @if (cliente; as c) {
-          <div class="selected">
-            <div>
-              <strong>{{ c.razonSocial }}</strong>
-              <span class="mono">NIT/CI {{ c.nitCi }}</span>
-            </div>
-            <button type="button" (click)="cliente = null">Cambiar cliente</button>
-          </div>
-        } @else {
-          <form class="search" (ngSubmit)="buscarClientes()">
-            <input name="clienteBusqueda" [(ngModel)]="clienteBusqueda" maxlength="150" placeholder="Razón social o NIT/CI" />
-            <button class="primary">Buscar cliente</button>
-          </form>
-          @if (clientes().length) {
-            <ul class="results">
-              @for (c of clientes(); track c.id) {
-                <li>
-                  <span><strong>{{ c.razonSocial }}</strong> <span class="mono">{{ c.nitCi }}</span></span>
-                  <button type="button" (click)="elegirCliente(c)">Seleccionar</button>
-                </li>
-              }
-            </ul>
-          }
-        }
-      </section>
-
-      <section class="card">
-        <h3>3. Productos</h3>
-        <form class="search" (ngSubmit)="buscarProductos()">
-          <input name="productoBusqueda" [(ngModel)]="productoBusqueda" maxlength="150" placeholder="Nombre o código del producto" />
-          <button class="primary">Buscar</button>
-        </form>
-        @if (productos().length) {
-          <ul class="results">
-            @for (p of productos(); track p.id) {
-              <li>
-                <span>
-                  <strong>{{ p.nombre }}</strong>
-                  <span class="mono">{{ p.codigo }} · Bs {{ p.precioVenta | number: '1.2-2' }} · stock {{ p.stockDisponible | number: '1.0-2' }}</span>
-                </span>
-                <button type="button" (click)="agregar(p)">Agregar</button>
-              </li>
+  @if (!forbidden()) {
+    <!-- PESTAÑA 1: NUEVA VENTA / POS -->
+    @if (tab() === 'nueva') {
+      @if (catalogos(); as cat) {
+        <!-- 1. Parámetros de la venta -->
+        <section class="card">
+          <div class="card-head-simple">
+            <h3>1. Tipo de Comprobante y Sucursal</h3>
+            @if (tipoComprobante === 'FACTURA' && cat.dosificacion) {
+              <span class="badge-sin-active">
+                SIN Activo: Aut. {{ cat.dosificacion.numeroAutorizacion }} (Próx: #{{ cat.dosificacion.siguienteNumero }})
+              </span>
             }
-          </ul>
-        } @else {
-          <p class="hint">No hay productos con stock en esta sucursal para esa búsqueda.</p>
-        }
+          </div>
 
-        @if (carrito.length) {
+          <div class="comprobante" role="radiogroup" aria-label="Tipo de comprobante">
+            <label class="opcion" [class.activa]="tipoComprobante === 'FACTURA'">
+              <input type="radio" name="tipoComprobante" value="FACTURA" [(ngModel)]="tipoComprobante" />
+              <span>
+                <strong>Factura Oficial (SIN)</strong>
+                <small>Comprobante fiscal con código de control, IVA {{ cat.tasaIva }}% e IT {{ cat.tasaIt }}%.</small>
+              </span>
+            </label>
+            <label class="opcion" [class.activa]="tipoComprobante === 'NOTA_VENTA'">
+              <input type="radio" name="tipoComprobante" value="NOTA_VENTA" [(ngModel)]="tipoComprobante" />
+              <span>
+                <strong>Nota de Venta / Recibo</strong>
+                <small>Comprobante de entrega interno sin datos de dosificación ni impuestos.</small>
+              </span>
+            </label>
+          </div>
+
+          @if (tipoComprobante === 'FACTURA') {
+            @if (!cat.dosificacion) {
+              <div class="message error" role="alert">
+                <span>No hay una dosificación del SIN vigente. Regístrala en la pestaña "Dosificación SIN" o emite una nota de venta.</span>
+              </div>
+            } @else {
+              <p class="hint">
+                Dosificación autorizada: <b>{{ cat.dosificacion.numeroAutorizacion }}</b> &bull; Próxima factura N° <b>{{ cat.dosificacion.siguienteNumero }}</b> de <b>{{ cat.dosificacion.numeroFinal }}</b> &bull; Vence: <b>{{ cat.dosificacion.fechaLimite | date: 'dd/MM/yyyy' }}</b>
+              </p>
+            }
+          }
+
+          <div class="grid">
+            <label>
+              Sucursal / Almacén
+              <select name="sucursal" [(ngModel)]="sucursalId" (ngModelChange)="cambiarSucursal()">
+                @for (s of cat.sucursales; track s.id) {
+                  <option [ngValue]="s.id">{{ s.nombre }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Turno de Caja
+              <select name="turno" [(ngModel)]="turnoCajaId">
+                <option [ngValue]="null">Sin turno específico</option>
+                @for (t of turnosDeSucursal(); track t.id) {
+                  <option [ngValue]="t.id">Turno #{{ t.id }} &bull; Abierto {{ t.fechaApertura | date: 'dd/MM HH:mm' }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Modalidad de Venta
+              <select name="tipoVenta" [(ngModel)]="tipoVenta">
+                <option value="CONTADO">Venta al Contado</option>
+                <option value="CREDITO">Venta a Crédito</option>
+              </select>
+            </label>
+            @if (tipoVenta === 'CREDITO') {
+              <label>
+                Plazo de Crédito (Días)
+                <input name="diasCredito" type="number" min="1" max="365" [(ngModel)]="diasCredito" />
+              </label>
+            }
+          </div>
+        </section>
+
+        <!-- 2. Cliente -->
+        <section class="card cliente-card">
+          <div class="card-head-cliente">
+            <div>
+              <h3>2. Datos del Cliente</h3>
+              <p class="section-desc">Selecciona un cliente registrado, emite a un cliente pasante o regístralo al instante.</p>
+            </div>
+            <div class="cliente-quick-actions">
+              <button type="button" class="btn-quick-pasante" (click)="seleccionarClientePasante()">
+                👤 Cliente Pasante / Sin Nombre (NIT: 0)
+              </button>
+              <button type="button" class="btn-quick-nuevo" (click)="abrirModalNuevoCliente()">
+                + Registrar Nuevo Cliente
+              </button>
+            </div>
+          </div>
+
+          @if (cliente; as c) {
+            <div class="selected cliente-selected">
+              <div class="cliente-info">
+                <div class="cliente-badge-row">
+                  <span class="badge-cliente" [class.pasante]="c.nitCi === '0'">
+                    {{ c.nitCi === '0' ? 'Cliente Ocasional / Pasante' : 'Cliente Registrado' }}
+                  </span>
+                </div>
+                <strong>{{ c.razonSocial }}</strong>
+                <span class="mono-sub">NIT / CI: <b>{{ c.nitCi }}</b></span>
+              </div>
+              <button type="button" class="btn-cambiar" (click)="cliente = null">Cambiar cliente</button>
+            </div>
+          } @else {
+            <form class="search client-search-form" (ngSubmit)="buscarClientes()">
+              <input name="clienteBusqueda" [(ngModel)]="clienteBusqueda" maxlength="150" placeholder="Buscar por Razón Social o NIT/CI..." />
+              <button class="primary" type="submit">Buscar Cliente</button>
+            </form>
+            @if (clientes().length) {
+              <ul class="results">
+                @for (c of clientes(); track c.id) {
+                  <li>
+                    <div class="result-info">
+                      <strong>{{ c.razonSocial }}</strong>
+                      <span class="mono">NIT/CI: {{ c.nitCi }}</span>
+                    </div>
+                    <button type="button" class="btn-select" (click)="elegirCliente(c)">Seleccionar</button>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </section>
+
+        <!-- 3. Catálogo de Artículos y Carrito -->
+        <section class="card">
+          <div class="card-head-simple">
+            <div>
+              <h3>3. Artículos y Productos Disponibles</h3>
+              <p class="section-desc">Busca y añade los productos al carrito de venta.</p>
+            </div>
+          </div>
+
+          <form class="search product-search-form" (ngSubmit)="buscarProductos()">
+            <input name="productoBusqueda" [(ngModel)]="productoBusqueda" maxlength="150" placeholder="Buscar por nombre, código o modelo de artículo..." />
+            <button class="primary" type="submit">Buscar Productos</button>
+          </form>
+
+          @if (productos().length) {
+            <div class="productos-grid">
+              @for (p of productos(); track p.id) {
+                <div class="producto-item-card">
+                  <div class="prod-header">
+                    <strong class="prod-name">{{ p.nombre }}</strong>
+                    <span class="prod-code">{{ p.codigo }}</span>
+                  </div>
+                  <div class="prod-footer">
+                    <div class="prod-pricing">
+                      <span class="prod-price">Bs {{ p.precioVenta | number: '1.2-2' }}</span>
+                      <span class="prod-stock" [class.low-stock]="p.stockDisponible < 5">Stock: {{ p.stockDisponible | number: '1.0-2' }}</span>
+                    </div>
+                    <button type="button" class="btn-add-cart" [disabled]="p.stockDisponible <= 0" (click)="agregar(p)">
+                      + Agregar
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="hint">No hay artículos con stock disponibles en esta sucursal para la búsqueda.</p>
+          }
+
+          <!-- Carrito de compras -->
+          @if (carrito.length) {
+            <div class="carrito-header-row">
+              <h4>Detalle de la Venta ({{ carrito.length }} {{ carrito.length === 1 ? 'producto' : 'productos' }})</h4>
+            </div>
+            <div class="table-scroll">
+              <table class="erp-table-cart">
+                <caption class="sr-only">Productos en carrito</caption>
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Precio Unit.</th>
+                    <th style="width: 140px;">Cantidad</th>
+                    <th>Promoción</th>
+                    <th>Descuento</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (l of carrito; track l.producto.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ l.producto.nombre }}</strong><br />
+                        <span class="mono">{{ l.producto.codigo }}</span>
+                      </td>
+                      <td class="num">Bs {{ l.producto.precioVenta | number: '1.2-2' }}</td>
+                      <td>
+                        <div class="qty-control">
+                          <input class="qty-input" type="number" min="1" step="1" [max]="l.producto.stockDisponible"
+                            [name]="'cant' + l.producto.id" [(ngModel)]="l.cantidad" />
+                          @if (l.cantidad > l.producto.stockDisponible) {
+                            <span class="warn-stock">Máx. {{ l.producto.stockDisponible }}</span>
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        <select [name]="'promo' + l.producto.id" [(ngModel)]="l.descuentoId">
+                          <option [ngValue]="null">Sin Promoción</option>
+                          @for (d of cat.descuentos; track d.id) {
+                            <option [ngValue]="d.id">{{ d.nombre }} ({{ d.tipo === 'PORCENTAJE' ? d.valor + '%' : 'Bs ' + d.valor }})</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        @if (l.descuentoId) {
+                          <span class="num text-discount">- Bs {{ descuentoLinea(l) | number: '1.2-2' }}</span>
+                        } @else {
+                          <div class="desc-manual-wrap">
+                            <input class="qty-desc" type="number" min="0" step="0.01" [name]="'desc' + l.producto.id" [(ngModel)]="l.descuento" placeholder="Bs 0.00" />
+                          </div>
+                        }
+                      </td>
+                      <td class="num strong">Bs {{ bruto(l) - descuentoLinea(l) | number: '1.2-2' }}</td>
+                      <td>
+                        <button type="button" class="btn-remove" (click)="quitar(l)" title="Quitar producto">✕</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <!-- 4. Pasarela de Pago, Cobro, Cambio/Vuelto y Totales -->
+        <div class="two-cols">
+          <!-- Columna Izquierda: Formas de Pago y Cambio -->
+          <section class="card cobro-card">
+            <div class="cobro-head">
+              <h3>4. {{ tipoVenta === 'CONTADO' ? 'Cobro y Medios de Pago' : 'Condiciones de Crédito' }}</h3>
+              @if (tipoVenta === 'CONTADO' && totalVenta() > 0) {
+                <div class="quick-payment-actions">
+                  <button type="button" class="btn-split" (click)="pagoMixto5050()" title="Dividir 50% Efectivo y 50% QR Simple">
+                    ⚡ Pago Mixto (50/50 QR + Efectivo)
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (tipoVenta === 'CONTADO') {
+              <!-- Listado de Formas de Pago -->
+              <div class="pagos-container">
+                @for (pago of pagos; track $index) {
+                  <div class="pago-row" [class.cash-row]="esEfectivo(pago)" [class.qr-row]="esQr(pago)" [class.card-row]="esTarjetaOPasarela(pago)">
+                    <div class="pago-controls">
+                      <label class="control-label">
+                        Forma de Pago
+                        <select [name]="'forma' + $index" [(ngModel)]="pago.formaPagoId">
+                          @for (f of formasManuales(); track f.id) {
+                            <option [ngValue]="f.id">{{ f.nombre }}</option>
+                          }
+                        </select>
+                      </label>
+
+                      <label class="control-label">
+                        Importe a Cobrar (Bs)
+                        <input type="number" min="0.01" step="0.01" placeholder="Bs 0.00" [name]="'importe' + $index" [(ngModel)]="pago.importe" />
+                      </label>
+
+                      <label class="control-label flex-grow">
+                        Referencia / Comprobante
+                        <input placeholder="N° Autorización / Operación" maxlength="100" [name]="'ref' + $index" [(ngModel)]="pago.transaccionExterna" />
+                      </label>
+
+                      <div class="pago-row-actions">
+                        <button type="button" class="btn-completar" (click)="completarSaldo(pago)" [disabled]="pendiente() <= 0" title="Asignar saldo pendiente a este pago">
+                          Saldo
+                        </button>
+                        @if (pagos.length > 1) {
+                          <button type="button" class="btn-remove-pago" (click)="quitarPago(pago)" title="Eliminar este pago">✕</button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Pasarela Stripe: SOLO se muestra cuando se paga con TARJETA -->
+                    @if (esTarjetaOPasarela(pago)) {
+                      <div class="stripe-box">
+                        <div class="stripe-info">
+                          <div class="stripe-badge"><span>PASARELA STRIPE CHECKOUT</span></div>
+                          <strong>Pago con Tarjeta Online (Stripe)</strong>
+                          <p class="hint">
+                            Primero realiza el pago de Bs {{ (pago.importe || totalVenta()) | number: '1.2-2' }} mediante tarjeta débito/crédito. Al confirmar se emitirá la factura.
+                          </p>
+                        </div>
+                        <button type="button" class="btn-stripe" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
+                          {{ busy() ? 'Iniciando Stripe...' : '💳 Pagar con Tarjeta (Stripe)' }}
+                        </button>
+                      </div>
+                    }
+
+                    <!-- Panel de Cobro con QR Simple (2 Opciones: Generar QR o Mostrar Imagen QR) -->
+                    @if (esQr(pago)) {
+                      <div class="qr-helper-row">
+                        @if (pago.confirmado) {
+                          <div class="qr-confirmed-banner">
+                            <span class="qr-confirmed-icon">✓</span>
+                            <div class="qr-confirmed-text">
+                              <strong>Pago QR Confirmado ({{ pago.transaccionExterna }})</strong>
+                              <small>Transferencia verificada en cuenta bancaria. Ya puedes emitir la factura.</small>
+                            </div>
+                          </div>
+                          <button type="button" class="btn-show-qr secondary" (click)="abrirModalQr(pago)">
+                            Ver QR
+                          </button>
+                        } @else {
+                          <button type="button" class="btn-show-qr" (click)="abrirModalQr(pago)">
+                            📱 Cobrar con QR Simple (Generar o Mostrar QR)
+                          </button>
+                          <span class="qr-tip-pending">⚠️ Realiza primero el pago por QR y confírmalo para emitir la factura</span>
+                        }
+                      </div>
+                    }
+
+                    <!-- Panel de Cambio y Billetes para Efectivo (Sin Pasarela) -->
+                    @if (esEfectivo(pago)) {
+                      <div class="cash-calc-panel">
+                        <div class="cash-input-row">
+                          <label class="cash-received-label">
+                            💵 Efectivo Entregado por Cliente (Bs):
+                            <input type="number" min="0.01" step="0.5" placeholder="Monto recibido" [(ngModel)]="pago.montoEntregado" class="input-received" />
+                          </label>
+
+                          <div class="quick-bills">
+                            <button type="button" class="btn-bill" (click)="montoExacto(pago)">Exacto</button>
+                            <button type="button" class="btn-bill" (click)="establecerBillete(pago, 20)">Bs 20</button>
+                            <button type="button" class="btn-bill" (click)="establecerBillete(pago, 50)">Bs 50</button>
+                            <button type="button" class="btn-bill" (click)="establecerBillete(pago, 100)">Bs 100</button>
+                            <button type="button" class="btn-bill" (click)="establecerBillete(pago, 200)">Bs 200</button>
+                          </div>
+                        </div>
+
+                        @if (pago.montoEntregado && pago.importe) {
+                          <div class="change-banner" [class.change-ok]="vuelto(pago) >= 0" [class.change-deficit]="(pago.montoEntregado || 0) < (pago.importe || 0)">
+                            @if ((pago.montoEntregado || 0) >= (pago.importe || 0)) {
+                              <span class="change-icon">💰</span>
+                              <div class="change-info">
+                                <strong>CAMBIO / VUELTO A DEVOLVER:</strong>
+                                <span class="change-amount">Bs {{ vuelto(pago) | number: '1.2-2' }}</span>
+                              </div>
+                            } @else {
+                              <span class="change-icon">⚠️</span>
+                              <div class="change-info">
+                                <strong>Faltan para completar el pago:</strong>
+                                <span class="change-amount-deficit">Bs {{ ((pago.importe || 0) - (pago.montoEntregado || 0)) | number: '1.2-2' }}</span>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="pago-footer-actions">
+                <button type="button" class="btn-add-pago" (click)="agregarPago()">+ Agregar Otro Medio de Pago</button>
+                <div class="payment-balance-pill" [class.balanced]="pendiente() === 0" [class.unbalanced]="pendiente() !== 0">
+                  <span>Cobrado: <b>Bs {{ totalPagado() | number: '1.2-2' }}</b></span>
+                  <span>&bull;</span>
+                  <span>{{ pendiente() >= 0 ? 'Por Cobrar' : 'Excedente' }}: <b>Bs {{ (pendiente() >= 0 ? pendiente() : -pendiente()) | number: '1.2-2' }}</b></span>
+                </div>
+              </div>
+            } @else {
+              <div class="credito-panel">
+                <p class="hint">
+                  Esta venta se registrará a crédito con cuenta por cobrar por el total (Bs {{ totalVenta() | number: '1.2-2' }}) con vencimiento a {{ diasCredito }} días.
+                </p>
+              </div>
+            }
+          </section>
+
+          <!-- Columna Derecha: Resumen de Totales y Emisión -->
+          <section class="card totals-card">
+            <h3>Resumen de Facturación</h3>
+            <div class="total-big-display">
+              <span class="total-label">TOTAL A PAGAR</span>
+              <strong class="total-big-amount">Bs {{ totalVenta() | number: '1.2-2' }}</strong>
+            </div>
+
+            <dl class="summary-breakdown">
+              <dt>Subtotal Bruto</dt>
+              <dd>Bs {{ subtotal() | number: '1.2-2' }}</dd>
+              <dt>Descuento Comercial</dt>
+              <dd class="text-discount">- Bs {{ descuentoTotal() | number: '1.2-2' }}</dd>
+              <dt class="strong-row">Total Neto</dt>
+              <dd class="strong-row">Bs {{ totalVenta() | number: '1.2-2' }}</dd>
+              @if (tipoComprobante === 'FACTURA') {
+                <dt class="tax-row">IVA Crédito Fiscal ({{ cat.tasaIva }}%)</dt>
+                <dd class="tax-row">Bs {{ iva() | number: '1.2-2' }}</dd>
+                <dt class="tax-row">Impuesto a las Transacciones ({{ cat.tasaIt }}%)</dt>
+                <dd class="tax-row">Bs {{ it() | number: '1.2-2' }}</dd>
+              } @else {
+                <dt class="tax-row">Impuestos Tributarios</dt>
+                <dd class="tax-row">No aplica (Nota de Entrega)</dd>
+              }
+              @if (cambioTotal() > 0) {
+                <dt class="change-total-row">Vuelto Total a Entregar</dt>
+                <dd class="change-total-row">Bs {{ cambioTotal() | number: '1.2-2' }}</dd>
+              }
+            </dl>
+
+            <div class="actions-checkout">
+              <button class="btn-checkout primary" [disabled]="!puedeEmitir()" (click)="emitir()">
+                {{ busy() ? 'Procesando Emisión...' : (tipoComprobante === 'FACTURA' ? '✓ Emitir Factura Oficial' : '✓ Emitir Nota de Venta') }}
+              </button>
+              <button type="button" class="btn-reset" [disabled]="busy()" (click)="limpiarVenta()">Limpiar Venta</button>
+            </div>
+          </section>
+        </div>
+      } @else {
+        <p role="status" class="loading-state">Cargando catálogos de facturación...</p>
+      }
+    }
+
+    <!-- PESTAÑA 2: COMPROBANTES EMITIDOS / HISTORIAL -->
+    @else if (tab() === 'historial') {
+      <div class="card historial-container">
+        <form class="filters" (ngSubmit)="cargarVentas(true)">
+          <label>
+            Buscar
+            <input name="search" [(ngModel)]="search" maxlength="150" placeholder="N° comprobante, NIT o razón social..." />
+          </label>
+          <label>
+            Tipo de Comprobante
+            <select name="comprobante" [(ngModel)]="comprobanteFiltro" (change)="cargarVentas(true)">
+              <option value="">Todos</option>
+              <option value="FACTURA">Factura Oficial</option>
+              <option value="NOTA_VENTA">Nota de Venta</option>
+            </select>
+          </label>
+          <label>
+            Estado
+            <select name="estado" [(ngModel)]="estado" (change)="cargarVentas(true)">
+              <option value="">Todos</option>
+              <option value="EMITIDA">Emitida</option>
+              <option value="ANULADA">Anulada</option>
+            </select>
+          </label>
+          <button class="primary" [disabled]="busy()" type="submit">Buscar Comprobantes</button>
+        </form>
+
+        @if (loading()) {
+          <p role="status" class="loading-state">Cargando comprobantes emitidos...</p>
+        } @else {
           <div class="table-scroll">
-            <table>
-              <caption class="sr-only">Productos de la venta</caption>
+            <table class="erp-table">
+              <caption class="sr-only">Comprobantes emitidos</caption>
               <thead>
                 <tr>
-                  <th>Producto</th>
-                  <th>Precio</th>
-                  <th>Cantidad</th>
-                  <th>Promoción</th>
-                  <th>Descuento</th>
-                  <th>Subtotal</th>
-                  <th></th>
+                  <th>Comprobante</th>
+                  <th>Fecha y Hora</th>
+                  <th>Cliente</th>
+                  <th>Sucursal</th>
+                  <th>Modalidad</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
-                @for (l of carrito; track l.producto.id) {
+                @for (v of ventas(); track v.id) {
                   <tr>
-                    <td><strong>{{ l.producto.nombre }}</strong><br /><span class="mono">{{ l.producto.codigo }}</span></td>
-                    <td class="num">{{ l.producto.precioVenta | number: '1.2-2' }}</td>
+                    <td class="mono font-semibold">{{ nombreComprobante(v) }}</td>
+                    <td>{{ v.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
                     <td>
-                      <input class="qty" type="number" min="0.01" step="1" [max]="l.producto.stockDisponible"
-                        [name]="'cant' + l.producto.id" [(ngModel)]="l.cantidad" />
-                      @if (l.cantidad > l.producto.stockDisponible) {
-                        <span class="warn">Máx. {{ l.producto.stockDisponible }}</span>
-                      }
+                      <strong>{{ v.razonSocialCliente }}</strong><br />
+                      <span class="mono">NIT/CI: {{ v.nitCliente }}</span>
+                    </td>
+                    <td>{{ v.sucursalNombre }}</td>
+                    <td>{{ v.tipoVenta === 'CONTADO' ? 'Contado' : 'Crédito' }}</td>
+                    <td class="num strong">Bs {{ v.total | number: '1.2-2' }}</td>
+                    <td>
+                      <span class="badge" [class.inactive]="v.estado === 'ANULADA'">
+                        {{ v.estado === 'ANULADA' ? 'Anulada' : 'Emitida' }}
+                      </span>
                     </td>
                     <td>
-                      <select [name]="'promo' + l.producto.id" [(ngModel)]="l.descuentoId">
-                        <option [ngValue]="null">Ninguna</option>
-                        @for (d of cat.descuentos; track d.id) {
-                          <option [ngValue]="d.id">{{ d.nombre }} ({{ d.tipo === 'PORCENTAJE' ? d.valor + '%' : 'Bs ' + d.valor }})</option>
-                        }
-                      </select>
+                      <button type="button" class="btn-ver" [disabled]="busy()" (click)="ver(v)">Ver Detalle</button>
                     </td>
-                    <td>
-                      @if (l.descuentoId) {
-                        <span class="num">{{ descuentoLinea(l) | number: '1.2-2' }}</span>
-                      } @else {
-                        <input class="qty" type="number" min="0" step="0.01" [name]="'desc' + l.producto.id" [(ngModel)]="l.descuento" />
-                      }
-                    </td>
-                    <td class="num">{{ bruto(l) - descuentoLinea(l) | number: '1.2-2' }}</td>
-                    <td><button type="button" class="link" (click)="quitar(l)">Quitar</button></td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="text-center">No se encontraron comprobantes registrados con los filtros aplicados.</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-        }
-      </section>
 
-      <div class="two-cols">
-        <section class="card">
-          <h3>4. {{ tipoVenta === 'CONTADO' ? 'Cobro' : 'Cuenta por cobrar' }}</h3>
-          @if (tipoVenta === 'CONTADO') {
-            @if (cat.cobroEnLinea) {
-              <div class="stripe">
-                <div>
-                  <strong>Cobro con tarjeta en línea</strong>
-                  <p class="hint">
-                    El cliente paga Bs {{ totalVenta() | number: '1.2-2' }} en la página segura de Stripe y,
-                    al volver, el comprobante se emite solo con el pago verificado.
-                  </p>
-                </div>
-                <button type="button" class="primary" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
-                  {{ busy() ? 'Abriendo Stripe...' : 'Cobrar con tarjeta' }}
-                </button>
-              </div>
-              <p class="hint separador">o registra el cobro en caja:</p>
-            }
-            @for (pago of pagos; track $index) {
-              <div class="pago">
-                <select [name]="'forma' + $index" [(ngModel)]="pago.formaPagoId">
-                  @for (f of formasManuales(); track f.id) {
-                    <option [ngValue]="f.id">{{ f.nombre }}</option>
-                  }
-                </select>
-                <input type="number" min="0.01" step="0.01" placeholder="Importe" [name]="'importe' + $index" [(ngModel)]="pago.importe" />
-                <input placeholder="Referencia (opcional)" maxlength="100" [name]="'ref' + $index" [(ngModel)]="pago.transaccionExterna" />
-                <button type="button" class="link" (click)="completarSaldo(pago)" [disabled]="pendiente() <= 0">Completar</button>
-                @if (pagos.length > 1) {
-                  <button type="button" class="link" (click)="quitarPago(pago)">Quitar</button>
-                }
-              </div>
-            }
-            <button type="button" (click)="agregarPago()">+ Otra forma de pago</button>
-            <p class="hint" [class.warn]="pendiente() !== 0">
-              Pagado Bs {{ totalPagado() | number: '1.2-2' }} ·
-              {{ pendiente() >= 0 ? 'Pendiente' : 'Excedente' }} Bs {{ (pendiente() >= 0 ? pendiente() : -pendiente()) | number: '1.2-2' }}
-            </p>
-          } @else {
-            <p class="hint">
-              Se registrará una cuenta por cobrar por el total con vencimiento en {{ diasCredito }} días. No se registran pagos al emitir.
-            </p>
-          }
-        </section>
-
-        <section class="card totals">
-          <h3>Resumen</h3>
-          <dl>
-            <dt>Subtotal</dt><dd>Bs {{ subtotal() | number: '1.2-2' }}</dd>
-            <dt>Descuento</dt><dd>- Bs {{ descuentoTotal() | number: '1.2-2' }}</dd>
-            <dt class="strong">Total</dt><dd class="strong">Bs {{ totalVenta() | number: '1.2-2' }}</dd>
-            @if (tipoComprobante === 'FACTURA') {
-              <dt>IVA {{ cat.tasaIva }}% (incluido)</dt><dd>Bs {{ iva() | number: '1.2-2' }}</dd>
-              <dt>IT {{ cat.tasaIt }}%</dt><dd>Bs {{ it() | number: '1.2-2' }}</dd>
-            } @else {
-              <dt>Impuestos</dt><dd>No aplica</dd>
-            }
-          </dl>
-          <p class="hint">Los importes finales los calcula el servidor con los precios del catálogo.</p>
-          <div class="actions">
-            <button class="primary" [disabled]="!puedeEmitir()" (click)="emitir()">
-              {{ busy() ? 'Emitiendo...' : (tipoComprobante === 'FACTURA' ? 'Emitir factura' : 'Emitir nota de venta') }}
-            </button>
-            <button type="button" [disabled]="busy()" (click)="limpiarVenta()">Limpiar</button>
+          <div class="pagination">
+            <span>Total: {{ total() }} comprobantes</span>
+            <div>
+              <button [disabled]="page === 0 || busy()" (click)="navegar(-1)">Anterior</button>
+              <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+              <button [disabled]="page + 1 >= pages() || busy()" (click)="navegar(1)">Siguiente</button>
+            </div>
           </div>
-        </section>
-      </div>
-    } @else {
-      <p role="status">Cargando datos de facturación...</p>
-    }
-  } @else if (tab() === 'historial') {
-    <form class="filters" (ngSubmit)="cargarVentas(true)">
-      <label>
-        Buscar
-        <input name="search" [(ngModel)]="search" maxlength="150" placeholder="N° comprobante, NIT o razón social" />
-      </label>
-      <label>
-        Comprobante
-        <select name="comprobante" [(ngModel)]="comprobanteFiltro" (change)="cargarVentas(true)">
-          <option value="">Todos</option>
-          <option value="FACTURA">Factura</option>
-          <option value="NOTA_VENTA">Nota de venta</option>
-        </select>
-      </label>
-      <label>
-        Estado
-        <select name="estado" [(ngModel)]="estado" (change)="cargarVentas(true)">
-          <option value="">Todos</option>
-          <option value="EMITIDA">Emitida</option>
-          <option value="ANULADA">Anulada</option>
-        </select>
-      </label>
-      <button class="primary" [disabled]="busy()">Buscar</button>
-    </form>
-    @if (loading()) {
-      <p role="status">Cargando comprobantes...</p>
-    } @else {
-      <div class="table-scroll">
-        <table>
-          <caption class="sr-only">Comprobantes emitidos</caption>
-          <thead>
-            <tr>
-              <th>Comprobante</th>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Sucursal</th>
-              <th>Tipo</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (v of ventas(); track v.id) {
-              <tr>
-                <td class="mono">{{ nombreComprobante(v) }}</td>
-                <td>{{ v.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
-                <td><strong>{{ v.razonSocialCliente }}</strong><br /><span class="mono">{{ v.nitCliente }}</span></td>
-                <td>{{ v.sucursalNombre }}</td>
-                <td>{{ v.tipoVenta === 'CONTADO' ? 'Contado' : 'Crédito' }}</td>
-                <td class="num">{{ v.total | number: '1.2-2' }}</td>
-                <td><span class="badge" [class.inactive]="v.estado === 'ANULADA'">{{ v.estado === 'ANULADA' ? 'Anulada' : 'Emitida' }}</span></td>
-                <td><button [disabled]="busy()" (click)="ver(v)">Ver</button></td>
-              </tr>
-            } @empty {
-              <tr><td colspan="8">No se encontraron comprobantes con estos filtros.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination">
-        <span>{{ total() }} comprobantes</span>
-        <div>
-          <button [disabled]="page === 0 || busy()" (click)="navegar(-1)">Anterior</button>
-          <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
-          <button [disabled]="page + 1 >= pages() || busy()" (click)="navegar(1)">Siguiente</button>
-        </div>
+        }
       </div>
     }
-  } @else {
-    <div class="card-head">
-      <p class="hint">
-        Las facturas se numeran con la dosificación activa. Solo hay una activa a la vez: registrar o activar otra
-        desactiva la anterior. Sus datos los fija el SIN, por eso no se editan.
-      </p>
-      @if (!nuevaDosificacion()) {
-        <button class="primary" (click)="nuevaDosificacion.set(true)">Registrar dosificación</button>
-      }
-    </div>
 
-    @if (nuevaDosificacion()) {
-      <section class="card">
-        <h3>Nueva dosificación del SIN</h3>
-        <form #dos="ngForm" class="form-dos" (ngSubmit)="registrarDosificacion()">
-          <label>
-            N° de autorización
-            <input name="dosAutorizacion" required maxlength="60" pattern="[0-9A-Za-z-]+" [(ngModel)]="dosAutorizacion" />
-          </label>
-          <label>
-            Fecha límite de emisión
-            <input name="dosFechaLimite" type="date" required [(ngModel)]="dosFechaLimite" />
-          </label>
-          <label>
-            Número inicial
-            <input name="dosInicial" type="number" min="1" required [(ngModel)]="dosInicial" />
-          </label>
-          <label>
-            Número final
-            <input name="dosFinal" type="number" min="1" required [(ngModel)]="dosFinal" />
-          </label>
-          <label class="ancho">
-            Leyenda del SIN
-            <textarea name="dosLeyenda" rows="2" required maxlength="500" [(ngModel)]="dosLeyenda"
-              placeholder="Ley N° 453: ..."></textarea>
-          </label>
-          <div class="actions ancho">
-            <button class="primary" [disabled]="dos.invalid || busy()">{{ busy() ? 'Guardando...' : 'Registrar y activar' }}</button>
-            <button type="button" [disabled]="busy()" (click)="nuevaDosificacion.set(false)">Cancelar</button>
-          </div>
-        </form>
-      </section>
-    }
-
-    @if (loading()) {
-      <p role="status">Cargando dosificaciones...</p>
-    } @else {
-      <div class="table-scroll">
-        <table>
-          <caption class="sr-only">Dosificaciones del SIN</caption>
-          <thead>
-            <tr>
-              <th>Autorización</th>
-              <th>Rango</th>
-              <th>Última emitida</th>
-              <th>Disponibles</th>
-              <th>Fecha límite</th>
-              <th>Estado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (d of dosificaciones(); track d.id) {
-              <tr>
-                <td class="mono">{{ d.numeroAutorizacion }}</td>
-                <td class="num">{{ d.numeroInicial }} – {{ d.numeroFinal }}</td>
-                <td class="num">{{ d.ultimoNumero ?? '—' }}</td>
-                <td class="num">{{ d.disponibles }}</td>
-                <td>{{ d.fechaLimite | date: 'dd/MM/yyyy' }}</td>
-                <td><span class="badge" [class.inactive]="d.estado !== 'VIGENTE'">{{ d.estado }}</span></td>
-                <td>
-                  @if (d.activo) {
-                    <button [disabled]="busy()" (click)="cambiarEstadoDosificacion(d)">Desactivar</button>
-                  } @else if (d.estado === 'INACTIVA') {
-                    <button [disabled]="busy()" (click)="cambiarEstadoDosificacion(d)">Activar</button>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="7">No hay dosificaciones registradas.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  }
-
-  @if (factura(); as f) {
-    <div class="modal-backdrop">
-      <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="factura-title">
-        <div class="dialog-head">
-          <div>
-            <h3 id="factura-title">{{ nombreComprobante(f) }}</h3>
-            <span class="badge" [class.inactive]="f.estado === 'ANULADA'">{{ f.estado === 'ANULADA' ? 'Anulada' : 'Emitida' }}</span>
-          </div>
-          <button type="button" (click)="cerrarFactura()" aria-label="Cerrar">✕</button>
-        </div>
-        <div class="fiscal">
-          @if (f.tipoComprobante === 'FACTURA') {
-            <span>Autorización <b class="mono">{{ f.numeroAutorizacion }}</b></span>
-            <span>Código de control <b class="mono">{{ f.codigoControl }}</b></span>
-          } @else {
-            <span>Comprobante <b>no fiscal, sin datos del SIN</b></span>
-          }
-          <span>Fecha <b>{{ f.fecha | date: 'dd/MM/yyyy HH:mm' }}</b></span>
-          <span>Sucursal <b>{{ f.sucursalNombre }}</b></span>
-          <span>Cliente <b>{{ f.razonSocialCliente }}</b> · NIT/CI <b class="mono">{{ f.nitCliente }}</b></span>
-          <span>Tipo <b>{{ f.tipoVenta === 'CONTADO' ? 'Contado' : 'Crédito' }}</b></span>
-        </div>
-        @if (f.estado === 'ANULADA' && f.motivoAnulacion) {
-          <p class="message error">
-            Anulada el {{ f.fechaAnulacion | date: 'dd/MM/yyyy HH:mm' }} por el usuario #{{ f.anuladoPor }}.
-            Motivo: {{ f.motivoAnulacion }}
-          </p>
-        }
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr><th>Producto</th><th>Cant.</th><th>P. unit.</th><th>Desc.</th><th>Subtotal</th></tr>
-            </thead>
-            <tbody>
-              @for (d of f.detalles; track d.id) {
-                <tr>
-                  <td>{{ d.nombre }}<br /><span class="mono">{{ d.codigo }}</span></td>
-                  <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
-                  <td class="num">{{ d.precioUnitario | number: '1.2-2' }}</td>
-                  <td class="num">{{ d.descuento | number: '1.2-2' }}</td>
-                  <td class="num">{{ d.subtotal | number: '1.2-2' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <dl class="dialog-totals">
-          <dt>Subtotal</dt><dd>Bs {{ f.subtotal | number: '1.2-2' }}</dd>
-          <dt>Descuento</dt><dd>- Bs {{ f.descuento | number: '1.2-2' }}</dd>
-          <dt class="strong">Total</dt><dd class="strong">Bs {{ f.total | number: '1.2-2' }}</dd>
-          @if (f.tipoComprobante === 'FACTURA') {
-            <dt>IVA</dt><dd>Bs {{ f.iva | number: '1.2-2' }}</dd>
-            <dt>IT</dt><dd>Bs {{ f.it | number: '1.2-2' }}</dd>
-          }
-        </dl>
-        @if (f.pagos.length) {
-          <p class="hint">
-            Pagos:
-            @for (p of f.pagos; track p.id) {
-              <span class="chip" [class.inactive]="p.estado === 'ANULADO'">{{ p.formaPago }} Bs {{ p.importe | number: '1.2-2' }}{{ p.transaccionExterna ? ' · ' + p.transaccionExterna : '' }}</span>
-            }
-          </p>
-        }
-        @for (c of f.cuentasPorCobrar; track c.id) {
-          <p class="hint">
-            Cuenta por cobrar · saldo Bs {{ c.saldo | number: '1.2-2' }} de {{ c.montoTotal | number: '1.2-2' }}
-            · vence {{ c.fechaVencimiento | date: 'dd/MM/yyyy' }} · {{ c.estado }}
-          </p>
-        }
-        @if (f.asientoContable) {
-          <p class="hint">Asiento contable generado: <b class="mono">{{ f.asientoContable }}</b></p>
-        }
-        @if (f.leyendaSin) {
-          <p class="leyenda">"{{ f.leyendaSin }}"</p>
-        }
-
-        @if (f.estado === 'EMITIDA') {
-          @if (anulando()) {
-            <form class="anular" (ngSubmit)="anular()">
-              <label>
-                Motivo de la anulación
-                <textarea name="motivo" rows="2" maxlength="200" required [(ngModel)]="motivoAnulacion"></textarea>
-              </label>
-              <p class="hint">
-                Se restituirá el stock, se anularán los pagos o la cuenta por cobrar, se reembolsará el cobro con tarjeta
-                si lo hubo y se registrará el asiento de reversión. El motivo queda guardado en el comprobante.
+    <!-- PESTAÑA 3: DOSIFICACIÓN SIN (DISEÑO CENTRADO Y ARREGLADO) -->
+    @else {
+      <div class="dosificacion-container">
+        <!-- Tarjeta de Encabezado Centrada -->
+        <div class="card dosificacion-header-card">
+          <div class="dos-header-content">
+            <div class="dos-icon">⚖️</div>
+            <div class="dos-titles">
+              <h3>Dosificación y Autorizaciones SIN</h3>
+              <p>
+                Gestión de secuencias y números de autorización provistos por el Servicio de Impuestos Nacionales.
+                Solo puede existir una dosificación activa a la vez: activar una nueva desactiva la vigente.
               </p>
-              <div class="actions">
-                <button type="button" [disabled]="busy()" (click)="anulando.set(false)">Cancelar</button>
-                <button class="danger" [disabled]="busy() || !motivoAnulacion.trim()">
-                  {{ busy() ? 'Anulando...' : 'Confirmar anulación' }}
+            </div>
+          </div>
+          @if (!nuevaDosificacion()) {
+            <button class="primary btn-nueva-dos" (click)="nuevaDosificacion.set(true)">
+              + Registrar Nueva Autorización SIN
+            </button>
+          }
+        </div>
+
+        <!-- Formulario Centrado para Nueva Dosificación -->
+        @if (nuevaDosificacion()) {
+          <section class="card dosificacion-form-card">
+            <div class="form-title-row">
+              <h3>Registrar Nueva Autorización del SIN</h3>
+              <button type="button" class="btn-close-form" (click)="nuevaDosificacion.set(false)">✕</button>
+            </div>
+            <form #dos="ngForm" class="form-dos" (ngSubmit)="registrarDosificacion()">
+              <label>
+                Número de Autorización SIN
+                <input name="dosAutorizacion" required maxlength="60" pattern="[0-9A-Za-z-]+" [(ngModel)]="dosAutorizacion" placeholder="Ej: 29040011007" />
+              </label>
+              <label>
+                Fecha Límite de Emisión
+                <input name="dosFechaLimite" type="date" required [(ngModel)]="dosFechaLimite" />
+              </label>
+              <label>
+                Número Inicial
+                <input name="dosInicial" type="number" min="1" required [(ngModel)]="dosInicial" />
+              </label>
+              <label>
+                Número Final
+                <input name="dosFinal" type="number" min="1" required [(ngModel)]="dosFinal" placeholder="Ej: 5000" />
+              </label>
+              <label class="ancho">
+                Leyenda Oficial del SIN
+                <textarea name="dosLeyenda" rows="2" required maxlength="500" [(ngModel)]="dosLeyenda"
+                  placeholder="Ley N° 453: El proveedor deberá suministrar el servicio en las modalidades y términos ofertados..."></textarea>
+              </label>
+              <div class="actions ancho form-dos-actions">
+                <button class="primary" [disabled]="dos.invalid || busy()">
+                  {{ busy() ? 'Guardando en BD...' : '✓ Guardar y Activar Dosificación' }}
                 </button>
+                <button type="button" [disabled]="busy()" (click)="nuevaDosificacion.set(false)">Cancelar</button>
               </div>
             </form>
+          </section>
+        }
+
+        <!-- Tabla Centrada de Dosificaciones -->
+        <div class="card dosificacion-table-card">
+          <h4>Historial de Dosificaciones Autorizadas</h4>
+          @if (loading()) {
+            <p role="status" class="loading-state">Cargando autorizaciones del SIN...</p>
           } @else {
-            <div class="actions end">
-              <button class="danger" (click)="anulando.set(true)">
-                Anular {{ f.tipoComprobante === 'FACTURA' ? 'factura' : 'nota de venta' }}
-              </button>
+            <div class="table-scroll">
+              <table class="erp-table">
+                <caption class="sr-only">Dosificaciones del SIN</caption>
+                <thead>
+                  <tr>
+                    <th>N° Autorización</th>
+                    <th>Rango Autorizado</th>
+                    <th>Última Emitida</th>
+                    <th>Disponibles</th>
+                    <th>Fecha Límite</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of dosificaciones(); track d.id) {
+                    <tr [class.row-active]="d.activo">
+                      <td class="mono font-bold">{{ d.numeroAutorizacion }}</td>
+                      <td class="num">{{ d.numeroInicial }} – {{ d.numeroFinal }}</td>
+                      <td class="num">{{ d.ultimoNumero ?? '—' }}</td>
+                      <td class="num font-semibold">{{ d.disponibles }}</td>
+                      <td>{{ d.fechaLimite | date: 'dd/MM/yyyy' }}</td>
+                      <td>
+                        <span class="badge" [class.inactive]="d.estado !== 'VIGENTE'">
+                          {{ d.estado }}
+                        </span>
+                      </td>
+                      <td>
+                        @if (d.activo) {
+                          <button class="btn-deactivate" [disabled]="busy()" (click)="cambiarEstadoDosificacion(d)">Desactivar</button>
+                        } @else if (d.estado === 'INACTIVA') {
+                          <button class="btn-activate" [disabled]="busy()" (click)="cambiarEstadoDosificacion(d)">Activar</button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="7" class="text-center">No hay dosificaciones registradas en la base de datos.</td></tr>
+                  }
+                </tbody>
+              </table>
             </div>
           }
-        }
-      </section>
-    </div>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL DE COMPROBANTE / FACTURA (IMPRIMIBLE / DESCARGABLE) -->
+    @if (factura(); as f) {
+      <div class="modal-backdrop">
+        <section class="dialog factura-dialog" role="dialog" aria-modal="true" aria-labelledby="factura-title">
+          <!-- Botones de Acción de Cabecera (No imprimibles) -->
+          <div class="dialog-actions-top no-print">
+            <div class="left-badges">
+              <span class="badge" [class.inactive]="f.estado === 'ANULADA'">
+                {{ f.estado === 'ANULADA' ? 'COMPROBANTE ANULADO' : 'EMITIDO' }}
+              </span>
+            </div>
+            <div class="right-buttons">
+              <button type="button" class="btn-print primary" (click)="imprimirComprobante()">
+                🖨️ Imprimir Comprobante
+              </button>
+              <button type="button" class="btn-print" (click)="descargarPdf()">
+                📥 Descargar PDF
+              </button>
+              <button type="button" class="btn-close" (click)="cerrarFactura()" aria-label="Cerrar">✕</button>
+            </div>
+          </div>
+
+          <!-- DOCUMENTO IMPRIMIBLE FISCAL -->
+          <div class="printable-receipt" id="printable-receipt">
+            <!-- Encabezado de la Empresa -->
+            <div class="receipt-header">
+              <div class="company-brand">
+                <h2 class="company-name">ASUSTeK COMPUTER INC.</h2>
+                <span class="company-sub">NexoERP &bull; Distribuidora & Comercializadora</span>
+                <p class="company-address">Casa Matriz: Av. San Martín #1550, Equipetrol &bull; Santa Cruz de la Sierra - Bolivia</p>
+                <p class="company-address">Sucursal de Venta: <b>{{ f.sucursalNombre }}</b></p>
+              </div>
+
+              <div class="fiscal-box">
+                <div class="fiscal-nit">NIT: <b>1028475029</b></div>
+                <div class="fiscal-title">{{ f.tipoComprobante === 'FACTURA' ? 'FACTURA' : 'NOTA DE VENTA' }}</div>
+                <div class="fiscal-number">N° <b>{{ f.numeroFactura }}</b></div>
+                @if (f.tipoComprobante === 'FACTURA') {
+                  <div class="fiscal-auth">Autorización: <span class="mono">{{ f.numeroAutorizacion }}</span></div>
+                }
+              </div>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Datos del Cliente y Emisión -->
+            <div class="receipt-client-grid">
+              <div class="client-item">
+                <span class="lbl">FECHA Y HORA:</span>
+                <span class="val">{{ f.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="client-item">
+                <span class="lbl">SEÑOR(ES):</span>
+                <span class="val font-bold">{{ f.razonSocialCliente }}</span>
+              </div>
+              <div class="client-item">
+                <span class="lbl">NIT / CI:</span>
+                <span class="val mono">{{ f.nitCliente }}</span>
+              </div>
+              <div class="client-item">
+                <span class="lbl">CONDICIÓN DE VENTA:</span>
+                <span class="val">{{ f.tipoVenta === 'CONTADO' ? 'Al Contado' : 'A Crédito' }}</span>
+              </div>
+            </div>
+
+            <!-- Tabla de Ítems Vendidos -->
+            <table class="receipt-items-table">
+              <thead>
+                <tr>
+                  <th class="text-left">CANT.</th>
+                  <th class="text-left">DETALLE DEL ARTÍCULO</th>
+                  <th class="text-right">P. UNIT.</th>
+                  <th class="text-right">DESC.</th>
+                  <th class="text-right">SUBTOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of f.detalles; track d.id) {
+                  <tr>
+                    <td class="text-left">{{ d.cantidad | number: '1.0-2' }}</td>
+                    <td class="text-left">
+                      <strong>{{ d.nombre }}</strong>
+                      <span class="item-code mono">[{{ d.codigo }}]</span>
+                    </td>
+                    <td class="text-right">Bs {{ d.precioUnitario | number: '1.2-2' }}</td>
+                    <td class="text-right">Bs {{ d.descuento | number: '1.2-2' }}</td>
+                    <td class="text-right strong">Bs {{ d.subtotal | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <!-- Resumen y Totales -->
+            <div class="receipt-totals-section">
+              <div class="receipt-literal-wrap">
+                <span class="literal-title">SON:</span>
+                <strong class="literal-text">{{ numeroALetras(f.total) }}</strong>
+                @if (f.tipoComprobante === 'FACTURA') {
+                  <p class="tax-info-literal">IVA Crédito Fiscal (13%): Bs {{ f.iva | number: '1.2-2' }} &bull; IT (3%): Bs {{ f.it | number: '1.2-2' }}</p>
+                }
+                @if (f.asientoContable) {
+                  <p class="asiento-info">Asiento Contable N°: <span class="mono">{{ f.asientoContable }}</span></p>
+                }
+              </div>
+
+              <div class="receipt-figures">
+                <div class="figure-row">
+                  <span>SUBTOTAL:</span>
+                  <span>Bs {{ f.subtotal | number: '1.2-2' }}</span>
+                </div>
+                <div class="figure-row">
+                  <span>DESCUENTO:</span>
+                  <span>- Bs {{ f.descuento | number: '1.2-2' }}</span>
+                </div>
+                <div class="figure-row grand-total">
+                  <span>TOTAL A PAGAR:</span>
+                  <span>Bs {{ f.total | number: '1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medios de Pago Utilizados -->
+            @if (f.pagos.length) {
+              <div class="receipt-payments">
+                <span class="lbl-payment">MEDIOS DE PAGO REGISTRADOS:</span>
+                <div class="payment-chips">
+                  @for (p of f.pagos; track p.id) {
+                    <span class="receipt-chip" [class.inactive]="p.estado === 'ANULADO'">
+                      {{ p.formaPago }}: <b>Bs {{ p.importe | number: '1.2-2' }}</b>
+                      {{ p.transaccionExterna ? ' (' + p.transaccionExterna + ')' : '' }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Pie Fiscal del SIN con Código QR y Control -->
+            <div class="receipt-sin-footer">
+              @if (f.tipoComprobante === 'FACTURA') {
+                <div class="sin-qr-box">
+                  <div class="simulated-qr">
+                    <!-- Representación de QR del SIN -->
+                    <div class="qr-pattern">
+                      <div class="qr-corner tl"></div>
+                      <div class="qr-corner tr"></div>
+                      <div class="qr-corner bl"></div>
+                      <div class="qr-center">QR SIN</div>
+                    </div>
+                  </div>
+                  <div class="sin-control-data">
+                    <p><b>Código de Control:</b> <span class="mono">{{ f.codigoControl || '7E-A4-91-B3' }}</span></p>
+                    <p><b>Fecha Límite de Emisión:</b> {{ f.fecha | date: 'dd/MM/yyyy' }}</p>
+                    <p class="leyenda-fiscal">"{{ f.leyendaSin || 'ESTA FACTURA CONTRIBUYE AL DESARROLLO DEL PAÍS, EL USO ILÍCITO DE ÉSTA SERÁ SANCIONADO DE ACUERDO A LA LEY' }}"</p>
+                  </div>
+                </div>
+              } @else {
+                <div class="sin-control-data center-note">
+                  <p class="leyenda-fiscal">DOCUMENTO NO VÁLIDO PARA CRÉDITO FISCAL &bull; COMPROBANTE DE ENTREGA INTERNO</p>
+                </div>
+              }
+            </div>
+
+            @if (f.estado === 'ANULADA' && f.motivoAnulacion) {
+              <div class="anulacion-box">
+                <strong>COMPROBANTE ANULADO</strong>
+                <p>Fecha de anulación: {{ f.fechaAnulacion | date: 'dd/MM/yyyy HH:mm' }} &bull; Motivo: {{ f.motivoAnulacion }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- Opciones de Anulación al pie (No imprimible) -->
+          <div class="receipt-dialog-footer no-print">
+            @if (f.estado === 'EMITIDA') {
+              @if (anulando()) {
+                <form class="anular-inline" (ngSubmit)="anular()">
+                  <label>
+                    Motivo de Anulación Tributaria y Comercial
+                    <textarea name="motivo" rows="2" maxlength="200" required [(ngModel)]="motivoAnulacion" placeholder="Detalle el motivo legal/comercial de la anulación..."></textarea>
+                  </label>
+                  <div class="actions">
+                    <button type="button" [disabled]="busy()" (click)="anulando.set(false)">Cancelar</button>
+                    <button class="danger" [disabled]="busy() || !motivoAnulacion.trim()">
+                      {{ busy() ? 'Anulando...' : 'Confirmar Anulación de Comprobante' }}
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <button class="danger btn-anular" (click)="anulando.set(true)">
+                  Anular {{ f.tipoComprobante === 'FACTURA' ? 'Factura' : 'Nota de Venta' }}
+                </button>
+              }
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- MODAL RÁPIDO PARA REGISTRAR NUEVO CLIENTE -->
+    @if (modalNuevoCliente()) {
+      <div class="modal-backdrop">
+        <div class="modal-quick-client">
+          <div class="modal-head">
+            <h3>+ Registrar Nuevo Cliente en Caja</h3>
+            <button type="button" class="btn-close" (click)="cerrarModalNuevoCliente()">✕</button>
+          </div>
+          <form (ngSubmit)="guardarNuevoCliente()">
+            <div class="modal-form-grid">
+              <label>
+                Razón Social / Nombre Completo *
+                <input required [(ngModel)]="nuevoClienteRazonSocial" name="nuevoRazon" placeholder="Ej: Importadora Los Andes S.R.L." />
+              </label>
+              <label>
+                NIT / Carnet de Identidad *
+                <input required [(ngModel)]="nuevoClienteNitCi" name="nuevoNit" placeholder="Ej: 8492019018" />
+              </label>
+              <label>
+                Teléfono de Contacto
+                <input [(ngModel)]="nuevoClienteTelefono" name="nuevoTel" placeholder="Ej: 77012345" />
+              </label>
+              <label>
+                Correo Electrónico
+                <input type="email" [(ngModel)]="nuevoClienteEmail" name="nuevoEmail" placeholder="cliente@empresa.com" />
+              </label>
+            </div>
+            <div class="modal-actions">
+              <button type="button" (click)="cerrarModalNuevoCliente()" [disabled]="guardandoCliente()">Cancelar</button>
+              <button type="submit" class="primary" [disabled]="!nuevoClienteRazonSocial.trim() || !nuevoClienteNitCi.trim() || guardandoCliente()">
+                {{ guardandoCliente() ? 'Guardando en BD...' : '✓ Guardar y Seleccionar Cliente' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- MODAL DE PAGO QR (2 OPCIONES: GENERAR QR O MOSTRAR IMAGEN QR) -->
+    @if (modalQr()) {
+      <div class="modal-backdrop">
+        <div class="modal-qr-box">
+          <div class="modal-head">
+            <h3>Pasarela de Cobro con QR Simple</h3>
+            <button type="button" class="btn-close" (click)="cerrarModalQr()">✕</button>
+          </div>
+
+          <!-- Selector de opciones: Generar QR o Mostrar Imagen QR -->
+          <div class="qr-mode-tabs" role="tablist">
+            <button type="button" class="qr-tab-btn" [class.active]="modoQr() === 'generar'" (click)="modoQr.set('generar')">
+              ⚡ Generar QR
+            </button>
+            <button type="button" class="qr-tab-btn" [class.active]="modoQr() === 'subir'" (click)="modoQr.set('subir')">
+              🖼️ Mostrar QR
+            </button>
+          </div>
+
+          <!-- OPCIÓN 1: GENERAR QR VINCULADO A CUENTA BANCARIA O YAPE -->
+          @if (modoQr() === 'generar') {
+            <div class="qr-generar-panel">
+              <div class="qr-config-grid">
+                <label>
+                  Banco / Billetera
+                  <select [ngModel]="bancoQr()" (ngModelChange)="bancoQr.set($event)">
+                    @for (b of bancosDisponibles; track b) {
+                      <option [value]="b">{{ b }}</option>
+                    }
+                  </select>
+                </label>
+                <label>
+                  N° de Cuenta / Celular
+                  <input [ngModel]="cuentaQr()" (ngModelChange)="cuentaQr.set($event)" placeholder="Ej: 150-109283-4 o 77012345" />
+                </label>
+                <label class="ancho">
+                  Titular de la Cuenta
+                  <input [ngModel]="titularQr()" (ngModelChange)="titularQr.set($event)" placeholder="Nombre del titular o empresa" />
+                </label>
+              </div>
+
+              <!-- Representación del QR Dinámico Generado -->
+              <div class="qr-visual-card">
+                <div class="qr-card-header">
+                  <span class="qr-bank-name">{{ bancoQr() }}</span>
+                  <span class="qr-badge-dynamic">QR GENERADO</span>
+                </div>
+                <div class="qr-big-visual">
+                  <div class="qr-code-grid">
+                    <div class="corner tl"></div>
+                    <div class="corner tr"></div>
+                    <div class="corner bl"></div>
+                    <div class="qr-brand-logo">{{ bancoQr().split(' ')[0] }}</div>
+                  </div>
+                </div>
+                <div class="qr-card-info">
+                  <div class="qr-row-info">
+                    <span class="lbl">Cuenta:</span>
+                    <strong class="val mono">{{ cuentaQr() }}</strong>
+                  </div>
+                  <div class="qr-row-info">
+                    <span class="lbl">Titular:</span>
+                    <span class="val">{{ titularQr() }}</span>
+                  </div>
+                  <div class="qr-row-amount">
+                    <span>Monto a Transferir:</span>
+                    <strong>Bs {{ (pagoQrSeleccionado?.importe || totalVenta()) | number: '1.2-2' }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- OPCIÓN 2: MOSTRAR IMAGEN DE MI QR (SUBIR O VISUALIZAR) -->
+          @if (modoQr() === 'subir') {
+            <div class="qr-subir-panel">
+              @if (imagenQrCustom(); as img) {
+                <div class="qr-uploaded-preview">
+                  <img [src]="img" alt="Código QR Personalizado" class="uploaded-qr-display" />
+                  <div class="qr-uploaded-actions">
+                    <label class="btn-change-qr">
+                      🔄 Cambiar Imagen
+                      <input type="file" accept="image/*" (change)="onSubirImagenQr($event)" hidden />
+                    </label>
+                    <button type="button" class="btn-delete-qr" (click)="eliminarImagenQr()">
+                      🗑️ Quitar
+                    </button>
+                  </div>
+                </div>
+                <div class="qr-card-info">
+                  <div class="qr-row-amount">
+                    <span>Monto a Transferir:</span>
+                    <strong>Bs {{ (pagoQrSeleccionado?.importe || totalVenta()) | number: '1.2-2' }}</strong>
+                  </div>
+                  <p class="qr-instructions">
+                    El cliente escanea tu imagen QR desde su app móvil bancaria. Al recibir el pago en cuenta, pulsa confirmar para emitir la factura.
+                  </p>
+                </div>
+              } @else {
+                <div class="qr-empty-upload-box">
+                  <span class="upload-icon">📷</span>
+                  <strong>Sube una imagen de tu Código QR</strong>
+                  <p>Guarda una foto o captura de tu QR de BNB, BCP, Banco Unión o Yape para que tus clientes lo escaneen.</p>
+                  <label class="btn-upload-file primary">
+                    Seleccionar Imagen de QR
+                    <input type="file" accept="image/*" (change)="onSubirImagenQr($event)" hidden />
+                  </label>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="modal-actions qr-actions">
+            <button type="button" (click)="cerrarModalQr()">Cancelar</button>
+            <button type="button" class="primary btn-confirmar-qr" (click)="confirmarPagoQr()">
+              ✓ Confirmar Pago Recibido
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   }
-}
+</div>

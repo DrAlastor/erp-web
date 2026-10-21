@@ -10,7 +10,12 @@ const cliente = {
   razonSocial: 'Cliente de prueba',
   nitCi: '123456789',
   telefono: '70000000',
+  email: 'prueba@test.com',
   direccion: 'Dirección de prueba',
+  ciudad: 'Santa Cruz',
+  condicionPago: 'CONTADO' as const,
+  limiteCredito: 0,
+  diasCredito: 0,
   activo: true,
   fechaCreacion: null,
 };
@@ -41,7 +46,7 @@ describe('Gestion de clientes', () => {
     const fixture = start();
     expect(fixture.nativeElement.textContent).toContain('Cliente de prueba');
     fixture.componentInstance.search = 'prueba';
-    fixture.componentInstance.activo = 'true';
+    fixture.componentInstance.activoFilter = 'true';
     fixture.componentInstance.load(true);
     const request = http.expectOne((item) => item.url === url);
     expect(request.request.params.get('search')).toBe('prueba');
@@ -56,6 +61,9 @@ describe('Gestion de clientes', () => {
     fixture.componentInstance.nitCi = '987654321';
     fixture.componentInstance.telefono = '71111111';
     fixture.componentInstance.direccion = 'Nueva dirección';
+    fixture.componentInstance.condicionPago = 'CONTADO';
+    fixture.componentInstance.limiteCredito = 0;
+    fixture.componentInstance.diasCredito = 0;
     fixture.componentInstance.save();
     const request = http.expectOne(`${url}`);
     expect(request.request.method).toBe('POST');
@@ -64,6 +72,9 @@ describe('Gestion de clientes', () => {
       nitCi: '987654321',
       telefono: '71111111',
       direccion: 'Nueva dirección',
+      condicionPago: 'CONTADO',
+      limiteCredito: 0,
+      diasCredito: 0,
     });
     request.flush({ ...cliente, razonSocial: 'Nueva empresa' });
     http
@@ -74,7 +85,7 @@ describe('Gestion de clientes', () => {
 
   it('edita y cambia el estado solo después de confirmar', () => {
     const fixture = start();
-    fixture.componentInstance.open(cliente);
+    fixture.componentInstance.openEdit(cliente);
     http.expectOne(`${url}/2`).flush(cliente);
     fixture.componentInstance.razonSocial = 'Cliente actualizado';
     fixture.componentInstance.save();
@@ -85,10 +96,10 @@ describe('Gestion de clientes', () => {
       .expectOne((item) => item.url === url)
       .flush({ content: [], totalElements: 0, totalPages: 0 });
 
-    fixture.componentInstance.confirmation.set(cliente);
+    fixture.componentInstance.confirmStatus(cliente);
     fixture.detectChanges();
     http.expectNone(`${url}/2/status`);
-    fixture.componentInstance.changeStatus();
+    fixture.componentInstance.executeStatus();
     const status = http.expectOne(`${url}/2/status`);
     expect(status.request.body).toEqual({ activo: false });
     status.flush({ ...cliente, activo: false });

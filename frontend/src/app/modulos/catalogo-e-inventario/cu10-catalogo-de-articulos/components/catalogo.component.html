@@ -1,63 +1,374 @@
-<section class="catalogo">
-  <header class="catalogo__header">
-    <div>
-      <p class="catalogo__eyebrow">Catálogo & Inventario</p>
-      <h1>Catálogo de artículos</h1>
-      <p class="catalogo__subtitle">Consulta SKU, precios en Bs. y disponibilidad de stock.</p>
+<section class="catalogo-container">
+  <!-- Encabezado Principal -->
+  <header class="catalogo-header">
+    <div class="header-titles">
+      <p class="eyebrow-tag">Catálogo & Inventario</p>
+      <h1>Catálogo de Artículos</h1>
+      <p class="subtitle">Administra los artículos del maestro comercial: alta, consulta de stock, edición de precios y baja lógica.</p>
     </div>
-
-    <label class="catalogo__search">
-      <span class="sr-only">Buscar por nombre</span>
-      <input
-        type="search"
-        placeholder="Buscar por nombre..."
-        [ngModel]="busqueda()"
-        (ngModelChange)="onBusquedaChange($event)"
-      />
-    </label>
+    <div class="header-actions">
+      <button type="button" class="btn-nuevo" (click)="abrirCrear()">
+        <span class="icon">+</span> Registrar Artículo
+      </button>
+    </div>
   </header>
 
+  <!-- Notificaciones de estado -->
+  @if (success()) {
+    <div class="alert-banner alert-success" role="status">
+      <span>✓ {{ success() }}</span>
+      <button type="button" class="btn-close-alert" (click)="success.set(null)">✕</button>
+    </div>
+  }
+  @if (error() && !modalForm() && !modalEliminar()) {
+    <div class="alert-banner alert-error" role="alert">
+      <span>⚠ {{ error() }}</span>
+      <button type="button" class="btn-close-alert" (click)="error.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="search"
+        placeholder="Buscar por SKU, nombre o descripción..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+      />
+    </div>
+
+    <div class="filter-controls">
+      <div class="select-group">
+        <label>Categoría:</label>
+        <select [ngModel]="categoriaFiltro()" (ngModelChange)="categoriaFiltro.set($event)">
+          <option value="">Todas las categorías</option>
+          @for (cat of categorias(); track cat.id) {
+            <option [value]="cat.id">{{ cat.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="select-group">
+        <label>Estado:</label>
+        <select [ngModel]="estadoFiltro()" (ngModelChange)="estadoFiltro.set($event)">
+          <option value="todos">Todos los estados</option>
+          <option value="activos">Solo Activos</option>
+          <option value="inactivos">Solo Inactivos</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de Carga -->
   @if (cargando()) {
-    <p class="catalogo__state">Cargando catálogo...</p>
-  } @else if (error()) {
-    <div class="catalogo__state catalogo__state--error">
-      <p>{{ error() }}</p>
-      <button type="button" (click)="cargarArticulos()">Reintentar</button>
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Cargando catálogo maestro de artículos...</p>
     </div>
   } @else if (articulosFiltrados().length === 0) {
-    <p class="catalogo__state">No hay artículos para mostrar.</p>
+    <div class="state-container empty-state">
+      <p class="empty-icon">📦</p>
+      <h3>No se encontraron artículos</h3>
+      <p>No existen registros que coincidan con los criterios de búsqueda seleccionados.</p>
+      <button type="button" class="btn-secundario" (click)="busqueda.set(''); categoriaFiltro.set(''); estadoFiltro.set('todos')">
+        Limpiar Filtros
+      </button>
+    </div>
   } @else {
-    <div class="catalogo__grid">
-      @for (articulo of articulosFiltrados(); track articulo.id) {
-        <article class="card">
-          <div class="card__media">
-            <img [src]="imagenSrc(articulo)" [alt]="articulo.nombre" loading="lazy" />
-            <span
-              class="badge"
-              [class.badge--activo]="articulo.activo"
-              [class.badge--inactivo]="!articulo.activo"
-            >
-              {{ articulo.activo ? 'Activo' : 'Inactivo' }}
+    <!-- Tabla Formato Lista -->
+    <div class="table-responsive">
+      <table class="catalogo-table">
+        <thead>
+          <tr>
+            <th class="col-articulo">Artículo</th>
+            <th class="col-sku">SKU</th>
+            <th class="col-categoria">Categoría</th>
+            <th class="col-precio">Precio Unitario</th>
+            <th class="col-stock">Stock Actual</th>
+            <th class="col-estado">Estado</th>
+            <th class="col-acciones">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (articulo of articulosFiltrados(); track articulo.id) {
+            <tr [class.row-inactivo]="!articulo.activo">
+              <td class="col-articulo">
+                <div class="articulo-meta">
+                  <div class="thumb-container">
+                    <img [src]="imagenSrc(articulo)" [alt]="articulo.nombre" loading="lazy" />
+                  </div>
+                  <div class="meta-info">
+                    <span class="articulo-nombre">{{ articulo.nombre }}</span>
+                    @if (articulo.descripcion) {
+                      <span class="articulo-desc">{{ articulo.descripcion }}</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td class="col-sku">
+                <span class="sku-badge">{{ articulo.sku }}</span>
+              </td>
+              <td class="col-categoria">
+                <span class="categoria-tag">{{ articulo.categoria?.nombre || 'General' }}</span>
+              </td>
+              <td class="col-precio">
+                <span class="precio-valor">{{ articulo.precio | number: '1.2-2' }} Bs.</span>
+              </td>
+              <td class="col-stock">
+                <span [class]="stockClass(articulo.stock)">
+                  {{ articulo.stock ?? 0 }} un.
+                </span>
+              </td>
+              <td class="col-estado">
+                <span class="badge" [class.badge-activo]="articulo.activo" [class.badge-inactivo]="!articulo.activo">
+                  {{ articulo.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="col-acciones">
+                <div class="actions-group">
+                  <button type="button" class="btn-action-view" (click)="abrirVer(articulo)" title="Ver Detalle">
+                    👁 Ver
+                  </button>
+                  <button type="button" class="btn-action-edit" (click)="abrirEditar(articulo)" title="Editar Artículo">
+                    ✎ Editar
+                  </button>
+                  <button type="button" class="btn-action-delete" (click)="abrirEliminar(articulo)" title="Dar de Baja">
+                    🗑 Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="list-summary">
+      <span>Mostrando {{ articulosFiltrados().length }} de {{ articulos().length }} artículos</span>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODAL 1: REGISTRAR / EDITAR ARTÍCULO
+       ========================================================================= -->
+  @if (modalForm()) {
+    <div class="modal-backdrop" (click)="cerrarModales()">
+      <div class="modal-card modal-articulo" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <h3>{{ modoEdicion() ? 'Editar Artículo' : 'Registrar Nuevo Artículo' }}</h3>
+            <p>{{ modoEdicion() ? 'Actualice los datos comerciales y de stock del artículo.' : 'Complete la ficha técnica para incorporarlo al inventario y venta.' }}</p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarModales()">✕</button>
+        </header>
+
+        @if (error()) {
+          <div class="modal-alert-error" role="alert">
+            <span>⚠ {{ error() }}</span>
+          </div>
+        }
+
+        <form (ngSubmit)="guardar()" class="modal-form-body" autocomplete="off">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Código SKU <span class="required">*</span></label>
+              <input
+                type="text"
+                [(ngModel)]="formSku"
+                name="formSku"
+                required
+                maxlength="50"
+                placeholder="Ej. LAP-ASUS-G14"
+                autocomplete="off"
+              />
+              <small class="helper-text">Identificador comercial único.</small>
+            </div>
+
+            <div class="form-group">
+              <label>Categoría</label>
+              <select [(ngModel)]="formCategoriaId" name="formCategoriaId">
+                <option [ngValue]="null">-- Sin Categoría --</option>
+                @for (cat of categorias(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre del Artículo <span class="required">*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="formNombre"
+              name="formNombre"
+              required
+              maxlength="200"
+              placeholder="Ej. Asus ROG Zephyrus G14 32GB 1TB"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Descripción Comercial</label>
+            <textarea
+              [(ngModel)]="formDescripcion"
+              name="formDescripcion"
+              rows="3"
+              maxlength="500"
+              placeholder="Detalles técnicos, especificaciones o notas del producto..."
+            ></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Precio Unitario (Bs.) <span class="required">*</span></label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                [(ngModel)]="formPrecio"
+                name="formPrecio"
+                required
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Stock Disponible <span class="required">*</span></label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                [(ngModel)]="formStock"
+                name="formStock"
+                required
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>URL de Imagen (Opcional)</label>
+            <input
+              type="url"
+              [(ngModel)]="formImagenUrl"
+              name="formImagenUrl"
+              maxlength="500"
+              placeholder="https://ejemplo.com/imagen.jpg"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group-checkbox">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [(ngModel)]="formActivo"
+                name="formActivo"
+              />
+              <span>Artículo activo para operaciones comerciales y venta</span>
+            </label>
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn-cancelar" (click)="cerrarModales()" [disabled]="busy()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-guardar" [disabled]="busy()">
+              {{ busy() ? 'Guardando...' : (modoEdicion() ? 'Guardar Cambios' : 'Registrar Artículo') }}
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODAL 2: VER DETALLE DEL ARTÍCULO
+       ========================================================================= -->
+  @if (modalDetalle(); as art) {
+    <div class="modal-backdrop" (click)="cerrarModales()">
+      <div class="modal-card modal-detalle" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <h3>Ficha Técnica del Artículo</h3>
+            <p>SKU: <strong>{{ art.sku }}</strong></p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarModales()">✕</button>
+        </header>
+
+        <div class="detalle-body">
+          <div class="detalle-preview">
+            <img [src]="imagenSrc(art)" [alt]="art.nombre" />
+            <span class="badge" [class.badge-activo]="art.activo" [class.badge-inactivo]="!art.activo">
+              {{ art.activo ? 'Activo en Catálogo' : 'Dado de Baja' }}
             </span>
           </div>
 
-          <div class="card__body">
-            <h2>{{ articulo.nombre }}</h2>
-            <p class="card__sku">SKU: {{ articulo.sku }}</p>
-            <p class="card__categoria">
-              {{ articulo.categoria?.nombre || 'Sin categoría' }}
-            </p>
-            <div class="card__meta">
-              <span class="card__precio">
-                {{ articulo.precio | number: '1.2-2' }} Bs.
-              </span>
-              <span class="card__stock" [class]="stockClass(articulo.stock)">
-                Stock: {{ articulo.stock ?? 0 }}
-              </span>
+          <div class="detalle-content">
+            <h4>{{ art.nombre }}</h4>
+            <p class="detalle-desc">{{ art.descripcion || 'Sin descripción comercial adicional registrada.' }}</p>
+
+            <div class="detalle-metrics">
+              <div class="metric-card">
+                <span class="metric-label">Precio Unitario</span>
+                <span class="metric-value precio">{{ art.precio | number: '1.2-2' }} Bs.</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Stock en Kardex</span>
+                <span class="metric-value" [class]="stockClass(art.stock)">{{ art.stock ?? 0 }} unidades</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Categoría</span>
+                <span class="metric-value">{{ art.categoria?.nombre || 'General' }}</span>
+              </div>
             </div>
           </div>
-        </article>
-      }
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-action-edit" (click)="abrirEditar(art)">
+            ✎ Modificar este artículo
+          </button>
+          <button type="button" class="btn-cancelar" (click)="cerrarModales()">
+            Cerrar
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- =========================================================================
+       MODAL 3: CONFIRMAR ELIMINACIÓN / BAJA LÓGICA
+       ========================================================================= -->
+  @if (modalEliminar(); as art) {
+    <div class="modal-backdrop" (click)="cerrarModales()">
+      <div class="modal-card modal-confirmar" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <h3>Dar de Baja Artículo</h3>
+            <p>Confirmación de seguridad</p>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarModales()">✕</button>
+        </header>
+
+        <div class="confirm-body">
+          <p class="warning-icon">⚠</p>
+          <p>¿Está seguro de que desea dar de baja al artículo <strong>{{ art.nombre }}</strong> (SKU: <code>{{ art.sku }}</code>)?</p>
+          <p class="confirm-note">El artículo pasará a estado <em>Inactivo</em> y no podrá seleccionarse en nuevos pedidos de venta ni facturaciones. El historial de movimientos en Kardex permanecerá intacto.</p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-cancelar" (click)="cerrarModales()" [disabled]="busy()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-eliminar-confirm" (click)="confirmarEliminar()" [disabled]="busy()">
+            {{ busy() ? 'Desactivando...' : 'Confirmar Baja' }}
+          </button>
+        </footer>
+      </div>
     </div>
   }
 </section>

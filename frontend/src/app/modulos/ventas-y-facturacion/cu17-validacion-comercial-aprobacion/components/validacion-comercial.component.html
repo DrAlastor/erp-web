@@ -1,0 +1,182 @@
+<div class="validacion-container">
+  <div class="header-section">
+    <div>
+      <h2>Validación Comercial y Aprobación de Pedidos</h2>
+      <p>Revisa cliente, mora, límite de crédito, existencias y descuento antes de aprobar o rechazar un pedido de venta.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>✕</span>
+      <div>{{ error() }}</div>
+    </div>
+  }
+  @if (success()) {
+    <div class="alert alert-success" role="status">
+      <span>✓</span>
+      <div>{{ success() }}</div>
+    </div>
+  }
+
+  <div class="layout" [class.con-detalle]="seleccionado() || cargandoDetalle()">
+    <!-- ============ BANDEJA ============ -->
+    <section class="bandeja" aria-label="Bandeja de pedidos">
+      <div class="filters-bar">
+        <label>
+          Estado
+          <select [(ngModel)]="estado" name="estado" (change)="cargar(true)">
+            <option value="PENDIENTE">Pendientes de validación</option>
+            <option value="APROBADO">Aprobados</option>
+            <option value="RECHAZADO">Rechazados</option>
+            <option value="ANULADO">Anulados</option>
+            <option value="TODOS">Todos</option>
+          </select>
+        </label>
+        <span class="total">{{ totalPedidos() }} pedido(s)</span>
+      </div>
+
+      @if (loading()) {
+        <div class="estado-vacio">Cargando pedidos...</div>
+      } @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th class="num">Total</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of pedidos(); track p.id) {
+                <tr class="fila" [class.activa]="seleccionado()?.pedido?.id === p.id" tabindex="0"
+                    (click)="abrir(p)" (keydown.enter)="abrir(p)">
+                  <td>
+                    <div class="cell-strong">{{ p.numeroPedido }}</div>
+                    <small class="cell-sub">{{ p.fecha | date: 'dd/MM/yyyy' }}</small>
+                  </td>
+                  <td>{{ p.clienteNombre || ('Cliente #' + p.clienteId) }}</td>
+                  <td class="num">Bs. {{ p.total | number: '1.2-2' }}</td>
+                  <td><span class="badge" [ngClass]="claseEstado(p.estado)">{{ p.estado }}</span></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="estado-vacio">No hay pedidos en este estado.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalPaginas() > 1) {
+          <div class="paginacion">
+            <button class="btn secondary" type="button" (click)="cambiarPagina(-1)" [disabled]="pagina() === 0">Anterior</button>
+            <span>Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+            <button class="btn secondary" type="button" (click)="cambiarPagina(1)" [disabled]="pagina() + 1 >= totalPaginas()">Siguiente</button>
+          </div>
+        }
+      }
+    </section>
+
+    <!-- ============ DETALLE Y DECISIÓN ============ -->
+    @if (cargandoDetalle()) {
+      <section class="detalle"><div class="estado-vacio">Evaluando el pedido...</div></section>
+    } @else if (seleccionado(); as v) {
+      <section class="detalle" aria-label="Detalle del pedido">
+        <header class="detalle-cabecera">
+          <div>
+            <h3>{{ v.pedido.numeroPedido }}</h3>
+            <small>{{ v.pedido.clienteNombre }} · {{ v.pedido.fecha | date: 'dd/MM/yyyy' }}</small>
+          </div>
+          <span class="badge" [ngClass]="claseEstado(v.pedido.estado)">{{ v.pedido.estado }}</span>
+          <button class="cerrar" type="button" (click)="cerrar()" aria-label="Cerrar el detalle">✕</button>
+        </header>
+
+        <div class="kpis">
+          <div class="kpi"><span>Total del pedido</span><strong>Bs. {{ v.pedido.total | number: '1.2-2' }}</strong></div>
+          <div class="kpi"><span>Condición de pago</span><strong>{{ v.condicionPago || '—' }}</strong></div>
+          <div class="kpi"><span>Límite de crédito</span><strong>Bs. {{ v.limiteCredito | number: '1.2-2' }}</strong></div>
+          <div class="kpi"><span>Deuda pendiente</span><strong>Bs. {{ v.saldoPendiente | number: '1.2-2' }}</strong></div>
+          <div class="kpi" [class.kpi-alerta]="v.saldoVencido > 0"><span>Saldo vencido</span><strong>Bs. {{ v.saldoVencido | number: '1.2-2' }}</strong></div>
+          <div class="kpi"><span>Crédito disponible</span><strong>Bs. {{ v.creditoDisponible | number: '1.2-2' }}</strong></div>
+        </div>
+
+        <h4>Reglas comerciales</h4>
+        <ul class="reglas">
+          @for (r of v.reglas; track r.codigo) {
+            <li [class.cumple]="r.cumple" [class.bloquea]="!r.cumple && r.bloqueante" [class.advierte]="!r.cumple && !r.bloqueante">
+              <span class="icono" aria-hidden="true">{{ r.cumple ? '✓' : (r.bloqueante ? '✕' : '!') }}</span>
+              <div>
+                <strong>{{ r.nombre }}</strong>
+                <p>{{ r.detalle }}</p>
+              </div>
+              @if (!r.cumple) {
+                <span class="etiqueta">{{ r.bloqueante ? 'Bloquea la aprobación' : 'Requiere justificación' }}</span>
+              }
+            </li>
+          }
+        </ul>
+
+        <h4>Productos del pedido</h4>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th class="num">Pide</th>
+                <th class="num">En sucursal</th>
+                <th class="num">Reservado</th>
+                <th class="num">Libre</th>
+                <th class="num">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of v.lineas; track l.productoId) {
+                <tr [class.sin-stock]="!l.cubierta">
+                  <td>
+                    <div class="cell-strong">{{ l.productoNombre }}</div>
+                    <small class="cell-sub">{{ l.productoSku }}</small>
+                  </td>
+                  <td class="num">{{ l.cantidad | number: '1.0-2' }}</td>
+                  <td class="num">{{ l.stockFisico | number: '1.0-2' }}</td>
+                  <td class="num">{{ l.reservado | number: '1.0-2' }}</td>
+                  <td class="num cell-strong">{{ l.disponible | number: '1.0-2' }}</td>
+                  <td class="num">Bs. {{ l.subtotal | number: '1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (v.observaciones) {
+          <h4>Historial de observaciones</h4>
+          <pre class="observaciones">{{ v.observaciones }}</pre>
+        }
+
+        @if (pendiente()) {
+          <div class="decision">
+            <label>
+              {{ v.requiereJustificacion ? 'Justificación (obligatoria para aprobar)' : 'Observación (obligatoria para rechazar)' }}
+              <textarea [(ngModel)]="observacion" name="observacion" rows="3" maxlength="500"
+                        placeholder="Escribe el motivo de la decisión"></textarea>
+            </label>
+            @if (!puedeDecidir()) {
+              <p class="aviso">Tu rol puede consultar la validación, pero no aprobar ni rechazar pedidos.</p>
+            } @else if (bloqueos().length > 0) {
+              <p class="aviso">Este pedido no se puede aprobar mientras haya reglas bloqueantes; puedes rechazarlo.</p>
+            }
+            <div class="acciones">
+              <button class="btn danger" type="button" (click)="rechazar()" [disabled]="!puedeDecidir() || procesando()">Rechazar</button>
+              <button class="btn primary" type="button" (click)="aprobar()"
+                      [disabled]="!puedeDecidir() || !v.puedeAprobar || procesando()">
+                {{ procesando() ? 'Procesando...' : 'Aprobar pedido' }}
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</div>

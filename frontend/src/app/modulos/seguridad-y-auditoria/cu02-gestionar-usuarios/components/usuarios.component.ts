@@ -300,16 +300,26 @@ export class UsuariosComponent {
 
   private fail(err: HttpErrorResponse): void {
     this.forbidden.set(err.status === 403);
-    this.error.set(
-      err.status === 403
-        ? 'No tienes autorización para gestionar usuarios.'
-        : err.status === 0
-          ? 'No se pudo conectar con el servidor. Intenta nuevamente.'
-          : err.status === 401
-            ? 'La sesión ha expirado. Inicia sesión nuevamente.'
-            : err.status >= 500
-              ? 'El servidor no pudo completar la operación.'
-              : err.error?.message || 'No se pudo completar la operación.',
-    );
+    let msg = '';
+    if (err.status === 403) {
+      msg = 'No tienes autorización para gestionar usuarios.';
+    } else if (err.status === 0) {
+      msg = 'No se pudo conectar con el servidor. Intenta nuevamente.';
+    } else if (err.status === 401) {
+      msg = 'La sesión ha expirado. Inicia sesión nuevamente.';
+    } else if (err.error?.errors && Array.isArray(err.error.errors) && err.error.errors.length > 0) {
+      msg = err.error.errors.map((e: any) => e.defaultMessage || e.message).join(' · ');
+    } else if (err.error?.message) {
+      msg = err.error.message;
+    } else if (err.error?.detail) {
+      msg = err.error.detail;
+    } else if (typeof err.error === 'string') {
+      msg = err.error;
+    } else if (err.status >= 500) {
+      msg = 'El servidor no pudo completar la operación.';
+    } else {
+      msg = 'No se pudo completar la operación.';
+    }
+    this.error.set(msg);
   }
 }

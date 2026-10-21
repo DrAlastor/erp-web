@@ -1,135 +1,563 @@
 <div class="clients-header">
-  <div>
-    <h2>Directorio de clientes</h2>
-    <p>Administra la información comercial de las empresas y personas compradoras.</p>
+  <div class="header-titles">
+    <h2>Directorio de Clientes</h2>
+    <p>Administra la información comercial, fiscal y crediticia de los compradores.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn-primary" (click)="openNew()" [disabled]="busy()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nuevo Cliente</span>
+    </button>
   </div>
 </div>
+
 @if (error()) {
-  <p class="message error" role="alert">{{ error() }}</p>
+  <div class="alert-box error" role="alert">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ error() }}</span>
+  </div>
 }
+
 @if (success()) {
-  <p class="message success" role="status">{{ success() }}</p>
+  <div class="alert-box success" role="status">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    <span>{{ success() }}</span>
+  </div>
 }
+
 @if (!forbidden()) {
-  <form class="filters" (ngSubmit)="load(true)">
-    <label>
-      Buscar
-      <input
-        name="search"
-        [(ngModel)]="search"
-        maxlength="150"
-        placeholder="Razón social o NIT/CI" />
-    </label>
-    <label>
-      Estado
-      <select name="activo" [(ngModel)]="activo" (change)="load(true)">
+  <!-- BARRA DE FILTROS -->
+  <form class="filters-bar" (ngSubmit)="load(true)">
+    <div class="filter-group flex-1">
+      <label for="filter-search">Búsqueda rápida</label>
+      <div class="search-input-wrapper">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          id="filter-search"
+          name="search"
+          [(ngModel)]="search"
+          maxlength="150"
+          placeholder="Buscar por Razón Social, NIT/CI, Ciudad o Email..." />
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-condicion">Condición de Pago</label>
+      <select id="filter-condicion" name="condicionPago" [(ngModel)]="condicionPagoFilter" (change)="load(true)">
+        <option value="">Todas las condiciones</option>
+        <option value="CONTADO">Contado</option>
+        <option value="CREDITO">Crédito</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-activo">Estado</label>
+      <select id="filter-activo" name="activo" [(ngModel)]="activoFilter" (change)="load(true)">
         <option value="">Todos los estados</option>
         <option value="true">Activo</option>
         <option value="false">Inactivo</option>
       </select>
-    </label>
-    <button class="primary" [disabled]="busy()">Buscar</button>
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="btn-secondary" [disabled]="busy() || loading()">
+        Filtrar
+      </button>
+    </div>
   </form>
+
+  <!-- TABLA DE CLIENTES -->
   @if (loading()) {
-    <p role="status">Cargando clientes...</p>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando padrón de clientes comerciales...</p>
+    </div>
   } @else {
-    <div class="table-scroll">
-      <table>
-        <caption class="sr-only">Directorio de clientes registrados</caption>
+    <div class="table-container">
+      <table class="clients-table">
+        <caption class="sr-only">Directorio de clientes comerciales registrados</caption>
         <thead>
           <tr>
-            <th>Razón social</th>
-            <th>NIT/CI</th>
+            <th>Cliente / Razón Social</th>
             <th>Contacto</th>
-            <th>Dirección</th>
+            <th>Ubicación</th>
+            <th>Condición</th>
+            <th>Límite de Crédito</th>
+            <th>Plazo</th>
             <th>Estado</th>
-            <th>Acciones</th>
+            <th class="text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (cliente of clientes(); track cliente.id) {
             <tr>
-              <td><strong>{{ cliente.razonSocial }}</strong></td>
-              <td>{{ cliente.nitCi }}</td>
-              <td>{{ cliente.telefono || 'Sin teléfono' }}</td>
-              <td>{{ cliente.direccion || 'Sin dirección' }}</td>
               <td>
-                <span class="badge" [class.inactive]="!cliente.activo">
+                <div class="client-cell">
+                  <div class="avatar" [class.inactive]="!cliente.activo">
+                    {{ getIniciales(cliente.razonSocial) }}
+                  </div>
+                  <div class="client-meta">
+                    <strong class="client-name" (click)="openView(cliente)" title="Ver ficha completa">
+                      {{ cliente.razonSocial }}
+                    </strong>
+                    <span class="client-nit">NIT/CI: {{ cliente.nitCi }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-meta">
+                  <span class="text-main">{{ cliente.telefono || 'Sin teléfono' }}</span>
+                  <span class="text-muted text-sm">{{ cliente.email || 'Sin correo' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="location-meta">
+                  <span class="badge-city">{{ cliente.ciudad || 'No especificada' }}</span>
+                  <span class="text-muted text-sm" [title]="cliente.direccion || ''">
+                    {{ cliente.direccion ? (cliente.direccion.length > 28 ? cliente.direccion.slice(0, 28) + '...' : cliente.direccion) : 'Sin dirección' }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span class="badge-pill" [class.credito]="cliente.condicionPago === 'CREDITO'" [class.contado]="cliente.condicionPago !== 'CREDITO'">
+                  {{ cliente.condicionPago || 'CONTADO' }}
+                </span>
+              </td>
+              <td>
+                @if (cliente.condicionPago === 'CREDITO') {
+                  <span class="credit-limit">Bs {{ cliente.limiteCredito | number:'1.2-2' }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>
+                @if (cliente.condicionPago === 'CREDITO' && cliente.diasCredito > 0) {
+                  <span class="credit-days">{{ cliente.diasCredito }} días</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>
+                <span class="badge-status" [class.active]="cliente.activo" [class.inactive]="!cliente.activo">
                   {{ cliente.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
-              <td class="actions">
-                <button [disabled]="busy()" (click)="open(cliente)">Editar</button>
-                <button [disabled]="busy()" (click)="confirmation.set(cliente)">
-                  {{ cliente.activo ? 'Inactivar' : 'Activar' }}
-                </button>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button type="button" class="btn-icon" (click)="openView(cliente)" title="Ver ficha del cliente" aria-label="Ver ficha">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-icon" (click)="openEdit(cliente)" title="Editar cliente" aria-label="Editar cliente">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-icon" (click)="confirmStatus(cliente)" [title]="cliente.activo ? 'Inactivar cliente' : 'Activar cliente'" aria-label="Cambiar estado">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                      <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-icon btn-danger" (click)="confirmDelete(cliente)" title="Eliminar cliente" aria-label="Eliminar cliente">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="6">No se encontraron clientes con estos filtros.</td>
+              <td colspan="8" class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <p>No se encontraron clientes comerciales con los filtros aplicados.</p>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
-    <div class="pagination">
-      <span>{{ total() }} clientes</span>
-      <div>
-        <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
-        <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
-        <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+
+    <!-- PAGINACIÓN -->
+    <div class="pagination-bar">
+      <span class="pagination-count">{{ total() }} clientes registrados</span>
+      <div class="pagination-controls">
+        <button type="button" class="btn-page" [disabled]="page === 0 || busy()" (click)="navigate(-1)">
+          Anterior
+        </button>
+        <span class="page-indicator">Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+        <button type="button" class="btn-page" [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">
+          Siguiente
+        </button>
       </div>
     </div>
   }
-  @if (editorOpen()) {
-    <section class="detail" aria-label="Formulario de cliente">
-      <h3>{{ selected() ? 'Editar cliente' : 'Registrar cliente' }}</h3>
-      <p>Completa los datos fiscales y de contacto del cliente.</p>
-      <form #edit="ngForm" (ngSubmit)="save()">
-        <label>
-          Razón social
-          <input name="razonSocial" [(ngModel)]="razonSocial" required maxlength="150" />
-        </label>
-        <label>
-          NIT/CI
-          <input name="nitCi" [(ngModel)]="nitCi" required maxlength="30" />
-        </label>
-        <label>
-          Teléfono
-          <input name="telefono" [(ngModel)]="telefono" maxlength="30" />
-        </label>
-        <label>
-          Dirección
-          <input name="direccion" [(ngModel)]="direccion" maxlength="255" />
-        </label>
-        <div class="actions">
-          <button class="primary" [disabled]="edit.invalid || busy()">
-            {{ busy() ? 'Guardando...' : 'Guardar cliente' }}
+
+  <!-- ========================================================================= -->
+  <!-- CARD MODAL: VER DETALLE / FICHA DEL CLIENTE -->
+  <!-- ========================================================================= -->
+  @if (viewOpen() && selected(); as cliente) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="client-card-modal view-mode" (click)="$event.stopPropagation()">
+        <!-- Header del Modal -->
+        <div class="modal-card-header">
+          <div class="header-profile">
+            <div class="avatar-lg" [class.inactive]="!cliente.activo">
+              {{ getIniciales(cliente.razonSocial) }}
+            </div>
+            <div>
+              <div class="badge-status-top" [class.active]="cliente.activo" [class.inactive]="!cliente.activo">
+                {{ cliente.activo ? 'Cliente Activo' : 'Cliente Inactivo' }}
+              </div>
+              <h3 class="modal-title">{{ cliente.razonSocial }}</h3>
+              <span class="modal-subtitle">NIT / CI: <strong>{{ cliente.nitCi }}</strong></span>
+            </div>
+          </div>
+          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Cerrar modal">
+            ✕
           </button>
-          <button type="button" [disabled]="busy()" (click)="editorOpen.set(false)">Cancelar</button>
         </div>
-      </form>
-    </section>
+
+        <!-- Cuerpo del Modal: Ficha con Secciones -->
+        <div class="modal-card-body">
+          <!-- Tarjeta destacada de Condiciones Comerciales (RN18) -->
+          <div class="metric-card" [class.credit-active]="cliente.condicionPago === 'CREDITO'">
+            <div class="metric-item">
+              <span class="metric-label">Condición de Pago</span>
+              <span class="metric-value font-bold">{{ cliente.condicionPago || 'CONTADO' }}</span>
+            </div>
+            <div class="metric-divider"></div>
+            <div class="metric-item">
+              <span class="metric-label">Límite de Crédito</span>
+              <span class="metric-value font-bold text-primary">
+                {{ cliente.condicionPago === 'CREDITO' ? ('Bs ' + (cliente.limiteCredito | number:'1.2-2')) : '0.00 Bs (Sin crédito)' }}
+              </span>
+            </div>
+            <div class="metric-divider"></div>
+            <div class="metric-item">
+              <span class="metric-label">Plazo de Pago</span>
+              <span class="metric-value font-bold">
+                {{ cliente.condicionPago === 'CREDITO' ? (cliente.diasCredito + ' días calendario') : 'Inmediato (Contado)' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Cuadrícula de Datos -->
+          <div class="info-grid">
+            <!-- Bloque 1: Ubicación y Contacto -->
+            <div class="info-block">
+              <h4 class="block-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                Ubicación y Contacto
+              </h4>
+              <div class="data-row">
+                <span class="data-label">Ciudad:</span>
+                <span class="data-value">{{ cliente.ciudad || 'No registrada' }}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Dirección fiscal:</span>
+                <span class="data-value">{{ cliente.direccion || 'No registrada' }}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Teléfono:</span>
+                <span class="data-value">{{ cliente.telefono || 'Sin teléfono' }}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Correo electrónico:</span>
+                <span class="data-value">{{ cliente.email || 'Sin correo registrado' }}</span>
+              </div>
+            </div>
+
+            <!-- Bloque 2: Información del Sistema -->
+            <div class="info-block">
+              <h4 class="block-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                Control Interno y Auditoría
+              </h4>
+              <div class="data-row">
+                <span class="data-label">Código de cliente:</span>
+                <span class="data-value">#CLI-{{ cliente.id }}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Fecha de alta:</span>
+                <span class="data-value">{{ cliente.fechaCreacion ? (cliente.fechaCreacion | date:'dd/MM/yyyy HH:mm') : '—' }}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Portal Web vinculado:</span>
+                <span class="data-value">
+                  @if (cliente.username) {
+                    <span class="badge-user">Usuario: {{ cliente.username }}</span>
+                  } @else {
+                    <span class="text-muted">Sin cuenta asignada</span>
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="modal-card-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">
+            Cerrar
+          </button>
+          <button type="button" class="btn-primary" (click)="switchToEditFromView()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>Editar Información</span>
+          </button>
+        </div>
+      </div>
+    </div>
   }
-  @if (confirmation(); as cliente) {
-    <div class="modal-backdrop">
-      <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-        <h3 id="confirm-title">{{ cliente.activo ? 'Inactivar' : 'Activar' }} cliente</h3>
-        <p>
+
+  <!-- ========================================================================= -->
+  <!-- CARD MODAL: REGISTRAR / EDITAR CLIENTE (FORMULARIO) -->
+  <!-- ========================================================================= -->
+  @if (editorOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="client-card-modal edit-mode" (click)="$event.stopPropagation()">
+        <!-- Header del Modal -->
+        <div class="modal-card-header">
+          <div>
+            <h3 class="modal-title">{{ selected() ? 'Editar Cliente Comercial' : 'Registrar Nuevo Cliente' }}</h3>
+            <p class="modal-subtitle">Completa los datos tributarios, contacto y condiciones crediticias (Ley 843 y RN18).</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Cerrar modal">
+            ✕
+          </button>
+        </div>
+
+        <!-- Formulario -->
+        <form #editForm="ngForm" (ngSubmit)="save()">
+          <div class="modal-card-body form-body">
+            <!-- SECCIÓN 1: IDENTIFICACIÓN TRIBUTARIA -->
+            <div class="form-section">
+              <h4 class="section-title">1. Identificación y Datos Fiscales</h4>
+              <div class="form-row">
+                <div class="form-field flex-2">
+                  <label for="input-razon">Razón Social o Nombre Completo *</label>
+                  <input
+                    id="input-razon"
+                    name="razonSocial"
+                    [(ngModel)]="razonSocial"
+                    required
+                    maxlength="150"
+                    placeholder="Ej. Innovatech Solutions Bolivia S.R.L." />
+                </div>
+                <div class="form-field flex-1">
+                  <label for="input-nit">NIT / C.I. *</label>
+                  <input
+                    id="input-nit"
+                    name="nitCi"
+                    [(ngModel)]="nitCi"
+                    required
+                    maxlength="30"
+                    placeholder="Ej. 4928172013" />
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 2: CONTACTO Y UBICACIÓN -->
+            <div class="form-section">
+              <h4 class="section-title">2. Contacto y Dirección</h4>
+              <div class="form-row">
+                <div class="form-field flex-1">
+                  <label for="input-ciudad">Ciudad</label>
+                  <input
+                    id="input-ciudad"
+                    name="ciudad"
+                    [(ngModel)]="ciudad"
+                    maxlength="100"
+                    placeholder="Ej. Santa Cruz de la Sierra" />
+                </div>
+                <div class="form-field flex-1">
+                  <label for="input-telefono">Teléfono / Celular</label>
+                  <input
+                    id="input-telefono"
+                    name="telefono"
+                    [(ngModel)]="telefono"
+                    maxlength="30"
+                    placeholder="Ej. 33448899 ó 77011223" />
+                </div>
+                <div class="form-field flex-1">
+                  <label for="input-email">Correo Electrónico</label>
+                  <input
+                    id="input-email"
+                    type="email"
+                    name="email"
+                    [(ngModel)]="email"
+                    maxlength="100"
+                    placeholder="Ej. compras@empresa.bo" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field full-width">
+                  <label for="input-direccion">Dirección Fiscal / Entrega</label>
+                  <input
+                    id="input-direccion"
+                    name="direccion"
+                    [(ngModel)]="direccion"
+                    maxlength="255"
+                    placeholder="Ej. Av. Marcelo Quiroga Santa Cruz #300" />
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 3: CONDICIONES COMERCIALES Y CRÉDITO (RN18) -->
+            <div class="form-section highlight-section">
+              <h4 class="section-title">3. Parámetros Comerciales y Política de Crédito</h4>
+              <div class="form-row">
+                <div class="form-field flex-1">
+                  <label for="select-condicion">Condición de Pago habitual</label>
+                  <select id="select-condicion" name="condicionPago" [(ngModel)]="condicionPago">
+                    <option value="CONTADO">CONTADO (Sin crédito)</option>
+                    <option value="CREDITO">CRÉDITO (Con límite y plazo)</option>
+                  </select>
+                </div>
+                <div class="form-field flex-1">
+                  <label for="input-limite">Límite de Crédito (Bs.)</label>
+                  <input
+                    id="input-limite"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="limiteCredito"
+                    [(ngModel)]="limiteCredito"
+                    [disabled]="condicionPago !== 'CREDITO'"
+                    placeholder="0.00" />
+                </div>
+                <div class="form-field flex-1">
+                  <label for="input-dias">Días de Crédito (Plazo)</label>
+                  <input
+                    id="input-dias"
+                    type="number"
+                    min="0"
+                    name="diasCredito"
+                    [(ngModel)]="diasCredito"
+                    [disabled]="condicionPago !== 'CREDITO'"
+                    placeholder="0" />
+                </div>
+              </div>
+              @if (condicionPago === 'CREDITO') {
+                <div class="credit-helper-note">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span><strong>Regla RN18:</strong> Todo pedido a crédito validará que el saldo pendiente en Cuentas por Cobrar más la nueva orden no supere los <strong>Bs {{ (limiteCredito || 0) | number:'1.2-2' }}</strong> con plazo máximo de <strong>{{ diasCredito || 0 }} días</strong>.</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Footer del Modal -->
+          <div class="modal-card-footer">
+            <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="editForm.invalid || busy()">
+              {{ busy() ? 'Guardando cambios...' : (selected() ? 'Actualizar Cliente' : 'Guardar Cliente') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CAMBIO DE ESTADO (ACTIVAR / INACTIVAR) -->
+  <!-- ========================================================================= -->
+  @if (statusConfirmation(); as cliente) {
+    <div class="modal-backdrop" (click)="statusConfirmation.set(null)">
+      <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+        <div class="dialog-icon" [class.danger]="cliente.activo" [class.success]="!cliente.activo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <h3 class="dialog-title">{{ cliente.activo ? 'Inactivar Cliente' : 'Activar Cliente' }}</h3>
+        <p class="dialog-text">
           ¿Confirmas que deseas {{ cliente.activo ? 'inactivar' : 'activar' }} a
-          <strong>{{ cliente.razonSocial }}</strong>?
+          <strong>{{ cliente.razonSocial }}</strong> (NIT: {{ cliente.nitCi }})?
         </p>
         @if (cliente.activo) {
-          <p>El cliente no estará disponible para nuevos flujos comerciales.</p>
+          <p class="dialog-subtext">Al inactivarlo, el cliente no podrá ser seleccionado en nuevas cotizaciones, pedidos de preventa ni facturación.</p>
         }
-        <div class="actions">
-          <button type="button" [disabled]="busy()" (click)="confirmation.set(null)">Cancelar</button>
-          <button class="primary" [disabled]="busy()" (click)="changeStatus()">
-            {{ busy() ? 'Procesando...' : 'Confirmar' }}
+        <div class="dialog-actions">
+          <button type="button" class="btn-secondary" [disabled]="busy()" (click)="statusConfirmation.set(null)">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary" [class.btn-danger]="cliente.activo" [disabled]="busy()" (click)="executeStatus()">
+            {{ busy() ? 'Actualizando...' : 'Confirmar' }}
           </button>
         </div>
-      </section>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ELIMINACIÓN DE CLIENTE -->
+  <!-- ========================================================================= -->
+  @if (deleteConfirmation(); as cliente) {
+    <div class="modal-backdrop" (click)="deleteConfirmation.set(null)">
+      <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+        <div class="dialog-icon danger">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </div>
+        <h3 class="dialog-title">Eliminar Cliente</h3>
+        <p class="dialog-text">
+          ¿Estás seguro de eliminar al cliente <strong>{{ cliente.razonSocial }}</strong>?
+        </p>
+        <p class="dialog-subtext">
+          Si el cliente posee historial comercial (cotizaciones, pedidos o facturas), el sistema aplicará automáticamente <strong>baja lógica (inactivación)</strong> para preservar los libros contables.
+        </p>
+        <div class="dialog-actions">
+          <button type="button" class="btn-secondary" [disabled]="busy()" (click)="deleteConfirmation.set(null)">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary btn-danger" [disabled]="busy()" (click)="executeDelete()">
+            {{ busy() ? 'Eliminando...' : 'Eliminar Cliente' }}
+          </button>
+        </div>
+      </div>
     </div>
   }
 }

@@ -27,9 +27,15 @@ CloudFront  (distribución E391I4EET1AU1X, cuenta 621203631700)
 
 El despliegue del **frontend** es automático: todo `push` a `main` que toque `frontend/**` dispara
 `.github/workflows/deploy-frontend.yml` (build, `aws s3 sync` e invalidación de CloudFront).
-El **backend** se despliega a mano con los pasos de abajo.
 
-## Desplegar una versión nueva del backend
+El despliegue del **backend** ahora también está automatizado en `.github/workflows/deploy-backend.yml`:
+se ejecuta automáticamente ante cualquier `push` a `main` que toque `backend/**`, o manualmente mediante `workflow_dispatch` desde GitHub Actions. Realiza el build en Docker, sube a ECR, actualiza ECS Fargate y reapunta CloudFront a la nueva IP pública del task.
+
+## Desplegar una versión nueva del backend (Automático)
+
+Basta con hacer `git push origin main` con cambios en `backend/`, o disparar el workflow `Despliegue Backend (AWS ECS Fargate + CloudFront)` desde la pestaña **Actions** en GitHub.
+
+## Desplegar una versión nueva del backend (Manual / Local)
 
 ```powershell
 # 1. Construir y verificar el jar (la suite incluye el arranque real con Flyway + validate)

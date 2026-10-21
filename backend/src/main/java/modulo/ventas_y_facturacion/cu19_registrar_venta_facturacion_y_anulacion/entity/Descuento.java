@@ -10,7 +10,7 @@ import java.time.LocalDate;
  * Descuento o promoción aplicable a una línea de venta, mapeado a la tabla descuentos.
  * {@code tipo} es PORCENTAJE o MONTO_FIJO.
  */
-@Entity
+@Entity(name = "DescuentoVenta")
 @Table(name = "descuentos")
 @Getter
 @Setter

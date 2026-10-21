@@ -4,12 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,34 +39,4 @@ public class ActualizarAlmacenRequest {
     private BigDecimal capacidadEstimada;
 
     private Boolean esPrincipal;
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
-
-    public Integer getCiudadId() { return ciudadId; }
-    public void setCiudadId(Integer ciudadId) { this.ciudadId = ciudadId; }
-
-    public Integer getSucursalId() { return sucursalId; }
-    public void setSucursalId(Integer sucursalId) { this.sucursalId = sucursalId; }
-
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
-
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
-
-    public String getHoraApertura() { return horaApertura; }
-    public void setHoraApertura(String horaApertura) { this.horaApertura = horaApertura; }
-
-    public String getHoraCierre() { return horaCierre; }
-    public void setHoraCierre(String horaCierre) { this.horaCierre = horaCierre; }
-
-    public BigDecimal getCapacidadEstimada() { return capacidadEstimada; }
-    public void setCapacidadEstimada(BigDecimal capacidadEstimada) { this.capacidadEstimada = capacidadEstimada; }
-
-    public Boolean getEsPrincipal() { return esPrincipal; }
-    public void setEsPrincipal(Boolean esPrincipal) { this.esPrincipal = esPrincipal; }
 }

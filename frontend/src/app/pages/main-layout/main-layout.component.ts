@@ -1,6 +1,6 @@
 import { RolesComponent } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/components/roles.component';
 import { PermisosService } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/services/permisos.service';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
@@ -10,19 +10,29 @@ import { MovimientoInventarioComponent } from '../../modulos/catalogo-e-inventar
 import { CatalogoComponent } from '../../modulos/catalogo-e-inventario/cu10-catalogo-de-articulos/components/catalogo.component';
 import { ClientesComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/clientes.component';
 import { ClientePortalComponent } from '../../modulos/ventas-y-facturacion/cu13-gestionar-clientes/components/cliente-portal.component';
+import { CotizacionesComponent } from '../../modulos/ventas-y-facturacion/cu15-gestionar-cotizaciones/components/cotizaciones.component';
+import { DespachosComponent } from '../../modulos/ventas-y-facturacion/cu18-gestionar-despacho-de-venta/components/despachos.component';
 import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
 import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inventario/cu09-datos-maestros-inventario/components/datos-maestros-inventario.component';
+import { PreciosYListasComponent } from '../../modulos/ventas-y-facturacion/cu14-precios-y-listas-precio/components/precios-y-listas.component';
+import { NotificationBellComponent } from '../../core/components/notification-bell/notification-bell.component';
+import { DashboardHomeComponent } from './components/dashboard-home/dashboard-home.component';
+import { ConsultarKardexComponent } from '../../modulos/catalogo-e-inventario/cu12-consultar-kardex/components/consultar-kardex.component';
+import { ValidacionComercialComponent } from '../../modulos/ventas-y-facturacion/cu17-validacion-comercial-aprobacion/components/validacion-comercial.component';
 import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-registrar-venta-facturacion-y-anulacion/components/facturacion.component';
 import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
+
+import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
-    FacturacionComponent, DevolucionesComponent],
+    PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +45,17 @@ export class MainLayoutComponent {
 
   constructor() {
     this.permisos.cargar().subscribe({ error: () => this.permisos.limpiar() });
+    effect(() => {
+      const mod = this.selectedModule();
+      if (mod) {
+        this.expanded.update((current) => {
+          if (current.has(mod.id)) return current;
+          const next = new Set(current);
+          next.add(mod.id);
+          return next;
+        });
+      }
+    });
   }
 
   // Módulos visibles filtrados según el rol del usuario conectado
@@ -63,22 +84,43 @@ export class MainLayoutComponent {
 
   readonly sidebarOpen = signal(false);
   readonly expanded = signal(new Set<string>());
-  private readonly params = toSignal(inject(ActivatedRoute).queryParamMap);
+  private readonly route = inject(ActivatedRoute);
+  private readonly pathParams = toSignal(this.route.paramMap);
+  private readonly queryParams = toSignal(this.route.queryParamMap);
 
-  readonly selectedModule = computed(() =>
-    this.visibleModules().find((module) => module.id === this.params()?.get('modulo')),
-  );
+  readonly currentFuncionSlug = computed(() => {
+    return this.pathParams()?.get('funcion') || this.queryParams()?.get('funcion') || null;
+  });
 
-  readonly selectedFunction = computed(() =>
-    this.selectedModule()?.functions.find((fn) => {
-      const selected = fn.id === this.params()?.get('funcion');
-      return selected && (!this.authService.isClient() || fn.id === 'perfil-personal');
-    }),
-  );
+  readonly selectedFunction = computed(() => {
+    const rawSlug = this.currentFuncionSlug();
+    if (!rawSlug) return null;
 
-  readonly hasSelection = computed(
-    () => !!this.params()?.get('modulo') || !!this.params()?.get('funcion'),
-  );
+    const slug = rawSlug.toLowerCase();
+    const cleanSlug = slug.replace(/^cu\d+-/, '');
+
+    for (const mod of this.visibleModules()) {
+      const fn = mod.functions.find(f =>
+        f.id === slug ||
+        f.slug === slug ||
+        f.id === cleanSlug ||
+        f.slug === cleanSlug
+      );
+      if (fn) {
+        if (this.authService.isClient() && fn.id !== 'perfil-personal') return null;
+        return fn;
+      }
+    }
+    return null;
+  });
+
+  readonly selectedModule = computed(() => {
+    const fn = this.selectedFunction();
+    if (!fn) return null;
+    return this.visibleModules().find(mod => mod.functions.some(f => f.id === fn.id)) || null;
+  });
+
+  readonly hasSelection = computed(() => !!this.currentFuncionSlug());
 
   toggleModule(id: string): void {
     this.expanded.update((current) => {

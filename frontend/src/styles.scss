@@ -157,16 +157,30 @@ body {
   }
 }
 
-/* Apple Translucent Frosted Glass */
+/* Apple Surface (Sin filtros de desenfoque pesados para 60fps) */
 .apple-glass {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
 
   :root.dark & {
-    background: rgba(28, 28, 30, 0.82);
+    background: #1c1c1e;
     border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Tablas limpias: ancho completo y sin scrollbars horizontales toscos */
+.table-scroll,
+.table-container,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -307,6 +321,55 @@ body {
   }
 }
 
+/* Botón Editar: Azul Comercial vibrante (sin color plomo) */
+.btn-action-edit,
+button.btn-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 102, 204, 0.08) !important;
+  color: var(--primary) !important;
+  border: 1px solid rgba(0, 102, 204, 0.28) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  cursor: pointer;
+  transition: all 140ms ease !important;
+
+  &:hover:not(:disabled) {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.35);
+  }
+}
+
+/* Botón Ver: Fondo neutro limpio */
+.btn-action-view,
+button.btn-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--bg-surface) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--bg-card-border) !important;
+  font-weight: 550 !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  cursor: pointer;
+  transition: all 140ms ease !important;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-subtle) !important;
+    color: var(--text-main) !important;
+    border-color: var(--text-muted) !important;
+  }
+}
+
 /* Label Pill con Tipografía JetBrains Mono */
 .btn-label-mono {
   background: var(--primary);
@@ -405,15 +468,13 @@ body {
   align-items: center;
   gap: 0.35rem;
   padding: 0.35rem 0.5rem;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--bg-surface);
   border: 1px solid var(--bg-card-border);
   border-radius: 9999px;
   box-shadow: var(--shadow-md);
 
   :root.dark & {
-    background: rgba(28, 28, 30, 0.88);
+    background: #1c1c1e;
   }
 
   .dock-item {
@@ -489,18 +550,89 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* ==========================================================================
+   Inputs, Selects, Textareas - Fondo blanco limpio (Sin colores plomos)
+   ========================================================================== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+select,
+textarea {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1.5px solid #d1d5db !important;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-family: inherit;
+
+  &:focus {
+    background-color: #ffffff !important;
+    border-color: #007aff !important;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2) !important;
+    outline: none !important;
+  }
+
+  &::placeholder {
+    color: #9ca3af !important;
+  }
+
+  /* Evitar fondos plomos/oscuros forzados por autofill de Chrome/Edge */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #111827 !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+    caret-color: #111827 !important;
+  }
+}
+
+:root.dark {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  select,
+  textarea {
+    background-color: #1c1c1e !important;
+    color: #f5f5f7 !important;
+    border: 1.5px solid #38383a !important;
+
+    &:focus {
+      background-color: #1c1c1e !important;
+      border-color: #0a84ff !important;
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25) !important;
+    }
+
+    &::placeholder {
+      color: #636366 !important;
+    }
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #1c1c1e inset !important;
+      -webkit-text-fill-color: #f5f5f7 !important;
+      box-shadow: 0 0 0 1000px #1c1c1e inset !important;
+      caret-color: #f5f5f7 !important;
+    }
+  }
+}
+
 /* Apple Search Input */
 .apple-search {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: var(--neutral-subtle);
-  border: 1px solid transparent;
+  background: #ffffff;
+  border: 1.5px solid #d1d5db;
   border-radius: 10px;
   padding: 0.55rem 0.9rem;
   color: var(--text-main);
   font-size: 0.9rem;
   transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+
+  :root.dark & {
+    background: #1c1c1e;
+    border-color: #38383a;
+  }
 
   &:focus-within {
     background: var(--bg-surface);
@@ -515,16 +647,18 @@ body {
   }
 
   input {
-    border: none;
-    background: transparent;
-    outline: none;
-    color: inherit;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: inherit !important;
     font-family: var(--font-sans);
     font-size: inherit;
     width: 100%;
+    padding: 0 !important;
 
     &::placeholder {
-      color: var(--tertiary);
+      color: var(--tertiary) !important;
       font-weight: 400;
     }
   }
@@ -606,5 +740,16 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Global Print Isolation Safeguard */
+@media print {
+  .no-print,
+  app-sidebar,
+  .topbar,
+  aside,
+  header {
+    display: none !important;
   }
 }

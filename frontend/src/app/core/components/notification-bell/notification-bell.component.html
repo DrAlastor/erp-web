@@ -1,0 +1,119 @@
+<div class="bell-container">
+  <button
+    type="button"
+    class="bell-button"
+    (click)="toggleOpen()"
+    [attr.aria-expanded]="isOpen()"
+    aria-label="Notificaciones del sistema"
+    [class.active]="isOpen()"
+  >
+    <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+
+    @if (conteoNoLeidas() > 0) {
+      <span class="badge" aria-label="Notificaciones sin leer">
+        {{ conteoNoLeidas() > 99 ? '99+' : conteoNoLeidas() }}
+      </span>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <div class="dropdown-panel" role="dialog" aria-label="Panel de notificaciones">
+      <div class="dropdown-header">
+        <div class="header-info">
+          <h3>Notificaciones</h3>
+          @if (conteoNoLeidas() > 0) {
+            <span class="count-pill">{{ conteoNoLeidas() }} nuevas</span>
+          }
+        </div>
+        @if (conteoNoLeidas() > 0) {
+          <button type="button" class="btn-link" (click)="marcarTodas()">
+            Marcar leídas
+          </button>
+        }
+      </div>
+
+      <div class="filter-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="filtroActivo() === 'todas'"
+          (click)="setFiltro('todas')"
+        >
+          Todas ({{ notificaciones().length }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="filtroActivo() === 'no-leidas'"
+          (click)="setFiltro('no-leidas')"
+        >
+          Sin leer ({{ conteoNoLeidas() }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="filtroActivo() === 'ventas'"
+          (click)="setFiltro('ventas')"
+        >
+          Ventas
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="filtroActivo() === 'inventario'"
+          (click)="setFiltro('inventario')"
+        >
+          Inventario
+        </button>
+      </div>
+
+      <div class="notification-list">
+        @for (item of notificacionesFiltradas(); track item.id) {
+          <div
+            class="notification-item"
+            [class.unread]="!item.leida"
+            (click)="clickNotificacion(item)"
+          >
+            <div class="item-icon-box" [attr.data-tipo]="item.tipo">
+              <span class="cat-icon">{{ getIconoCategoria(item.categoria) }}</span>
+            </div>
+
+            <div class="item-content">
+              <div class="item-top">
+                <span class="item-title">{{ item.titulo }}</span>
+                <span class="item-time">{{ formatearTiempo(item.fecha) }}</span>
+              </div>
+              <p class="item-msg">{{ item.mensaje }}</p>
+              @if (item.moduloId) {
+                <span class="nav-hint">Ver en módulo ↗</span>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="btn-dismiss"
+              aria-label="Descartar notificación"
+              (click)="descartar($event, item.id)"
+              title="Descartar"
+            >
+              ✕
+            </button>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <span class="empty-icon">✓</span>
+            <p>No tienes notificaciones en esta sección</p>
+            <small>Las novedades del sistema se reflejarán aquí en tiempo real.</small>
+          </div>
+        }
+      </div>
+
+      <div class="dropdown-footer">
+        <span class="footer-status">● Sistema comercial y contable activo</span>
+      </div>
+    </div>
+  }
+</div>

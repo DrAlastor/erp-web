@@ -23,10 +23,10 @@
         <div class="function-list" [id]="'functions-' + module.id" [hidden]="!expanded().has(module.id)">
           @for (fn of module.functions; track fn.id) {
           @if (!authService.isClient() || fn.id === 'perfil-personal') {
-          <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }" [class.selected]="
-                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+          <a [routerLink]="['/app', fn.slug || fn.id]" [class.selected]="
+                    selectedFunction()?.id === fn.id
                   " [attr.aria-current]="
-                    selectedModule()?.id === module.id && selectedFunction()?.id === fn.id
+                    selectedFunction()?.id === fn.id
                       ? 'page'
                       : null
                   " (click)="sidebarOpen.set(false)">{{ fn.name }}</a>
@@ -50,6 +50,7 @@
       </div>
 
       <div class="header-actions">
+        <app-notification-bell />
         <button class="theme-button" (click)="themeService.toggle()" [attr.aria-label]="
             themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
           ">
@@ -69,25 +70,37 @@
       <a class="back-link" routerLink="/app">← Volver al dashboard</a>
       <p class="eyebrow">{{ selectedModule()?.name }}</p>
       <h1>{{ fn.name }}</h1>
-      @if (authService.isClient() && (fn.id === 'perfil-personal' || fn.id === 'cu13-gestionar-clientes')) {
+      @if (authService.isClient() && (fn.id === 'perfil-personal' || fn.id === 'gestionar-clientes' || fn.id === 'cu13-gestionar-clientes')) {
       <app-cliente-portal />
-      } @else if (!authService.isClient() && (fn.id === 'cu02-gestionar-usuarios' || fn.id === 'gestion-de-usuarios')) {
+      } @else if (!authService.isClient() && (fn.id === 'gestionar-usuarios' || fn.id === 'gestion-de-usuarios' || fn.id === 'cu02-gestionar-usuarios')) {
       <app-usuarios />
-      } @else if (fn.id === 'cu03-gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos') {
+      } @else if (fn.id === 'gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos' || fn.id === 'cu03-gestionar-roles-y-permisos') {
       <app-roles />
-      } @else if (fn.id === 'cu04-gestionar-empleados' || fn.id === 'gestionar-empleados') {
+      } @else if (fn.id === 'gestionar-empleados' || fn.id === 'cu04-gestionar-empleados') {
       <app-empleados />
-      } @else if (fn.id === 'cu09-datos-maestros-inventario' || fn.id === 'datos-maestros-inventario') {
+      } @else if (fn.id === 'datos-maestros-inventario' || fn.id === 'cu09-datos-maestros-inventario') {
       <app-datos-maestros-inventario />
-      } @else if (fn.id === 'cu10-catalogo-de-articulos' || fn.id === 'catalogo-de-articulos') {
+      } @else if (fn.id === 'catalogo-de-articulos' || fn.id === 'cu10-catalogo-de-articulos') {
       <app-catalogo />
-      } @else if (fn.id === 'cu11-movimientos-de-inventario' || fn.id === 'movimientos-de-inventario') {
+      } @else if (fn.id === 'movimientos-de-inventario' || fn.id === 'cu11-movimientos-de-inventario') {
       <app-movimiento-inventario />
-      } @else if (!authService.isClient() && (fn.id === 'cu13-gestionar-clientes' || fn.id === 'gestion-de-clientes')) {
+      } @else if (fn.id === 'consultar-kardex' || fn.id === 'cu12-consultar-kardex') {
+      <app-consultar-kardex />
+      } @else if (!authService.isClient() && (fn.id === 'gestionar-clientes' || fn.id === 'gestion-de-clientes' || fn.id === 'cu13-gestionar-clientes')) {
       <app-clientes />
-      } @else if (fn.id === 'cu19-registrar-venta-facturacion-y-anulacion') {
+      } @else if (fn.id === 'precios-y-listas-precio' || fn.id === 'gestionar-precios-y-listas-precio' || fn.id === 'cu14-precios-y-listas-precio') {
+      <app-precios-y-listas />
+      } @else if (fn.id === 'gestionar-cotizaciones' || fn.id === 'cu15-gestionar-cotizaciones') {
+      <app-cotizaciones />
+      } @else if (fn.id === 'pedidos-de-venta' || fn.id === 'cu16-pedidos-de-venta') {
+      <app-pedidos-venta />
+      } @else if (fn.id === 'validacion-comercial' || fn.id === 'cu17-validacion-comercial-aprobacion') {
+      <app-validacion-comercial />
+      } @else if (fn.id === 'gestionar-despacho-de-venta' || fn.id === 'cu18-gestionar-despacho-de-venta') {
+      <app-despachos />
+      } @else if (fn.id === 'facturacion' || fn.id === 'cu19-registrar-venta-facturacion-y-anulacion' || fn.id === 'cu19-facturacion-electronica-sin') {
       <app-facturacion />
-      } @else if (fn.id === 'cu20-devoluciones-de-venta') {
+      } @else if (fn.id === 'devoluciones-y-notas-de-credito' || fn.id === 'devoluciones' || fn.id === 'cu20-devoluciones-de-venta' || fn.id === 'cu20-gestionar-devoluciones-y-notas-de-credito') {
       <app-devoluciones />
       } @else {
       <section class="module-card function-content">
@@ -101,62 +114,7 @@
       <p>Selecciona una función desde el panel de control.</p>
       <a class="back-link" routerLink="/app">Volver al dashboard</a>
       } @else {
-      <p class="eyebrow">VISTA GENERAL</p>
-      <h1>Dashboard</h1>
-      <p class="intro">
-        Bienvenido, {{ authService.usuario()?.fullname }}. Este es tu espacio de trabajo.
-      </p>
-      <section class="welcome-banner">
-        <div>
-          <span class="banner-label">ERP COMERCIAL Y CONTABLE</span>
-          <h2>Panel de Operaciones</h2>
-          <p>
-            Explora las funciones asignadas a tu perfil desde la barra lateral.
-          </p>
-        </div>
-        <span class="banner-symbol" aria-hidden="true">↗</span>
-      </section>
-      <section class="summary" aria-label="Resumen del sistema">
-        <div>
-          <span>Módulos Activos</span><strong>{{ visibleModules().length }}</strong><small>Áreas de trabajo</small>
-        </div>
-        <div>
-          <span>Funciones Disponibles</span><strong>{{ functionCount() }}</strong><small>Permisos asignados</small>
-        </div>
-        <div>
-          <span>Tu acceso</span><strong class="session-label">Sesión activa</strong><small>{{
-            authService.usuario()?.email }}</small>
-        </div>
-      </section>
-      <div class="section-heading">
-        <h2>Módulos del Sistema</h2>
-        <span>Selecciona una función para continuar</span>
-      </div>
-      <section class="module-grid" aria-label="Módulos del ERP">
-        @for (module of visibleModules(); track module.id) {
-        @if (!authService.isClient() || module.id === 'comercial-y-preventa') {
-        <article class="module-card">
-          <div class="card-top">
-            <span class="card-icon" aria-hidden="true">{{ module.icon }}</span><span class="count">{{
-              module.functions.length }} funciones</span>
-          </div>
-          <h3>{{ module.name }}</h3>
-          <div class="card-functions">
-            @for (fn of module.functions; track fn.id) {
-            @if (!authService.isClient() || fn.id === 'perfil-personal') {
-            <a routerLink="/app" [queryParams]="{ modulo: module.id, funcion: fn.id }">{{ fn.name }}<span
-                aria-hidden="true">↗</span></a>
-            }
-            } @empty {
-            <p class="future-note">
-              Sin funciones asignadas.
-            </p>
-            }
-          </div>
-        </article>
-        }
-        }
-      </section>
+        <app-dashboard-home />
       }
     </main>
   </div>

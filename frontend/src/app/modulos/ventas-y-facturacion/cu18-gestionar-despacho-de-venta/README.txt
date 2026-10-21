@@ -1,4 +1,4 @@
-Aqui se desarrollara el CU18 - Gestionar Despacho de Venta
-MÓDULO 3 — Ventas & Facturación
-
-Descripcion: Espacio de desarrollo para las vistas, componentes y servicios frontend del caso de uso CU18.
+CU18 - Gestionar Despacho de Venta (frontend)
+components/despachos.component  pedidos por despachar, preparar nota, confirmar, entregar, anular
+services/despachos.service.ts   /api/despachos (+ aprobación provisional de pedidos hasta la CU17)
+Los estilos comunes con CU15 están en ../_ventas-comun.scss

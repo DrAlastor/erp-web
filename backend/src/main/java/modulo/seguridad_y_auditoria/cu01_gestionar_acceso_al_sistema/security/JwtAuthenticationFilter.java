@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+    private final modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion servicioAutorizacion;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -52,6 +53,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     authorities.add(new SimpleGrantedAuthority(usuario.getRol().getPermiso()));
                                 }
                             }
+                            try {
+                                java.util.Set<String> perms = servicioAutorizacion.permisosEfectivos(usuario.getId());
+                                for (String p : perms) {
+                                    authorities.add(new SimpleGrantedAuthority(p));
+                                    authorities.add(new SimpleGrantedAuthority("ROLE_" + p));
+                                }
+                            } catch (Exception ignored) {}
                             try {
                                 List<String> tokenAuths = jwtService.extractAuthorities(token);
                                 if (tokenAuths != null) {

@@ -69,10 +69,6 @@ public class NotaCreditoService {
     @Transactional(readOnly = true)
     public List<VentaDevolucionResponse> buscarVentas(Integer numeroFactura, String nitCliente) {
         String nit = nitCliente == null ? "" : nitCliente.trim();
-        if (numeroFactura == null && nit.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Indica el número de factura o el NIT/CI del cliente.");
-        }
         List<Venta> ventas = ventaRepository.buscarVigentes(numeroFactura, nit).stream()
                 .limit(MAX_VENTAS_BUSQUEDA)
                 .toList();

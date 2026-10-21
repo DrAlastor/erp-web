@@ -67,7 +67,7 @@ public class UsuarioController {
     @GetMapping
     @PreAuthorize("hasPermission('SEGURIDAD','CONSULTAR')")
     public Page<UsuarioResponse> listar(@RequestParam(defaultValue = "") @Size(max = 150) String search,
-                                        @RequestParam(required = false) UUID role,
+                                        @RequestParam(required = false) String role,
                                         @RequestParam(required = false) Boolean enable,
                                         @RequestParam(defaultValue = "0") @Min(0) int page,
                                         @RequestParam(defaultValue = "15") @Min(1) @Max(100) int size) {

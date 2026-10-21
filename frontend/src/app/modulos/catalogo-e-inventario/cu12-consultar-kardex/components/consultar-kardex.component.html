@@ -1,0 +1,233 @@
+<div class="kardex-container">
+  <div class="header-section">
+    <div>
+      <h2>Consulta de Kardex Valorado</h2>
+      <p>Historial de entradas, salidas y saldos de cada producto por almacén, valuado con Promedio Ponderado o PEPS.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>✕</span>
+      <div>{{ error() }}</div>
+    </div>
+  }
+
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="tab() === 'kardex'" (click)="cambiarTab('kardex')">
+      Kardex por producto
+    </button>
+    <button class="tab-btn" [class.active]="tab() === 'valoracion'" (click)="cambiarTab('valoracion')">
+      Existencias valoradas
+    </button>
+  </div>
+
+  <!-- ============ KARDEX POR PRODUCTO ============ -->
+  @if (tab() === 'kardex') {
+    <form class="filters-bar" (ngSubmit)="consultar()">
+      <label class="flex-grow">
+        Producto
+        <select [(ngModel)]="productoId" name="producto" (change)="consultar()">
+          <option value="">Selecciona un producto</option>
+          @for (prod of productos(); track prod.id) {
+            <option [value]="prod.id">{{ prod.nombre }} ({{ prod.codigoSku }})</option>
+          }
+        </select>
+      </label>
+      <label>
+        Almacén
+        <select [(ngModel)]="almacenId" name="almacen" (change)="consultar()">
+          @for (alm of almacenes(); track alm.id) {
+            <option [value]="alm.id">{{ alm.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Método de costeo
+        <select [(ngModel)]="metodo" name="metodo" (change)="consultar()">
+          <option value="PROMEDIO">Promedio Ponderado</option>
+          <option value="PEPS">PEPS / FIFO</option>
+        </select>
+      </label>
+      <label>
+        Desde
+        <input type="date" [(ngModel)]="fechaInicio" name="fechaInicio">
+      </label>
+      <label>
+        Hasta
+        <input type="date" [(ngModel)]="fechaFin" name="fechaFin">
+      </label>
+      <label>
+        Tipo
+        <select [(ngModel)]="tipoMovimiento" name="tipo">
+          <option value="">Todos</option>
+          <option value="ENTRADA">Entrada</option>
+          <option value="SALIDA">Salida</option>
+          <option value="AJUSTE_POSITIVO">Ajuste (+)</option>
+          <option value="AJUSTE_NEGATIVO">Ajuste (-)</option>
+        </select>
+      </label>
+      <button class="btn primary" type="submit" [disabled]="loading()">Consultar</button>
+      <button class="btn secondary" type="button" (click)="limpiar()">Limpiar</button>
+    </form>
+
+    @if (loading()) {
+      <div class="estado-vacio">Calculando el Kardex...</div>
+    } @else if (kardex(); as k) {
+      <section class="resumen" aria-label="Resumen del Kardex">
+        <div class="resumen-producto">
+          <strong>{{ k.productoNombre }}</strong>
+          <small>{{ k.productoSku }} · {{ k.almacenNombre }} · {{ k.metodoEtiqueta }}</small>
+        </div>
+        <div class="resumen-kpi">
+          <span>Saldo inicial</span>
+          <strong>{{ k.saldoInicialCantidad | number: '1.2-2' }} {{ k.unidadMedida }}</strong>
+          <small>Bs. {{ k.saldoInicialValor | number: '1.2-2' }}</small>
+        </div>
+        <div class="resumen-kpi">
+          <span>Entradas</span>
+          <strong class="text-entrada">+{{ k.totalEntradasCantidad | number: '1.2-2' }}</strong>
+          <small>Bs. {{ k.totalEntradasValor | number: '1.2-2' }}</small>
+        </div>
+        <div class="resumen-kpi">
+          <span>Salidas</span>
+          <strong class="text-salida">-{{ k.totalSalidasCantidad | number: '1.2-2' }}</strong>
+          <small>Bs. {{ k.totalSalidasValor | number: '1.2-2' }}</small>
+        </div>
+        <div class="resumen-kpi destacado">
+          <span>Saldo final</span>
+          <strong>{{ k.saldoFinalCantidad | number: '1.2-2' }} {{ k.unidadMedida }}</strong>
+          <small>Bs. {{ k.saldoFinalValor | number: '1.2-2' }} · costo Bs. {{ k.saldoFinalCostoUnitario | number: '1.2-4' }}</small>
+        </div>
+        <button class="btn secondary" type="button" (click)="exportar()" [disabled]="exportando()">
+          {{ exportando() ? 'Exportando...' : 'Exportar CSV' }}
+        </button>
+      </section>
+
+      <div class="table-container">
+        <table class="kardex-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Fecha</th>
+              <th rowspan="2">Tipo</th>
+              <th rowspan="2">Referencia</th>
+              <th colspan="3" class="grupo grupo-entrada">Entradas</th>
+              <th colspan="3" class="grupo grupo-salida">Salidas</th>
+              <th colspan="3" class="grupo grupo-saldo">Saldo</th>
+            </tr>
+            <tr>
+              <th>Cant.</th><th>Costo</th><th>Valor</th>
+              <th>Cant.</th><th>Costo</th><th>Valor</th>
+              <th>Cant.</th><th>Costo</th><th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="fila-inicial">
+              <td colspan="9">Saldo inicial del periodo</td>
+              <td class="num">{{ k.saldoInicialCantidad | number: '1.2-2' }}</td>
+              <td class="num">—</td>
+              <td class="num">{{ k.saldoInicialValor | number: '1.2-2' }}</td>
+            </tr>
+            @for (m of k.movimientos; track m.id) {
+              <tr>
+                <td>{{ m.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="claseTipo(m.tipoMovimiento)">{{ m.tipoMovimiento }}</span>
+                  @if (m.motivo) {
+                    <div class="cell-sub">{{ m.motivo }}</div>
+                  }
+                </td>
+                <td>{{ m.referenciaDoc || '—' }}</td>
+                <td class="num">{{ m.entradaCantidad === null ? '' : (m.entradaCantidad | number: '1.2-2') }}</td>
+                <td class="num">{{ m.entradaCostoUnitario === null ? '' : (m.entradaCostoUnitario | number: '1.2-4') }}</td>
+                <td class="num">{{ m.entradaValor === null ? '' : (m.entradaValor | number: '1.2-2') }}</td>
+                <td class="num">{{ m.salidaCantidad === null ? '' : (m.salidaCantidad | number: '1.2-2') }}</td>
+                <td class="num">{{ m.salidaCostoUnitario === null ? '' : (m.salidaCostoUnitario | number: '1.2-4') }}</td>
+                <td class="num">{{ m.salidaValor === null ? '' : (m.salidaValor | number: '1.2-2') }}</td>
+                <td class="num saldo">{{ m.saldoCantidad | number: '1.2-2' }}</td>
+                <td class="num saldo">{{ m.saldoCostoUnitario | number: '1.2-4' }}</td>
+                <td class="num saldo">{{ m.saldoValor | number: '1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="12" class="estado-vacio">No hay movimientos en el periodo seleccionado.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="estado-vacio">Elige un producto y un almacén y pulsa «Consultar» para ver su Kardex.</div>
+    }
+  }
+
+  <!-- ============ EXISTENCIAS VALORADAS ============ -->
+  @if (tab() === 'valoracion') {
+    <form class="filters-bar" (ngSubmit)="cargarValoracion()">
+      <label>
+        Almacén
+        <select [(ngModel)]="valAlmacenId" name="valAlmacen">
+          @for (alm of almacenes(); track alm.id) {
+            <option [value]="alm.id">{{ alm.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Método de costeo
+        <select [(ngModel)]="valMetodo" name="valMetodo">
+          <option value="PROMEDIO">Promedio Ponderado</option>
+          <option value="PEPS">PEPS / FIFO</option>
+        </select>
+      </label>
+      <button class="btn primary" type="submit" [disabled]="loading()">Valorar</button>
+    </form>
+
+    @if (loading()) {
+      <div class="estado-vacio">Valorando existencias...</div>
+    } @else if (valoracion(); as v) {
+      <section class="resumen" aria-label="Total valorado">
+        <div class="resumen-producto">
+          <strong>{{ v.almacenNombre }}</strong>
+          <small>{{ v.metodoEtiqueta }}</small>
+        </div>
+        <div class="resumen-kpi destacado">
+          <span>Inventario valorado</span>
+          <strong>Bs. {{ v.totalValor | number: '1.2-2' }}</strong>
+          <small>{{ v.items.length }} producto(s)</small>
+        </div>
+      </section>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="num">Existencia</th>
+              <th class="num">Costo unitario</th>
+              <th class="num">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of v.items; track item.productoId) {
+              <tr>
+                <td>
+                  <div class="cell-strong">{{ item.productoNombre }}</div>
+                  <small class="cell-sub">{{ item.productoSku }}</small>
+                </td>
+                <td class="num">{{ item.cantidad | number: '1.2-2' }} {{ item.unidadMedida }}</td>
+                <td class="num">Bs. {{ item.costoUnitario | number: '1.2-4' }}</td>
+                <td class="num cell-strong">Bs. {{ item.valor | number: '1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="estado-vacio">Este almacén no tiene movimientos en el Kardex.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="estado-vacio">Elige un almacén y pulsa «Valorar» para ver sus existencias valoradas.</div>
+    }
+  }
+</div>

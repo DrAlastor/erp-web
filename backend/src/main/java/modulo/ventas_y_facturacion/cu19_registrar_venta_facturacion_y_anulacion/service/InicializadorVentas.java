@@ -33,6 +33,12 @@ public class InicializadorVentas implements ApplicationRunner {
             jdbc.execute("ALTER TABLE ventas ADD COLUMN IF NOT EXISTS motivo_anulacion VARCHAR(200)");
             jdbc.execute("ALTER TABLE ventas ADD COLUMN IF NOT EXISTS fecha_anulacion TIMESTAMP");
             jdbc.execute("ALTER TABLE ventas ADD COLUMN IF NOT EXISTS anulado_por INTEGER");
+            Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM clientes WHERE nit_ci = '0'", Integer.class);
+            if (count == null || count == 0) {
+                jdbc.execute("INSERT INTO clientes (razon_social, nit_ci, email, telefono, direccion, activo, limite_credito, dias_credito) " +
+                             "VALUES ('Sin Nombre', '0', 'ventas@erp.com', '0', 'Venta en mostrador', true, 0, 0)");
+                log.info("Cliente comodin 'Sin Nombre (NIT 0)' asegurado en BD.");
+            }
             log.info("Tabla ventas lista para comprobantes y anulaciones de la CU19.");
         } catch (Exception e) {
             log.warn("No se pudieron preparar las columnas de la CU19 en ventas: {}", e.getMessage());

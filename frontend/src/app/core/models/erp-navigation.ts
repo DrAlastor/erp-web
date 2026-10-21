@@ -1,7 +1,7 @@
 export interface ErpFunction {
   id: string;
   name: string;
-  code?: string;
+  slug: string;
   rolesPermitidos?: string[];
 }
 
@@ -18,13 +18,13 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Configuración y Seguridad',
     icon: '◎',
     functions: [
-      { id: 'cu02-gestionar-usuarios', name: 'Gestionar Usuarios', code: 'CU02', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu03-gestionar-roles-y-permisos', name: 'Gestionar Roles y Permisos', code: 'CU03', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu04-gestionar-empleados', name: 'Gestionar Empleados', code: 'CU04', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu05-empresas-sucursales-configuracion', name: 'Gestionar Empresas, Sucursales y Configuración', code: 'CU05', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu06-personalizar-apariencia', name: 'Personalizar Apariencia', code: 'CU06', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu07-backups-y-restore', name: 'Gestionar Backups y Restore', code: 'CU07', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu08-consultar-bitacora', name: 'Consultar Bitácora', code: 'CU08', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
+      { id: 'gestionar-usuarios', slug: 'gestionar-usuarios', name: 'Gestionar Usuarios', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'gestionar-roles-y-permisos', slug: 'gestionar-roles-y-permisos', name: 'Gestionar Roles y Permisos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'gestionar-empleados', slug: 'gestionar-empleados', name: 'Gestionar Empleados', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'empresas-sucursales-configuracion', slug: 'empresas-sucursales-configuracion', name: 'Gestionar Empresas, Sucursales y Configuración', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'personalizar-apariencia', slug: 'personalizar-apariencia', name: 'Personalizar Apariencia', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'backups-y-restore', slug: 'backups-y-restore', name: 'Gestionar Backups y Restore', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'consultar-bitacora', slug: 'consultar-bitacora', name: 'Consultar Bitácora', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
     ]
   },
   {
@@ -32,10 +32,10 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Catálogo e Inventarios',
     icon: '▦',
     functions: [
-      { id: 'cu09-datos-maestros-inventario', name: 'Gestionar Datos Maestros de Inventario', code: 'CU09', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'cu10-catalogo-de-articulos', name: 'Gestionar Catálogo de Artículos', code: 'CU10', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] },
-      { id: 'cu11-movimientos-de-inventario', name: 'Gestionar Movimientos de Inventario', code: 'CU11', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'cu12-consultar-kardex', name: 'Consultar Kardex', code: 'CU12', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] }
+      { id: 'datos-maestros-inventario', slug: 'datos-maestros-inventario', name: 'Gestionar Datos Maestros de Inventario', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
+      { id: 'catalogo-de-articulos', slug: 'catalogo-de-articulos', name: 'Gestionar Catálogo de Artículos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] },
+      { id: 'movimientos-de-inventario', slug: 'movimientos-de-inventario', name: 'Gestionar Movimientos de Inventario', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
+      { id: 'consultar-kardex', slug: 'consultar-kardex', name: 'Consultar Kardex', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] }
     ]
   },
   {
@@ -43,14 +43,14 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Ventas y Facturación',
     icon: '↗',
     functions: [
-      { id: 'cu13-gestionar-clientes', name: 'Gestionar Clientes', code: 'CU13', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'CAJERO'] },
-      { id: 'cu14-precios-y-listas-precio', name: 'Gestionar Precios y Listas de Precio', code: 'CU14', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
-      { id: 'cu15-gestionar-cotizaciones', name: 'Gestionar Cotizaciones', code: 'CU15', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
-      { id: 'cu16-pedidos-de-venta', name: 'Gestionar Pedidos de Venta', code: 'CU16', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
-      { id: 'cu17-validacion-comercial-aprobacion', name: 'Validación Comercial y Aprobación', code: 'CU17', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
-      { id: 'cu18-gestionar-despacho-de-venta', name: 'Gestionar Despacho de Venta', code: 'CU18', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] },
-      { id: 'cu19-registrar-venta-facturacion-y-anulacion', name: 'Registrar Venta, Facturación y Anulación', code: 'CU19', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] },
-      { id: 'cu20-devoluciones-de-venta', name: 'Gestionar Devoluciones y Notas de Crédito', code: 'CU20', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] }
+      { id: 'gestionar-clientes', slug: 'gestionar-clientes', name: 'Gestionar Clientes', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'CAJERO'] },
+      { id: 'precios-y-listas-precio', slug: 'precios-y-listas-precio', name: 'Gestionar Precios y Listas de Precio', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'gestionar-cotizaciones', slug: 'gestionar-cotizaciones', name: 'Gestionar Cotizaciones', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'pedidos-de-venta', slug: 'pedidos-de-venta', name: 'Gestionar Pedidos de Venta', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'validacion-comercial', slug: 'validacion-comercial', name: 'Validación Comercial', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'gestionar-despacho-de-venta', slug: 'gestionar-despacho-de-venta', name: 'Gestionar Despacho de Venta', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] },
+      { id: 'facturacion', slug: 'facturacion', name: 'Registrar Venta, Facturación y Anulación', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] },
+      { id: 'devoluciones-y-notas-de-credito', slug: 'devoluciones-y-notas-de-credito', name: 'Gestionar Devoluciones y Notas de Crédito', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR', 'ALMACENERO'] }
     ]
   },
   {
@@ -58,10 +58,10 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Compras y Proveedores',
     icon: '⇄',
     functions: [
-      { id: 'cu21-gestionar-proveedores', name: 'Gestionar Proveedores', code: 'CU21', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'cu22-solicitudes-y-cotizaciones-compra', name: 'Gestionar Solicitudes y Cotizaciones de Compra', code: 'CU22', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'cu23-ordenes-de-compra', name: 'Gestionar Órdenes de Compra', code: 'CU23', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
-      { id: 'cu24-recepcion-y-facturacion-compras', name: 'Recepción y Facturación de Compras', code: 'CU24', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] }
+      { id: 'gestionar-proveedores', slug: 'gestionar-proveedores', name: 'Gestionar Proveedores', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
+      { id: 'gestionar-ordenes-de-compra', slug: 'gestionar-ordenes-de-compra', name: 'Gestionar Órdenes de Compra', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
+      { id: 'registrar-compra-y-devolucion', slug: 'registrar-compra-y-devolucion', name: 'Registrar Compra y Devolución de Proveedores', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO'] },
+      { id: 'gestionar-cuentas-por-pagar', slug: 'gestionar-cuentas-por-pagar', name: 'Gestionar Cuentas por Pagar', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] }
     ]
   },
   {
@@ -69,13 +69,13 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Contabilidad y Finanzas',
     icon: '≡',
     functions: [
-      { id: 'cu25-plan-de-cuentas', name: 'Gestionar Plan de Cuentas', code: 'CU25', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu26-asientos-contables-comprobantes', name: 'Gestionar Asientos Contables y Comprobantes', code: 'CU26', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu27-ejercicios-periodos-contables', name: 'Gestionar Ejercicios y Periodos Contables', code: 'CU27', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu28-ajustes-y-cierres-contables', name: 'Gestionar Ajustes y Cierres Contables', code: 'CU28', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu29-centros-de-costos', name: 'Gestionar Centros de Costos', code: 'CU29', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu30-activos-fijos', name: 'Gestionar Activos Fijos', code: 'CU30', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu31-consultar-libros-contables', name: 'Consultar Libros Contables', code: 'CU31', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
+      { id: 'plan-de-cuentas', slug: 'plan-de-cuentas', name: 'Gestionar Plan de Cuentas', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'periodos-contables', slug: 'periodos-contables', name: 'Gestionar Periodos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'asientos-contables', slug: 'asientos-contables', name: 'Gestionar Asientos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'integracion-contable-automatica', slug: 'integracion-contable-automatica', name: 'Integración Contable Automática', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'cuentas-por-cobrar-y-cobros', slug: 'cuentas-por-cobrar-y-cobros', name: 'Gestionar Cuentas por Cobrar y Cobros', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
+      { id: 'consultar-libros-contables', slug: 'consultar-libros-contables', name: 'Consultar Libros Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'consultar-informacion-financiera', slug: 'consultar-informacion-financiera', name: 'Consultar Información Financiera', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
     ]
   },
   {
@@ -83,10 +83,10 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Tesorería y Cajas',
     icon: '▣',
     functions: [
-      { id: 'cu32-cuentas-bancarias-y-cajas', name: 'Gestionar Cuentas Bancarias y Cajas', code: 'CU32', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
-      { id: 'cu33-cuentas-por-cobrar-cxc', name: 'Gestionar Cuentas por Cobrar (CxC)', code: 'CU33', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
-      { id: 'cu34-cuentas-por-pagar-cxp', name: 'Gestionar Cuentas por Pagar (CxP)', code: 'CU34', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu35-arqueos-y-conciliaciones', name: 'Gestionar Arqueos y Conciliaciones Bancarias', code: 'CU35', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] }
+      { id: 'apertura-de-caja', slug: 'apertura-de-caja', name: 'Apertura de Caja', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
+      { id: 'venta-en-caja-pos', slug: 'venta-en-caja-pos', name: 'Venta en Caja (POS)', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
+      { id: 'registrar-movimiento-de-caja', slug: 'registrar-movimiento-de-caja', name: 'Registrar Movimiento de Caja', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
+      { id: 'cierre-arqueo-consulta-caja', slug: 'cierre-arqueo-consulta-caja', name: 'Cierre, Arqueo y Consulta de Caja', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] }
     ]
   },
   {
@@ -94,10 +94,10 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Reportes',
     icon: '◰',
     functions: [
-      { id: 'cu36-reportes-declaraciones-fiscales', name: 'Reportes y Declaraciones Fiscales', code: 'CU36', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu37-estados-financieros-basicos', name: 'Estados Financieros Básicos', code: 'CU37', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'cu38-reportes-operativos-gestion', name: 'Reportes Operativos y de Gestión', code: 'CU38', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'ALMACENERO', 'CAJERO'] },
-      { id: 'cu39-dashboard-analitico-kpis', name: 'Dashboard Analítico y KPIs', code: 'CU39', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
+      { id: 'dashboard-ejecutivo', slug: 'dashboard-ejecutivo', name: 'Dashboard Ejecutivo', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
+      { id: 'gestionar-reportes-predefinidos', slug: 'gestionar-reportes-predefinidos', name: 'Gestionar Reportes Predefinidos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR', 'ALMACENERO', 'CAJERO'] },
+      { id: 'gestionar-reportes-qbe', slug: 'gestionar-reportes-qbe', name: 'Gestionar Reportes QBE', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'gestionar-reportes-por-voz', slug: 'gestionar-reportes-por-voz', name: 'Gestionar Reportes por Voz', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] }
     ]
   }
 ];

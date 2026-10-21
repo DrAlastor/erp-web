@@ -25,9 +25,12 @@ import java.util.Set;
 public class ControladorMisPermisos {
 
     private final UsuarioRepository usuarioRepository;
+    private final modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion servicioAutorizacion;
 
-    public ControladorMisPermisos(UsuarioRepository usuarioRepository) {
+    public ControladorMisPermisos(UsuarioRepository usuarioRepository,
+                                  modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion servicioAutorizacion) {
         this.usuarioRepository = usuarioRepository;
+        this.servicioAutorizacion = servicioAutorizacion;
     }
 
     @GetMapping("/mis-permisos")
@@ -41,7 +44,7 @@ public class ControladorMisPermisos {
                 : "ADMINISTRADOR";
 
         List<String> roles = List.of(rolNombre);
-        Set<String> permisos = resolverPermisos(rolNombre);
+        Set<String> permisos = servicioAutorizacion.permisosEfectivos(principal.usuarioId());
 
         return new MisPermisosDto(
                 principal.usuarioId(),

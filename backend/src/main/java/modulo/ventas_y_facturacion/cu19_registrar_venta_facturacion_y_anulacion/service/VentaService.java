@@ -111,6 +111,7 @@ public class VentaService {
     private final ContabilidadVentaService contabilidadService;
     private final ImpuestoVentaService impuestoService;
     private final VentaMapper mapper;
+    private final modulo.notificaciones.service.NotificacionService notificacionService;
 
     @Transactional
     public VentaResponse registrar(VentaRequest request) {
@@ -190,6 +191,19 @@ public class VentaService {
                 referencia + " - " + cliente.getRazonSocial(), usuarioId, partidasVenta(venta));
 
         log.info("{} emitida: venta #{}, total {}, asiento {}", venta.descripcionComprobante(), venta.getId(), total, asiento);
+
+        try {
+            notificacionService.notificar(
+                    usuarioId,
+                    "Venta Registrada",
+                    String.format("Se emitió con éxito la %s por un monto total de Bs. %s para el cliente %s.",
+                            venta.descripcionComprobante(),
+                            total.setScale(2, java.math.RoundingMode.HALF_UP),
+                            cliente != null ? cliente.getRazonSocial() : "Cliente General"),
+                    "EXITO"
+            );
+        } catch (Exception ignored) {}
+
         return mapper.toResponse(venta, cuentas, leyendaSin, asiento);
     }
 
@@ -243,6 +257,18 @@ public class VentaService {
         }
 
         log.info("{} anulada por el usuario #{} (asiento {})", comprobante, usuarioId, asiento);
+
+        try {
+            notificacionService.notificar(
+                    usuarioId,
+                    "Venta Anulada",
+                    String.format("Se ha anulado la %s (Motivo: %s). El stock fue restituido al inventario.",
+                            comprobante,
+                            motivo.trim()),
+                    "URGENTE"
+            );
+        } catch (Exception ignored) {}
+
         return mapper.toResponse(venta, cuentas, leyenda(venta), asiento);
     }
 
