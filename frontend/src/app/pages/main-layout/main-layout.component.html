@@ -3,7 +3,7 @@
   <button class="scrim" aria-label="Cerrar menú" (click)="sidebarOpen.set(false)"></button>
   }
   <aside id="module-sidebar" class="sidebar" [class.open]="sidebarOpen()" aria-label="Panel de control">
-    <a class="brand" routerLink="/app" (click)="sidebarOpen.set(false)"><img class="brand-mark" src="erp-logo.png"
+    <a class="brand" routerLink="/app" (click)="sidebarOpen.set(false)"><img class="brand-mark" [src]="apariencia.logoUrl() ?? 'erp-logo.png'"
         alt="" width="38" height="38"> Nexo<span class="accent">ERP</span></a>
     <p class="eyebrow">PANEL DE CONTROL</p>
     <nav aria-label="Módulos y funciones">
@@ -51,11 +51,6 @@
 
       <div class="header-actions">
         <app-notification-bell />
-        <button class="theme-button" (click)="themeService.toggle()" [attr.aria-label]="
-            themeService.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
-          ">
-          {{ themeService.isDark() ? '☀' : '☾' }}
-        </button>
         <span class="avatar" aria-hidden="true">{{
           iniciales(authService.usuario()?.fullname)
           }}</span>
@@ -76,6 +71,10 @@
       <app-usuarios />
       } @else if (fn.id === 'gestionar-roles-y-permisos' || fn.id === 'roles-y-permisos' || fn.id === 'cu03-gestionar-roles-y-permisos') {
       <app-roles />
+      } @else if (fn.id === 'personalizar-apariencia' || fn.id === 'cu06-personalizar-apariencia') {
+      <app-personalizar-apariencia />
+      } @else if (fn.id === 'gestionar-reportes-predefinidos' || fn.id === 'cu37-gestionar-reportes-predefinidos') {
+      <app-reportes-predefinidos />
       } @else if (fn.id === 'gestionar-empleados' || fn.id === 'cu04-gestionar-empleados') {
       <app-empleados />
       } @else if (fn.id === 'datos-maestros-inventario' || fn.id === 'cu09-datos-maestros-inventario') {

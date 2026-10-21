@@ -1,4 +1,5 @@
 import { PermisosService } from '../../cu03-gestionar-roles-y-permisos/services/permisos.service';
+import { AparienciaService } from '../../cu06-personalizar-apariencia/services/apariencia.service';
 ﻿import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -13,6 +14,7 @@ interface TokenClaims { exp: number; authorities?: string[]; roles?: string[]; c
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly permisos = inject(PermisosService);
+  private readonly apariencia = inject(AparienciaService);
   private rememberMe = false;
   private readonly sessionSignal = signal<UserSession | null>(this.readStoredSession());
   private refreshRequest?: Observable<TokenResponse>;
@@ -150,6 +152,8 @@ export class AuthService {
 
   private clearSession(): void {
     this.permisos.limpiar();
+    // CU06: la apariencia es de la empresa de esta sesión; no debe quedar para la siguiente.
+    this.apariencia.limpiar();
     this.sessionSignal.set(null);
     this.refreshRequest = undefined;
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* Almacenamiento no disponible. */ }

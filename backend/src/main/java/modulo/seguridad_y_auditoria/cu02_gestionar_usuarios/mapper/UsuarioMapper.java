@@ -4,7 +4,6 @@ import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.dto.UsuarioRequest;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.dto.UsuarioResponse;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.dto.RolAsignadoDto;
-import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.entity.Rol;
 
 import org.springframework.stereotype.Component;
 
@@ -51,9 +50,5 @@ public class UsuarioMapper {
 
     public UsuarioResponse.RolResponse toRolResponse(RolAsignadoDto rol) {
         return new UsuarioResponse.RolResponse(rol.rolId(), rol.nombre());
-    }
-
-    public UsuarioResponse.RolResponse toRolResponse(Rol rol) {
-        return new UsuarioResponse.RolResponse(rol.getId(), rol.getNombre());
     }
 }

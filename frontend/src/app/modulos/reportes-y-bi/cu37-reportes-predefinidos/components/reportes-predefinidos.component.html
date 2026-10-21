@@ -1,0 +1,115 @@
+<p class="bajada">
+  Elige un reporte, ajusta los filtros y genéralo. Puedes descargarlo en CSV para Excel o imprimirlo
+  y guardarlo como PDF.
+</p>
+
+@if (cargandoCatalogo()) {
+  <p class="estado">Cargando reportes…</p>
+} @else if (!catalogo().length) {
+  <p class="estado" role="note">
+    Tu rol no tiene acceso a ningún reporte predefinido. Los de ventas requieren el permiso
+    <code>FACTURACION_CONSULTAR</code> y los de inventario, <code>INVENTARIO_CONSULTAR</code>.
+  </p>
+} @else {
+  <div class="tablero">
+    <nav class="catalogo" aria-label="Reportes disponibles">
+      @for (grupo of grupos(); track grupo.categoria) {
+        <p class="grupo">{{ grupo.etiqueta }}</p>
+        @for (r of grupo.reportes; track r.codigo) {
+          <button type="button" class="reporte" [class.elegido]="seleccionado()?.codigo === r.codigo"
+            [attr.aria-pressed]="seleccionado()?.codigo === r.codigo" (click)="elegir(r)">
+            {{ r.titulo }}
+          </button>
+        }
+      }
+    </nav>
+
+    @if (seleccionado(); as rep) {
+      <section class="detalle">
+        <header class="detalle-encabezado">
+          <h2>{{ rep.titulo }}</h2>
+          <p>{{ rep.descripcion }}</p>
+        </header>
+
+        <form class="filtros" [formGroup]="formulario" (ngSubmit)="generar()">
+          @if (usa('DESDE')) {
+            <label class="campo"><span>Desde</span><input type="date" formControlName="desde" /></label>
+          }
+          @if (usa('HASTA')) {
+            <label class="campo"><span>Hasta</span><input type="date" formControlName="hasta" /></label>
+          }
+          @if (usa('SUCURSAL')) {
+            <label class="campo">
+              <span>Sucursal</span>
+              <select formControlName="sucursalId">
+                <option [ngValue]="null">Todas</option>
+                @for (s of sucursales(); track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+              </select>
+            </label>
+          }
+          @if (usa('CATEGORIA')) {
+            <label class="campo">
+              <span>Categoría</span>
+              <select formControlName="categoriaId">
+                <option [ngValue]="null">Todas</option>
+                @for (c of categorias(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }
+              </select>
+            </label>
+          }
+          @if (usa('LIMITE')) {
+            <label class="campo corto"><span>Top</span><input type="number" min="1" max="100" formControlName="limite" /></label>
+          }
+          <button type="submit" class="boton-principal" [disabled]="generando()">
+            {{ generando() ? 'Generando…' : 'Generar' }}
+          </button>
+        </form>
+
+        @if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        }
+
+        @if (resultado(); as r) {
+          <div class="resultado-encabezado">
+            <div class="meta">
+              @for (f of filtrosAplicados(); track f[0]) { <span><b>{{ f[0] }}:</b> {{ f[1] }}</span> }
+              <span><b>Generado:</b> {{ generadoEn() }}</span>
+            </div>
+            <div class="acciones">
+              <button type="button" class="boton-secundario" [disabled]="descargando()" (click)="descargarCsv()">
+                {{ descargando() ? 'Descargando…' : 'Descargar CSV' }}
+              </button>
+              <button type="button" class="boton-secundario" (click)="imprimir()">Imprimir / PDF</button>
+            </div>
+          </div>
+
+          <div class="tabla-contenedor">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  @for (c of r.columnas; track c.clave) { <th scope="col" [class.num]="numerica(c)">{{ c.etiqueta }}</th> }
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of r.filas; track $index) {
+                  <tr>
+                    @for (c of r.columnas; track c.clave) { <td [class.num]="numerica(c)">{{ valor(fila, c) }}</td> }
+                  </tr>
+                } @empty {
+                  <tr><td class="vacio" [attr.colspan]="r.columnas.length">No hay datos para los filtros elegidos.</td></tr>
+                }
+              </tbody>
+              @if (hayTotales()) {
+                <tfoot>
+                  <tr>
+                    @for (c of r.columnas; track c.clave; let i = $index) { <td [class.num]="numerica(c)">{{ total(c, i) }}</td> }
+                  </tr>
+                </tfoot>
+              }
+            </table>
+          </div>
+          <p class="pie">{{ r.filas.length }} {{ r.filas.length === 1 ? 'fila' : 'filas' }}</p>
+        }
+      </section>
+    }
+  </div>
+}
