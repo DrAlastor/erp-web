@@ -1,0 +1,77 @@
+{
+  "name": "ERP - CU39 Reportes por comando de voz",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cu39-reportes-voz",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2f6a0d1e-3c39-4c39-9a39-000000000001",
+      "name": "Webhook ERP",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6d1f3c39-7b2a-4e39-8c39-000000000039"
+    },
+    {
+      "parameters": {
+        "jsCode": "// CU39 - Interpreta la frase dictada y devuelve la consulta estructurada que espera el ERP.\n// Entrada (body del webhook): { texto, fechaReferencia, sucursales[], productos[], metricas[] }\n// Salida: { metrica, agrupacion, fechaInicio, fechaFin, sucursalId, productoId, soloCriticos, limite }\n// Se puede reemplazar por un nodo de IA siempre que devuelva el mismo JSON; el backend\n// valida todo contra su catálogo y nunca arma SQL con este texto.\nconst body = $input.first().json.body || {};\nconst NUM = { dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,\n  once: 11, doce: 12, quince: 15, veinte: 20, treinta: 30 };\nconst norm = (s) => ' ' + String(s || '').normalize('NFD').replace(/\\p{M}/gu, '').toLowerCase()\n  .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean)\n  .map((w) => (NUM[w] !== undefined ? String(NUM[w]) : w)).join(' ') + ' ';\nconst t = norm(body.texto);\nconst tiene = (...claves) => claves.some((k) => t.includes(' ' + k));\n\nconst ref = String(body.fechaReferencia || new Date().toISOString().slice(0, 10));\nconst [Y, M, D] = ref.split('-').map(Number);\nconst fecha = (y, m, d) => new Date(Date.UTC(y, m - 1, d));\nconst hoy = fecha(Y, M, D);\nconst mas = (f, dias) => new Date(f.getTime() + dias * 86400000);\nconst finDeMes = (y, m) => fecha(y, m + 1, 0);\nconst iso = (f) => f.toISOString().slice(0, 10);\n\n// 1. Métrica: términos informales a entidades del ERP (\"lo que vendimos\" -> VENTAS)\nlet metrica = null;\nif (tiene('por cobrar', 'cxc', 'cobranza', 'cartera', 'deuda', 'nos deben', 'morosos')) metrica = 'CUENTAS_POR_COBRAR';\nelse if (tiene('compra', 'proveedor', 'adquisicion')) metrica = 'COMPRAS';\nelse if (tiene('kardex', 'movimiento', 'entradas', 'salidas')) metrica = 'MOVIMIENTOS_KARDEX';\nelse if (tiene('stock', 'inventario', 'existencia', 'agotad', 'reponer', 'reposicion')) metrica = 'STOCK';\nelse if (tiene('mas vendid', 'productos vendidos', 'articulos vendidos', 'que productos', 'que articulos')) metrica = 'PRODUCTOS_VENDIDOS';\nelse if (tiene('venta', 'vend', 'factur', 'ingreso', 'recaud', 'ganamos', 'top', 'ranking', 'mejores')) metrica = 'VENTAS';\nif (!metrica) return [{ json: { metrica: null } }];\n\n// 2. Rango de fechas (\"el mes pasado\" -> mes calendario anterior)\nconst MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',\n  'septiembre', 'octubre', 'noviembre', 'diciembre'];\nlet rango = null;\nlet m;\nif ((m = t.match(/ (?:ultimos|ultimas) (\\d{1,3}) (dias|semanas|meses|anos) /) ||\n         t.match(/ (\\d{1,3}) (?:ultimos|ultimas) (dias|semanas|meses|anos) /))) {\n  const n = Number(m[1]);\n  let inicio;\n  if (m[2] === 'dias') inicio = mas(hoy, -(n - 1));\n  else if (m[2] === 'semanas') inicio = mas(hoy, -(7 * n) + 1);\n  else if (m[2] === 'meses') inicio = mas(fecha(Y, M - n, D), 1);\n  else inicio = mas(fecha(Y - n, M, D), 1);\n  rango = [inicio, hoy];\n} else if ((m = t.match(new RegExp(' (' + MESES.join('|') + ')(?: (?:de|del) (\\\\d{4}))? ')))) {\n  const mes = MESES.indexOf(m[1]) + 1;\n  const anio = m[2] ? Number(m[2]) : (mes > M ? Y - 1 : Y);\n  rango = [fecha(anio, mes, 1), finDeMes(anio, mes)];\n} else if (tiene('anteayer')) rango = [mas(hoy, -2), mas(hoy, -2)];\nelse if (tiene('ayer')) rango = [mas(hoy, -1), mas(hoy, -1)];\nelse if (tiene('hoy', 'del dia', 'en el dia')) rango = [hoy, hoy];\nelse if (tiene('semana pasada', 'ultima semana', 'semana anterior')) {\n  const lunes = mas(hoy, -((hoy.getUTCDay() + 6) % 7) - 7);\n  rango = [lunes, mas(lunes, 6)];\n} else if (tiene('esta semana', 'semana actual')) rango = [mas(hoy, -((hoy.getUTCDay() + 6) % 7)), hoy];\nelse if (tiene('mes pasado', 'ultimo mes', 'mes anterior')) rango = [fecha(Y, M - 1, 1), finDeMes(Y, M - 1)];\nelse if (tiene('este mes', 'mes actual', 'va del mes', 'en el mes')) rango = [fecha(Y, M, 1), hoy];\nelse if (tiene('ano pasado', 'ultimo ano', 'ano anterior', 'gestion pasada', 'gestion anterior')) rango = [fecha(Y - 1, 1, 1), fecha(Y - 1, 12, 31)];\nelse if (tiene('este ano', 'ano actual', 'va del ano', 'esta gestion')) rango = [fecha(Y, 1, 1), hoy];\nelse if ((m = t.match(/ (?:en|del|de|el) (?:ano )?(20\\d{2}) /))) rango = [fecha(Number(m[1]), 1, 1), fecha(Number(m[1]), 12, 31)];\n\n// 3. Agrupación\nconst reglas = [\n  ['DIA', ['por dia', 'diari', 'cada dia']], ['MES', ['por mes', 'mensual', 'cada mes']],\n  ['SUCURSAL', ['por sucursal', 'cada sucursal']], ['CLIENTE', ['por cliente', 'cada cliente']],\n  ['VENDEDOR', ['por vendedor', 'por cajero', 'cada vendedor']], ['PRODUCTO', ['por producto', 'por articulo', 'cada producto']],\n  ['CATEGORIA', ['por categoria', 'cada categoria']], ['PROVEEDOR', ['por proveedor', 'cada proveedor']],\n  ['TIPO', ['por tipo']], ['ESTADO', ['por estado']]];\nlet agrupacion = (reglas.find(([, claves]) => tiene(...claves)) || [null])[0];\nif (!agrupacion && tiene('evolucion', 'tendencia', 'historico', 'comportamiento')) {\n  agrupacion = rango && (rango[1] - rango[0]) / 86400000 <= 62 ? 'DIA' : 'MES';\n}\nif (!agrupacion) {\n  const plurales = [['SUCURSAL', ['sucursales']], ['CLIENTE', ['clientes']], ['VENDEDOR', ['vendedores', 'cajeros']],\n    ['CATEGORIA', ['categorias']], ['PROVEEDOR', ['proveedores']], ['PRODUCTO', ['productos', 'articulos']]];\n  agrupacion = (plurales.find(([, claves]) => tiene(...claves)) || [null])[0];\n}\n\n// 4. Sucursal y producto: cada palabra pesa menos cuantas más entidades la comparten\nconst VACIAS = new Set(['sucursal', 'de', 'del', 'la', 'las', 'el', 'los', 'y', 'en', 'con', 'para', 'por', 'calle', 'av', 'esq', 'the', 'asus']);\nconst buscar = (entidades, alias) => {\n  const palabras = entidades.map((e) => new Set(norm(e.nombre + ' ' + (e[alias] || '')).trim().split(' ')\n    .filter((p) => p.length >= 3 && !VACIAS.has(p))));\n  const frecuencia = {};\n  palabras.forEach((ps) => ps.forEach((p) => { frecuencia[p] = (frecuencia[p] || 0) + 1; }));\n  let mejor = null, mejorPuntaje = 0, segundo = 0;\n  entidades.forEach((e, i) => {\n    let puntaje = 0;\n    palabras[i].forEach((p) => { if (t.includes(' ' + p + ' ')) puntaje += 1 / frecuencia[p]; });\n    if (puntaje > mejorPuntaje) { segundo = mejorPuntaje; mejorPuntaje = puntaje; mejor = e.id; }\n    else if (puntaje > segundo) segundo = puntaje;\n  });\n  return mejorPuntaje >= 0.5 && mejorPuntaje > segundo ? mejor : null;\n};\nconst catalogo = Object.fromEntries((body.metricas || []).map((x) => [x.codigo, x]));\nlet productoId = buscar(body.productos || [], 'codigo');\nif (metrica === 'VENTAS' && (productoId || agrupacion === 'PRODUCTO' || agrupacion === 'CATEGORIA')) metrica = 'PRODUCTOS_VENDIDOS';\nconst def = catalogo[metrica] || {};\nif (!def.admiteProducto) productoId = null;\nif (!agrupacion && productoId) agrupacion = metrica === 'STOCK' ? 'SUCURSAL' : metrica === 'PRODUCTOS_VENDIDOS' ? 'NINGUNA' : null;\nif (agrupacion && def.agrupaciones && !def.agrupaciones.includes(agrupacion)) agrupacion = null;\n\nconst criticos = def.admiteCriticos && (metrica === 'STOCK'\n  ? tiene('bajo minimo', 'bajo el minimo', 'debajo del minimo', 'critico', 'agotad', 'reponer', 'reposicion')\n  : tiene('vencid', 'mora', 'morosos', 'atrasad'));\n\n// 5. Límite (\"top 5\", \"los 10 mejores\")\nlet limite = null;\nif ((m = t.match(/ (?:top|los|las|primeros|primeras|mejores) (\\d{1,3}) (?!ultim|dia|semana|mes|ano)/) ||\n         t.match(/ (\\d{1,3}) (?:productos|articulos|clientes|proveedores|vendedores|mejores|primeros) /))) {\n  const n = Number(m[1]);\n  if (n >= 1 && n <= 100) limite = n;\n}\n\nconst usaFechas = def.usaFechas !== false;\nreturn [{\n  json: {\n    metrica,\n    agrupacion,\n    fechaInicio: usaFechas && rango ? iso(rango[0]) : null,\n    fechaFin: usaFechas && rango ? iso(rango[1]) : null,\n    sucursalId: buscar(body.sucursales || [], 'ciudad'),\n    productoId,\n    soloCriticos: criticos ? true : null,\n    limite\n  }\n}];\n"
+      },
+      "id": "2f6a0d1e-3c39-4c39-9a39-000000000002",
+      "name": "Interpretar comando",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "2f6a0d1e-3c39-4c39-9a39-000000000003",
+      "name": "Responder al ERP",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook ERP": {
+      "main": [
+        [
+          {
+            "node": "Interpretar comando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interpretar comando": {
+      "main": [
+        [
+          {
+            "node": "Responder al ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

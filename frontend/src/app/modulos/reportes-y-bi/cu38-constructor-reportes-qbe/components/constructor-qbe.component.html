@@ -1,0 +1,251 @@
+<div class="qbe-container">
+  <div class="header-section">
+    <div>
+      <h2>Constructor de reportes QBE</h2>
+      <p>Arma reportes a medida eligiendo la entidad, los campos, los filtros y los totales, sin escribir SQL.</p>
+    </div>
+  </div>
+
+  <!-- ============ PLANTILLAS GUARDADAS ============ -->
+  <section class="plantillas-bar" aria-label="Plantillas guardadas">
+    <label class="flex-grow">
+      Plantilla guardada
+      <select [(ngModel)]="plantillaSeleccionada" name="plantilla" (ngModelChange)="cargarPlantilla()">
+        <option value="">— Reporte nuevo —</option>
+        @for (p of plantillas(); track p.id) {
+          <option [ngValue]="p.id">{{ p.nombre }} · {{ p.entidadEtiqueta }}</option>
+        }
+      </select>
+    </label>
+    <button class="btn secondary" type="button" (click)="nuevo()">Nuevo reporte</button>
+    @if (plantillaId !== null) {
+      <button class="btn danger" type="button" (click)="eliminarPlantilla()">Eliminar plantilla</button>
+    }
+  </section>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert"><span>✕</span><div>{{ error() }}</div></div>
+  }
+  @if (mensaje()) {
+    <div class="alert alert-success" role="status"><span>✓</span><div>{{ mensaje() }}</div></div>
+  }
+  @for (adv of advertencias(); track adv) {
+    <div class="alert alert-warning" role="status"><span>!</span><div>{{ adv }}</div></div>
+  }
+
+  <!-- ============ 1. ENTIDAD Y CAMPOS (HU38.1) ============ -->
+  <section class="paso">
+    <h3><span class="num-paso">1</span> Entidad y campos</h3>
+    <label class="entidad">
+      Entidad base
+      <select [(ngModel)]="entidadCodigo" name="entidad" (ngModelChange)="cambiarEntidad()">
+        <option value="">Selecciona qué quieres consultar</option>
+        @for (g of modulos(); track g.modulo) {
+          <optgroup [label]="g.modulo">
+            @for (e of g.entidades; track e.codigo) {
+              <option [value]="e.codigo">{{ e.etiqueta }}</option>
+            }
+          </optgroup>
+        }
+      </select>
+    </label>
+
+    @if (entidad(); as e) {
+      <div class="campos-layout">
+        <div class="campos-disponibles">
+          <h4>Campos disponibles</h4>
+          <ul>
+            @for (c of e.campos; track c.clave) {
+              <li>
+                <button type="button" class="campo-btn" [class.usado]="seleccionado(c.clave)" (click)="agregarColumna(c.clave)"
+                        [attr.aria-label]="'Agregar ' + c.etiqueta">
+                  <span>{{ c.etiqueta }}</span>
+                  <small class="tipo">{{ c.tipo | lowercase }}</small>
+                  <span class="mas" aria-hidden="true">+</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div class="columnas-seleccionadas">
+          <h4>Columnas del reporte <small>(en este orden)</small></h4>
+          @if (columnas.length === 0) {
+            <p class="vacio">Haz clic en los campos de la izquierda para agregarlos como columnas.</p>
+          } @else {
+            <ol>
+              @for (col of columnas; track $index; let i = $index; let primero = $first; let ultimo = $last) {
+                <li class="columna">
+                  <span class="col-nombre">{{ campo(col.campo)?.etiqueta ?? col.campo }}</span>
+                  <select [(ngModel)]="col.agregacion" [name]="'agr' + i" aria-label="Cálculo de la columna">
+                    <option [ngValue]="null">{{ hayAgregaciones() ? 'Agrupar por' : 'Mostrar' }}</option>
+                    @for (a of agregacionesPara(col.campo); track a.codigo) {
+                      <option [ngValue]="a.codigo">{{ a.etiqueta }}</option>
+                    }
+                  </select>
+                  @if (campo(col.campo)?.tipo === 'FECHA' && !col.agregacion) {
+                    <select [(ngModel)]="col.granularidad" [name]="'gra' + i" aria-label="Formato de fecha">
+                      <option [ngValue]="null">{{ hayAgregaciones() ? 'Día' : 'Fecha y hora' }}</option>
+                      @for (g of catalogo()?.granularidades ?? []; track g.codigo) {
+                        <option [ngValue]="g.codigo">{{ g.etiqueta }}</option>
+                      }
+                    </select>
+                  }
+                  <span class="col-acciones">
+                    <button type="button" class="icon-btn" (click)="mover(i, -1)" [disabled]="primero" aria-label="Subir">↑</button>
+                    <button type="button" class="icon-btn" (click)="mover(i, 1)" [disabled]="ultimo" aria-label="Bajar">↓</button>
+                    <button type="button" class="icon-btn quitar" (click)="quitarColumna(i)" aria-label="Quitar">✕</button>
+                  </span>
+                </li>
+              }
+            </ol>
+            <p class="ayuda">
+              Elige Suma, Promedio o Conteo en una columna para obtener totales: las columnas que quedan en
+              "Agrupar por" definen los grupos.
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (entidad()) {
+    <!-- ============ 2. FILTROS Y ORDEN (HU38.2) ============ -->
+    <section class="paso">
+      <h3><span class="num-paso">2</span> Filtros y orden</h3>
+
+      <div class="sub-header">
+        <h4>Filtros</h4>
+        @if (filtros.length > 1) {
+          <div class="segmentado" role="radiogroup" aria-label="Combinar filtros">
+            <button type="button" [class.activo]="operadorLogico === 'AND'" (click)="operadorLogico = 'AND'">Cumplir todos (Y)</button>
+            <button type="button" [class.activo]="operadorLogico === 'OR'" (click)="operadorLogico = 'OR'">Cumplir alguno (O)</button>
+          </div>
+        }
+      </div>
+      @for (f of filtros; track $index; let i = $index; let primero = $first) {
+        <div class="fila-filtro">
+          <span class="conector">{{ primero ? 'Donde' : operadorLogico === 'AND' ? 'y' : 'o' }}</span>
+          <select [(ngModel)]="f.campo" [name]="'fc' + i" (ngModelChange)="cambiarCampoFiltro(f)" aria-label="Campo">
+            @for (c of entidad()!.campos; track c.clave) {
+              <option [value]="c.clave">{{ c.etiqueta }}</option>
+            }
+          </select>
+          <select [(ngModel)]="f.operador" [name]="'fo' + i" aria-label="Operador">
+            @for (o of operadoresPara(f.campo); track o.codigo) {
+              <option [value]="o.codigo">{{ o.etiqueta }}</option>
+            }
+          </select>
+          @if ((operador(f.operador)?.valores ?? 0) >= 1) {
+            <input [type]="tipoEntrada(f)" [(ngModel)]="f.valor" [name]="'fv' + i"
+                   [placeholder]="f.operador === 'ULTIMOS_DIAS' ? 'N° de días' : 'Valor'" aria-label="Valor">
+          }
+          @if ((operador(f.operador)?.valores ?? 0) === 2) {
+            <span class="conector">y</span>
+            <input [type]="tipoEntrada(f)" [(ngModel)]="f.valor2" [name]="'fv2' + i" placeholder="Valor" aria-label="Segundo valor">
+          }
+          <button type="button" class="icon-btn quitar" (click)="quitarFiltro(i)" aria-label="Quitar filtro">✕</button>
+        </div>
+      }
+      <button type="button" class="btn secondary pequeno" (click)="agregarFiltro()">+ Agregar filtro</button>
+
+      <div class="sub-header"><h4>Ordenar por</h4></div>
+      @for (o of orden; track $index; let i = $index) {
+        <div class="fila-filtro">
+          <select [(ngModel)]="o.columna" [name]="'oc' + i" aria-label="Columna">
+            @for (col of columnas; track $index; let j = $index) {
+              <option [ngValue]="j">{{ etiquetaColumna(j) }}</option>
+            }
+          </select>
+          <select [(ngModel)]="o.descendente" [name]="'od' + i" aria-label="Dirección">
+            <option [ngValue]="false">Ascendente (A→Z, menor a mayor)</option>
+            <option [ngValue]="true">Descendente (Z→A, mayor a menor)</option>
+          </select>
+          <button type="button" class="icon-btn quitar" (click)="quitarOrden(i)" aria-label="Quitar orden">✕</button>
+        </div>
+      }
+      <button type="button" class="btn secondary pequeno" (click)="agregarOrden()" [disabled]="columnas.length === 0">
+        + Agregar orden
+      </button>
+    </section>
+
+    <!-- ============ 3. EJECUTAR, EXPORTAR Y GUARDAR (HU38.3) ============ -->
+    <section class="paso">
+      <h3><span class="num-paso">3</span> Resultado</h3>
+      <div class="acciones">
+        <button class="btn primary" type="button" (click)="ejecutar()" [disabled]="loading() || columnas.length === 0">
+          {{ loading() ? 'Ejecutando…' : 'Ejecutar vista previa' }}
+        </button>
+        <button class="btn secondary" type="button" (click)="exportar('XLSX')" [disabled]="!!exportando() || columnas.length === 0">
+          {{ exportando() === 'XLSX' ? 'Exportando…' : 'Exportar Excel' }}
+        </button>
+        <button class="btn secondary" type="button" (click)="exportar('PDF')" [disabled]="!!exportando() || columnas.length === 0">
+          {{ exportando() === 'PDF' ? 'Exportando…' : 'Exportar PDF' }}
+        </button>
+      </div>
+
+      <form class="guardar" (ngSubmit)="guardar(false)">
+        <label>
+          Nombre de la plantilla
+          <input [(ngModel)]="nombre" name="nombre" maxlength="120" placeholder="Ej.: Ventas por sucursal del mes">
+        </label>
+        <label class="flex-grow">
+          Descripción
+          <input [(ngModel)]="descripcion" name="descripcion" maxlength="500" placeholder="Para qué sirve este reporte (opcional)">
+        </label>
+        <button class="btn primary" type="submit" [disabled]="guardando() || columnas.length === 0">
+          {{ plantillaId === null ? 'Guardar plantilla' : 'Actualizar plantilla' }}
+        </button>
+        @if (plantillaId !== null) {
+          <button class="btn secondary" type="button" (click)="guardar(true)" [disabled]="guardando()">Guardar como nueva</button>
+        }
+      </form>
+
+      @if (resultado(); as r) {
+        <div class="resultado-meta">
+          <span>{{ r.total }} {{ r.total === 1 ? 'fila' : 'filas' }}</span>
+          <span class="muted">{{ r.descripcionFiltros }}</span>
+        </div>
+        <div class="table-container" [class.cargando]="loading()">
+          <table>
+            <thead>
+              <tr>
+                @for (c of r.columnas; track c.clave) {
+                  <th [class.num]="esNumerica(c.tipo)">{{ c.etiqueta }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of r.filas; track $index) {
+                <tr>
+                  @for (c of r.columnas; track c.clave) {
+                    <td [class.num]="esNumerica(c.tipo)">{{ formatear(fila[c.clave], c.tipo) }}</td>
+                  }
+                </tr>
+              } @empty {
+                <tr><td class="estado-vacio" [attr.colspan]="r.columnas.length">No hay datos que cumplan los filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (r.totalPaginas > 1 || r.total > 10) {
+          <nav class="paginacion" aria-label="Paginación">
+            <button class="btn secondary pequeno" type="button" (click)="ejecutar(r.pagina - 1)" [disabled]="r.pagina === 0 || loading()">← Anterior</button>
+            <span>Página {{ r.pagina + 1 }} de {{ r.totalPaginas || 1 }}</span>
+            <button class="btn secondary pequeno" type="button" (click)="ejecutar(r.pagina + 1)" [disabled]="r.pagina + 1 >= r.totalPaginas || loading()">Siguiente →</button>
+            <label>
+              Filas por página
+              <select [(ngModel)]="tamanio" name="tamanio" (ngModelChange)="ejecutar(0)">
+                @for (t of [10, 25, 50, 100]; track t) {
+                  <option [ngValue]="t">{{ t }}</option>
+                }
+              </select>
+            </label>
+          </nav>
+        }
+      } @else {
+        <div class="estado-vacio">Ejecuta la vista previa para ver el resultado del reporte.</div>
+      }
+    </section>
+  }
+</div>
