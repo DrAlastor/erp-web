@@ -1,0 +1,283 @@
+<div class="voz-container">
+  <div class="header-section">
+    <div>
+      <h2>Reportes por comando de voz</h2>
+      <p>Dicta tu consulta en lenguaje natural y obtén el reporte al instante, sin navegar por filtros.</p>
+    </div>
+    @if (opciones(); as o) {
+      <span class="badge" [class.badge-ok]="o.n8nHabilitado">
+        {{ o.n8nHabilitado ? 'Orquestación N8N activa' : 'Intérprete local' }}
+      </span>
+    }
+  </div>
+
+  <!-- ============ CAPTURA DE VOZ (HU39.1) ============ -->
+  <section class="captura" aria-label="Consulta por voz">
+    <div class="microfono">
+      <button
+        type="button"
+        class="btn-mic"
+        [class.grabando]="voz.grabando()"
+        [attr.aria-pressed]="voz.grabando()"
+        [attr.aria-label]="voz.grabando() ? 'Detener grabación' : 'Iniciar grabación'"
+        [disabled]="!voz.soportado() || loading()"
+        (click)="alternarMicrofono()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          @if (voz.grabando()) {
+            <rect x="7" y="7" width="10" height="10" rx="2" />
+          } @else {
+            <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" />
+          }
+        </svg>
+      </button>
+      <div class="estado-mic" aria-live="polite">
+        @if (voz.grabando()) {
+          <span class="indicador"><span class="punto"></span>Escuchando… habla ahora</span>
+        } @else if (!voz.soportado()) {
+          <span class="muted">Tu navegador no permite dictar. Escribe la consulta.</span>
+        } @else {
+          <span class="muted">Presiona el micrófono y dicta tu consulta</span>
+        }
+      </div>
+    </div>
+
+    <form class="confirmacion" (ngSubmit)="generar()">
+      <label for="texto-voz">Texto transcrito (revísalo o corrígelo antes de continuar)</label>
+      <textarea
+        id="texto-voz"
+        name="texto"
+        rows="2"
+        maxlength="500"
+        placeholder="Ej.: Muéstrame las ventas de la sucursal Central del mes pasado"
+        [ngModel]="texto()"
+        (ngModelChange)="texto.set($event)"
+        [readonly]="voz.grabando()"></textarea>
+      <div class="acciones">
+        <button class="btn primary" type="submit" [disabled]="loading() || voz.grabando() || !texto().trim()">
+          {{ loading() ? 'Generando…' : 'Generar reporte' }}
+        </button>
+        @if (texto()) {
+          <button class="btn secondary" type="button" (click)="texto.set('')" [disabled]="voz.grabando()">Limpiar</button>
+        }
+      </div>
+    </form>
+
+    @if (opciones()?.ejemplos?.length) {
+      <div class="ejemplos">
+        <span>Prueba con:</span>
+        @for (ej of opciones()!.ejemplos; track ej) {
+          <button type="button" class="chip" (click)="usarEjemplo(ej)" [disabled]="loading()">{{ ej }}</button>
+        }
+      </div>
+    }
+  </section>
+
+  @if (voz.aviso()) {
+    <div class="alert alert-warning" role="status">
+      <span>!</span>
+      <div>{{ voz.aviso() }}</div>
+    </div>
+  }
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>✕</span>
+      <div>{{ error() }}</div>
+    </div>
+  }
+
+  <!-- ============ RESULTADO (HU39.3) ============ -->
+  @if (loading() && !reporte()) {
+    <div class="estado-vacio">Interpretando la consulta…</div>
+  } @else if (reporte(); as r) {
+    <section class="panel-reporte" [class.cargando]="loading()" aria-label="Reporte generado">
+      <header class="reporte-header">
+        <div>
+          <h3>{{ r.titulo }}</h3>
+          <p class="interpretacion">{{ r.interpretacion }}</p>
+          @if (r.textoOriginal) {
+            <p class="frase">“{{ r.textoOriginal }}”</p>
+          }
+        </div>
+        <div class="reporte-acciones">
+          <span class="badge origen" [attr.data-origen]="r.origen">{{ origenEtiqueta(r.origen) }}</span>
+          <button class="btn secondary" type="button" (click)="abrirRefinar()" [disabled]="!opciones()">Refinar</button>
+          <button class="btn secondary" type="button" (click)="exportar()" [disabled]="exportando() || r.filas.length === 0">
+            {{ exportando() ? 'Exportando…' : 'Exportar CSV' }}
+          </button>
+        </div>
+      </header>
+
+      @for (adv of r.advertencias; track adv) {
+        <div class="alert alert-warning compacta" role="status"><span>!</span><div>{{ adv }}</div></div>
+      }
+
+      @if (refinando() && opciones(); as o) {
+        <form class="refinar" (ngSubmit)="aplicarRefinamiento()">
+          <label>
+            Reporte
+            <select [(ngModel)]="fMetrica" name="metrica" (ngModelChange)="cambiarMetrica()">
+              @for (m of o.metricas; track m.codigo) {
+                <option [value]="m.codigo">{{ m.etiqueta }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Agrupar por
+            <select [(ngModel)]="fAgrupacion" name="agrupacion">
+              @for (a of metricaSeleccionada()?.agrupaciones ?? []; track a.codigo) {
+                <option [value]="a.codigo">{{ a.etiqueta }}</option>
+              }
+            </select>
+          </label>
+          @if (metricaSeleccionada()?.usaFechas) {
+            <label>
+              Desde
+              <input type="date" [(ngModel)]="fFechaInicio" name="fechaInicio">
+            </label>
+            <label>
+              Hasta
+              <input type="date" [(ngModel)]="fFechaFin" name="fechaFin">
+            </label>
+          }
+          <label>
+            Sucursal
+            <select [(ngModel)]="fSucursalId" name="sucursal">
+              <option value="">Todas</option>
+              @for (s of o.sucursales; track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </label>
+          @if (metricaSeleccionada()?.admiteProducto) {
+            <label class="flex-grow">
+              Producto
+              <select [(ngModel)]="fProductoId" name="producto">
+                <option value="">Todos</option>
+                @for (p of o.productos; track p.id) {
+                  <option [value]="p.id">{{ p.nombre }}</option>
+                }
+              </select>
+            </label>
+          }
+          @if (usaLimite()) {
+            <label class="corto">
+              Mostrar
+              <input type="number" min="1" max="100" [(ngModel)]="fLimite" name="limite">
+            </label>
+          }
+          @if (metricaSeleccionada()?.admiteCriticos) {
+            <label class="check">
+              <input type="checkbox" [(ngModel)]="fSoloCriticos" name="criticos">
+              {{ fMetrica === 'STOCK' ? 'Solo bajo el mínimo' : 'Solo vencidas' }}
+            </label>
+          }
+          <div class="acciones">
+            <button class="btn primary" type="submit" [disabled]="loading()">Aplicar</button>
+            <button class="btn secondary" type="button" (click)="refinando.set(false)">Cancelar</button>
+          </div>
+        </form>
+      }
+
+      @if (r.filas.length > 0) {
+        @if (r.visualizacion !== 'KPI') {
+          <div class="vista-bar">
+            <div class="tab-nav" role="tablist">
+              <button class="tab-btn" role="tab" [class.active]="vista() === 'grafico'" [attr.aria-selected]="vista() === 'grafico'" (click)="vista.set('grafico')">
+                {{ r.visualizacion === 'LINEAS' ? 'Gráfico de líneas' : 'Gráfico de barras' }}
+              </button>
+              <button class="tab-btn" role="tab" [class.active]="vista() === 'tabla'" [attr.aria-selected]="vista() === 'tabla'" (click)="vista.set('tabla')">
+                Tabla
+              </button>
+            </div>
+            @if (vista() === 'grafico' && medidas().length > 1) {
+              <label class="medida">
+                Medida
+                <select [ngModel]="medidaActual()?.clave" (ngModelChange)="medida.set($event)" name="medida">
+                  @for (m of medidas(); track m.clave) {
+                    <option [value]="m.clave">{{ m.etiqueta }}</option>
+                  }
+                </select>
+              </label>
+            }
+          </div>
+        }
+
+        @if (r.visualizacion === 'KPI') {
+          <div class="kpis">
+            @for (m of medidas(); track m.clave; let primero = $first) {
+              <div class="kpi" [class.destacado]="primero">
+                <span>{{ m.etiqueta }}</span>
+                <strong>{{ formatear(r.filas[0][m.clave], m.tipo) }}</strong>
+              </div>
+            }
+          </div>
+        } @else if (vista() === 'grafico' && r.visualizacion === 'LINEAS') {
+          <figure class="grafico-lineas">
+            <svg [attr.viewBox]="'0 0 ' + ancho + ' ' + alto" role="img"
+                 [attr.aria-label]="r.titulo + ', ' + medidaActual()?.etiqueta">
+              <line class="eje" [attr.x1]="0" [attr.x2]="ancho" [attr.y1]="alto - 32" [attr.y2]="alto - 32" />
+              <path class="area" [attr.d]="area()" />
+              <polyline class="linea" [attr.points]="polilinea()" />
+              @for (p of puntos(); track $index) {
+                <circle class="punto" [attr.cx]="p.x" [attr.cy]="p.y" r="4">
+                  <title>{{ p.etiqueta }}: {{ p.texto }}</title>
+                </circle>
+              }
+              @for (p of etiquetasEje(); track $index; let ultimo = $last; let primero = $first) {
+                <text class="etiqueta-eje" [attr.x]="p.x" [attr.y]="alto - 10"
+                      [attr.text-anchor]="primero ? 'start' : ultimo ? 'end' : 'middle'">{{ p.etiqueta }}</text>
+              }
+            </svg>
+            <figcaption>{{ medidaActual()?.etiqueta }} · pasa el cursor sobre un punto para ver su valor</figcaption>
+          </figure>
+        } @else if (vista() === 'grafico') {
+          <ul class="grafico-barras" [attr.aria-label]="r.titulo + ', ' + medidaActual()?.etiqueta">
+            @for (b of barras(); track $index) {
+              <li>
+                <span class="barra-etiqueta" [title]="b.etiqueta">{{ b.etiqueta }}</span>
+                <span class="barra-pista"><span class="barra" [style.width.%]="b.porcentaje"></span></span>
+                <span class="barra-valor">{{ b.texto }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  @for (c of r.columnas; track c.clave) {
+                    <th [class.num]="esNumerica(c)">{{ c.etiqueta }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of r.filas; track $index) {
+                  <tr>
+                    @for (c of r.columnas; track c.clave) {
+                      <td [class.num]="esNumerica(c)" [class.cell-strong]="c.clave === 'grupo'">{{ celda(fila, c) }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+              @if (tieneTotales()) {
+                <tfoot>
+                  <tr>
+                    @for (c of r.columnas; track c.clave) {
+                      <td [class.num]="esNumerica(c)">{{ c.clave === 'grupo' ? 'Total' : total(c) }}</td>
+                    }
+                  </tr>
+                </tfoot>
+              }
+            </table>
+          </div>
+        }
+      } @else {
+        <div class="estado-vacio">No hay datos para esta consulta.</div>
+      }
+    </section>
+  } @else {
+    <div class="estado-vacio">
+      Aún no generaste ningún reporte. Dicta una consulta o elige uno de los ejemplos.
+    </div>
+  }
+</div>

@@ -25,6 +25,8 @@ import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-re
 import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
 
 import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
+import { ReportesPorVozComponent } from '../../modulos/reportes-y-bi/cu39-reportes-por-comando-de-voz/components/reportes-por-voz.component';
+import { ConstructorQbeComponent } from '../../modulos/reportes-y-bi/cu38-constructor-reportes-qbe/components/constructor-qbe.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -32,7 +34,8 @@ import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-p
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
-    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
+    ReportesPorVozComponent, ConstructorQbeComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

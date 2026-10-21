@@ -48,6 +48,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // Exportación de reportes QBE (CU38): Excel XLSX y PDF
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
+    implementation 'com.github.librepdf:openpdf:2.0.3'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
