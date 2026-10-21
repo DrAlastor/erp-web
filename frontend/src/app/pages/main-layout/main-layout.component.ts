@@ -14,6 +14,8 @@ import { DespachosComponent } from '../../modulos/ventas-y-facturacion/cu18-gest
 import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
 import { SaasEntitlementsService } from '../../core/services/saas-entitlements.service';
 
+import { EmpresaConfigComponent } from '../../modulos/seguridad-y-auditoria/cu05-empresas-sucursales-configuracion/components/empresa-config.component';
+import { RegistrarCompraComponent } from '../../modulos/compras-y-proveedores/cu23-registrar-compra-y-devolucion/components/registrar-compra.component';
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
 import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inventario/cu09-datos-maestros-inventario/components/datos-maestros-inventario.component';
 import { PreciosYListasComponent } from '../../modulos/ventas-y-facturacion/cu14-precios-y-listas-precio/components/precios-y-listas.component';
@@ -41,7 +43,7 @@ import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-da
   selector: 'app-main-layout',
   standalone: true,
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
-    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
+    CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, EmpresaConfigComponent, RegistrarCompraComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
     ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
     BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,

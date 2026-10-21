@@ -1,0 +1,307 @@
+<div class="cfg-container">
+  <header class="cfg-header">
+    <span class="badge-modulo">Compras y Proveedores</span>
+    <h1>Registrar Compra y Devolución de Proveedores</h1>
+    <p>Ingreso de mercadería al almacén a partir de la factura del proveedor y devolución de lo recibido.</p>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>{{ error() }}</span>
+      <button type="button" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+  @if (success()) {
+    <div class="alert alert-success" role="status">
+      <span>{{ success() }}</span>
+      <button type="button" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" [class.activa]="pestana() === 'compras'" (click)="seleccionarPestana('compras')">Compras</button>
+    <button type="button" role="tab" [class.activa]="pestana() === 'devoluciones'" (click)="seleccionarPestana('devoluciones')">Devoluciones</button>
+  </nav>
+
+  <!-- ============ COMPRAS ============ -->
+  @if (pestana() === 'compras') {
+    <section class="card">
+      <div class="barra">
+        <input type="search" class="buscar" placeholder="Buscar por factura o proveedor"
+               [value]="filtroTexto()" (input)="filtroTexto.set($any($event.target).value); cargarCompras()" />
+        <select [value]="filtroProveedor()" (change)="filtroProveedor.set($any($event.target).value); cargarCompras()">
+          <option value="">Todos los proveedores</option>
+          @for (p of catalogos().proveedores; track p.id) {
+            <option [value]="p.id">{{ p.razonSocial }}</option>
+          }
+        </select>
+        <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); cargarCompras()">
+          <option value="">Todos los estados</option>
+          <option value="REGISTRADA">Registrada</option>
+          <option value="COMPLETADA">Completada</option>
+          <option value="DEVUELTA_PARCIAL">Devuelta parcial</option>
+          <option value="DEVUELTA">Devuelta</option>
+          <option value="ANULADA">Anulada</option>
+        </select>
+        <button type="button" class="btn btn-primary" (click)="abrirNuevaCompra()">+ Registrar compra</button>
+      </div>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr><th>Fecha</th><th>Factura</th><th>Proveedor</th><th>Almacén</th><th>Pago</th><th class="num">Total</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (c of compras(); track c.id) {
+              <tr>
+                <td>{{ c.fecha | date: 'dd/MM/yyyy' }}</td>
+                <td><strong>{{ c.numeroFactura }}</strong></td>
+                <td>{{ c.proveedorNombre || '—' }}</td>
+                <td>{{ c.sucursalNombre || '—' }}</td>
+                <td>{{ c.tipoPago === 'CREDITO' ? 'Crédito' : 'Contado' }}</td>
+                <td class="num">{{ c.total | number: '1.2-2' }}</td>
+                <td><span class="chip" [attr.data-estado]="c.estado">{{ etiquetaEstado(c.estado) }}</span></td>
+                <td class="fila-acciones">
+                  <button type="button" class="btn btn-ghost" (click)="verDetalle(c)">Ver</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="vacio">No hay compras para mostrar.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ============ DEVOLUCIONES ============ -->
+  @if (pestana() === 'devoluciones') {
+    <section class="card">
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr><th>N°</th><th>Fecha</th><th>Factura</th><th>Proveedor</th><th>Motivo</th><th>Productos</th><th class="num">Total</th></tr>
+          </thead>
+          <tbody>
+            @for (d of devoluciones(); track d.id) {
+              <tr>
+                <td><strong>{{ d.numeroDevolucion }}</strong></td>
+                <td>{{ d.fecha | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ d.numeroFactura || '—' }}</td>
+                <td>{{ d.proveedorNombre || '—' }}</td>
+                <td>{{ d.motivo }}</td>
+                <td>
+                  @for (x of d.detalles; track x.id) {
+                    <div class="mini">{{ x.cantidad | number: '1.0-2' }} × {{ x.productoNombre }}</div>
+                  }
+                </td>
+                <td class="num">{{ d.total | number: '1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="vacio">Aún no hay devoluciones a proveedores.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ============ DETALLE DE COMPRA ============ -->
+  @if (detalle(); as c) {
+    <div class="overlay" (click)="detalle.set(null)">
+      <div class="modal ancho" (click)="$event.stopPropagation()">
+        <h2>Compra · factura {{ c.numeroFactura }}
+          <span class="chip" [attr.data-estado]="c.estado">{{ etiquetaEstado(c.estado) }}</span>
+        </h2>
+        <dl class="resumen">
+          <div><dt>Proveedor</dt><dd>{{ c.proveedorNombre }}</dd></div>
+          <div><dt>Almacén</dt><dd>{{ c.sucursalNombre }}</dd></div>
+          <div><dt>Fecha</dt><dd>{{ c.fecha | date: 'dd/MM/yyyy' }}</dd></div>
+          <div><dt>Pago</dt><dd>{{ c.tipoPago === 'CREDITO' ? 'Crédito' : 'Contado' }}</dd></div>
+          @if (c.numeroAutorizacion) { <div><dt>N° autorización</dt><dd>{{ c.numeroAutorizacion }}</dd></div> }
+          @if (c.observaciones) { <div class="completo"><dt>Observaciones</dt><dd>{{ c.observaciones }}</dd></div> }
+        </dl>
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>Producto</th><th class="num">Cantidad</th><th class="num">Costo</th><th class="num">Subtotal</th><th class="num">Devuelto</th></tr></thead>
+            <tbody>
+              @for (d of c.detalles; track d.id) {
+                <tr>
+                  <td>{{ d.productoNombre }} <small class="clave">{{ d.productoCodigo }}</small></td>
+                  <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
+                  <td class="num">{{ d.costoUnitario | number: '1.2-2' }}</td>
+                  <td class="num">{{ d.subtotal | number: '1.2-2' }}</td>
+                  <td class="num">{{ d.cantidadDevuelta | number: '1.0-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="totales">
+          <div><span>Subtotal</span><strong>{{ c.subtotal | number: '1.2-2' }}</strong></div>
+          <div><span>IVA</span><strong>{{ c.iva | number: '1.2-2' }}</strong></div>
+          <div class="total"><span>Total</span><strong>{{ c.total | number: '1.2-2' }}</strong></div>
+        </div>
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
+          @if (estaVigente(c)) {
+            <button type="button" class="btn btn-danger" (click)="abrirAnular(c)">Anular compra</button>
+          }
+          @if (puedeDevolver(c)) {
+            <button type="button" class="btn btn-primary" (click)="abrirDevolucion(c)">Devolver al proveedor</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============ NUEVA COMPRA ============ -->
+  @if (modalCompra()) {
+    <div class="overlay" (click)="modalCompra.set(false)">
+      <form class="modal ancho" [formGroup]="formCompra" (ngSubmit)="guardarCompra()" (click)="$event.stopPropagation()">
+        <h2>Registrar compra</h2>
+        <div class="grid">
+          <label class="campo">
+            <span>Proveedor *</span>
+            <select formControlName="proveedorId">
+              <option [ngValue]="null" disabled>Seleccione…</option>
+              @for (p of catalogos().proveedores; track p.id) {
+                <option [ngValue]="p.id">{{ p.razonSocial }}</option>
+              }
+            </select>
+          </label>
+          <label class="campo">
+            <span>Almacén de destino *</span>
+            <select formControlName="sucursalId">
+              @for (a of catalogos().almacenes; track a.id) {
+                <option [ngValue]="a.id">{{ a.nombre }}</option>
+              }
+            </select>
+          </label>
+          <label class="campo">
+            <span>N° de factura *</span>
+            <input type="text" formControlName="numeroFactura" />
+            @if (formCompra.get('numeroFactura')?.touched && formCompra.get('numeroFactura')?.invalid) {
+              <small class="err">El número de factura es obligatorio.</small>
+            }
+          </label>
+          <label class="campo">
+            <span>N° de autorización</span>
+            <input type="text" formControlName="numeroAutorizacion" />
+          </label>
+          <label class="campo">
+            <span>Fecha *</span>
+            <input type="date" formControlName="fecha" [max]="hoy" />
+          </label>
+          <label class="campo">
+            <span>Tipo de pago *</span>
+            <select formControlName="tipoPago">
+              <option value="CONTADO">Contado</option>
+              <option value="CREDITO">Crédito</option>
+            </select>
+          </label>
+          <label class="campo ancho-completo">
+            <span>Observaciones</span>
+            <input type="text" formControlName="observaciones" />
+          </label>
+        </div>
+
+        <h3>Productos recibidos</h3>
+        <div formArrayName="lineas" class="lineas">
+          @for (l of lineas.controls; track $index) {
+            <div class="linea" [formGroupName]="$index">
+              <select formControlName="productoId" aria-label="Producto">
+                <option [ngValue]="null" disabled>Producto…</option>
+                @for (p of catalogos().productos; track p.id) {
+                  <option [ngValue]="p.id">{{ p.codigoSku }} · {{ p.nombre }}</option>
+                }
+              </select>
+              <input type="number" formControlName="cantidad" min="0.01" step="0.01" aria-label="Cantidad" placeholder="Cant." />
+              <input type="number" formControlName="costoUnitario" min="0.01" step="0.01" aria-label="Costo unitario" placeholder="Costo" />
+              <span class="sub">{{ subtotalLinea($index) | number: '1.2-2' }}</span>
+              <button type="button" class="btn btn-ghost" (click)="quitarLinea($index)" [disabled]="lineas.length === 1" aria-label="Quitar línea">✕</button>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-ghost" (click)="agregarLinea()">+ Agregar producto</button>
+
+        <div class="totales">
+          <div class="total"><span>Subtotal (el IVA se calcula al guardar)</span><strong>{{ totalesCompra().subtotal | number: '1.2-2' }}</strong></div>
+        </div>
+
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="modalCompra.set(false)">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="busy()">{{ busy() ? 'Guardando…' : 'Registrar compra' }}</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ============ ANULAR ============ -->
+  @if (anulando(); as c) {
+    <div class="overlay" (click)="anulando.set(null)">
+      <form class="modal chico" [formGroup]="formAnular" (ngSubmit)="confirmarAnular()" (click)="$event.stopPropagation()">
+        <h2>Anular compra</h2>
+        <p>Se revertirá el ingreso de stock de la factura <strong>{{ c.numeroFactura }}</strong>. Si ya se vendió parte de la mercadería, el sistema lo rechazará.</p>
+        <label class="campo">
+          <span>Motivo *</span>
+          <input type="text" formControlName="motivo" />
+          @if (formAnular.get('motivo')?.touched && formAnular.get('motivo')?.invalid) {
+            <small class="err">El motivo es obligatorio.</small>
+          }
+        </label>
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="anulando.set(null)">Cancelar</button>
+          <button type="submit" class="btn btn-danger" [disabled]="busy()">Anular</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ============ DEVOLUCIÓN ============ -->
+  @if (devolviendo(); as c) {
+    <div class="overlay" (click)="devolviendo.set(null)">
+      <form class="modal ancho" [formGroup]="formDevolucion" (ngSubmit)="confirmarDevolucion()" (click)="$event.stopPropagation()">
+        <h2>Devolver al proveedor · factura {{ c.numeroFactura }}</h2>
+        <div class="grid">
+          <label class="campo">
+            <span>Motivo *</span>
+            <input type="text" formControlName="motivo" placeholder="Ej: producto defectuoso" />
+            @if (formDevolucion.get('motivo')?.touched && formDevolucion.get('motivo')?.invalid) {
+              <small class="err">El motivo es obligatorio.</small>
+            }
+          </label>
+          <label class="campo">
+            <span>Fecha *</span>
+            <input type="date" formControlName="fecha" [min]="c.fecha" [max]="hoy" />
+          </label>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>Producto</th><th class="num">Comprado</th><th class="num">Ya devuelto</th><th class="num">A devolver</th></tr></thead>
+            <tbody formArrayName="lineas">
+              @for (d of c.detalles; track d.id; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td>{{ d.productoNombre }}</td>
+                  <td class="num">{{ d.cantidad | number: '1.0-2' }}</td>
+                  <td class="num">{{ d.cantidadDevuelta | number: '1.0-2' }}</td>
+                  <td class="num">
+                    <input type="number" class="cant" formControlName="cantidad" min="0" [max]="pendienteLinea(i)" step="0.01"
+                           [disabled]="pendienteLinea(i) <= 0" />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="totales">
+          <div class="total"><span>Total a devolver (con IVA)</span><strong>{{ totalDevolucion() | number: '1.2-2' }}</strong></div>
+        </div>
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="devolviendo.set(null)">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="busy()">{{ busy() ? 'Guardando…' : 'Registrar devolución' }}</button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

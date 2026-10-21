@@ -1,0 +1,218 @@
+<div class="cfg-container">
+  <header class="cfg-header">
+    <span class="badge-modulo">Configuración y Seguridad</span>
+    <h1>Empresa, Sucursales y Configuración</h1>
+    <p>Datos generales de la empresa, sucursales de operación y parámetros del sistema.</p>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <span>{{ error() }}</span>
+      <button type="button" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+  @if (success()) {
+    <div class="alert alert-success" role="status">
+      <span>{{ success() }}</span>
+      <button type="button" (click)="limpiarAlertas()" aria-label="Cerrar">✕</button>
+    </div>
+  }
+
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" [class.activa]="pestana() === 'empresa'" (click)="seleccionarPestana('empresa')">Empresa</button>
+    <button type="button" role="tab" [class.activa]="pestana() === 'sucursales'" (click)="seleccionarPestana('sucursales')">Sucursales</button>
+    <button type="button" role="tab" [class.activa]="pestana() === 'configuracion'" (click)="seleccionarPestana('configuracion')">Configuración general</button>
+  </nav>
+
+  <!-- ============ EMPRESA ============ -->
+  @if (pestana() === 'empresa') {
+    <form class="card" [formGroup]="formEmpresa" (ngSubmit)="guardarEmpresa()">
+      <div class="grid">
+        <label class="campo">
+          <span>Nombre comercial *</span>
+          <input type="text" formControlName="nombre" />
+          @if (formEmpresa.get('nombre')?.touched && formEmpresa.get('nombre')?.invalid) {
+            <small class="err">El nombre comercial es obligatorio.</small>
+          }
+        </label>
+        <label class="campo">
+          <span>Razón social</span>
+          <input type="text" formControlName="razonSocial" />
+        </label>
+        <label class="campo">
+          <span>NIT *</span>
+          <input type="text" formControlName="nit" />
+          @if (formEmpresa.get('nit')?.touched && formEmpresa.get('nit')?.invalid) {
+            <small class="err">El NIT es obligatorio.</small>
+          }
+        </label>
+        <label class="campo">
+          <span>Teléfono</span>
+          <input type="text" formControlName="telefono" />
+        </label>
+        <label class="campo">
+          <span>Correo electrónico</span>
+          <input type="email" formControlName="email" />
+          @if (formEmpresa.get('email')?.touched && formEmpresa.get('email')?.invalid) {
+            <small class="err">Ingrese un correo válido.</small>
+          }
+        </label>
+        <label class="campo">
+          <span>Dirección</span>
+          <input type="text" formControlName="direccion" />
+        </label>
+        <label class="campo">
+          <span>Moneda principal *</span>
+          <input type="text" formControlName="monedaPrincipal" placeholder="BOB" />
+        </label>
+        <label class="campo">
+          <span>Moneda secundaria</span>
+          <input type="text" formControlName="monedaSecundaria" placeholder="USD" />
+        </label>
+        <label class="campo ancho">
+          <span>URL del logo</span>
+          <input type="text" formControlName="logoUrl" placeholder="https://..." />
+        </label>
+      </div>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primary" [disabled]="busy()">
+          {{ busy() ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- ============ SUCURSALES ============ -->
+  @if (pestana() === 'sucursales') {
+    <section class="card">
+      <div class="barra">
+        <input type="search" class="buscar" placeholder="Buscar por nombre o dirección"
+               [value]="filtroTexto()" (input)="filtroTexto.set($any($event.target).value); cargarSucursales()" />
+        <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value); cargarSucursales()">
+          <option value="todos">Todas</option>
+          <option value="activas">Activas</option>
+          <option value="inactivas">Inactivas</option>
+        </select>
+        <button type="button" class="btn btn-primary" (click)="abrirModalSucursal()">+ Nueva sucursal</button>
+      </div>
+
+      <div class="tabla-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th><th>Ciudad</th><th>Dirección</th><th>Teléfono</th><th>Horario</th><th>Estado</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of sucursales(); track s.id) {
+              <tr>
+                <td><strong>{{ s.nombre }}</strong></td>
+                <td>{{ s.ciudadNombre || '—' }}</td>
+                <td>{{ s.direccion }}</td>
+                <td>{{ s.telefono || '—' }}</td>
+                <td>
+                  @if (s.horaApertura && s.horaCierre) {
+                    {{ s.horaApertura.substring(0, 5) }} – {{ s.horaCierre.substring(0, 5) }}
+                  } @else { — }
+                </td>
+                <td><span class="chip" [class.on]="s.activo">{{ s.activo ? 'Activa' : 'Inactiva' }}</span></td>
+                <td class="fila-acciones">
+                  <button type="button" class="btn btn-ghost" (click)="abrirModalSucursal(s)">Editar</button>
+                  <button type="button" class="btn btn-ghost" (click)="confirmarCambioEstado(s)">
+                    {{ s.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="vacio">No hay sucursales para mostrar.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <!-- ============ CONFIGURACIÓN ============ -->
+  @if (pestana() === 'configuracion') {
+    <form class="card" [formGroup]="formConfig" (ngSubmit)="guardarConfiguracion()">
+      <div class="grid">
+        @for (p of parametros(); track p.clave) {
+          <label class="campo">
+            <span>{{ p.descripcion }}</span>
+            <input type="text" [formControlName]="p.clave" />
+            <small class="clave">{{ p.clave }}</small>
+          </label>
+        }
+      </div>
+      <div class="acciones">
+        <button type="submit" class="btn btn-primary" [disabled]="busy()">
+          {{ busy() ? 'Guardando…' : 'Guardar configuración' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- ============ MODAL SUCURSAL ============ -->
+  @if (modalSucursal()) {
+    <div class="overlay" (click)="cerrarModalSucursal()">
+      <form class="modal" [formGroup]="formSucursal" (ngSubmit)="guardarSucursal()" (click)="$event.stopPropagation()">
+        <h2>{{ sucursalEnEdicion() == null ? 'Nueva sucursal' : 'Editar sucursal' }}</h2>
+        <div class="grid">
+          <label class="campo">
+            <span>Nombre *</span>
+            <input type="text" formControlName="nombre" />
+            @if (formSucursal.get('nombre')?.touched && formSucursal.get('nombre')?.invalid) {
+              <small class="err">El nombre es obligatorio.</small>
+            }
+          </label>
+          <label class="campo">
+            <span>Ciudad *</span>
+            <select formControlName="ciudadId">
+              @for (c of ciudades(); track c.id) {
+                <option [ngValue]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+          </label>
+          <label class="campo ancho">
+            <span>Dirección *</span>
+            <input type="text" formControlName="direccion" />
+            @if (formSucursal.get('direccion')?.touched && formSucursal.get('direccion')?.invalid) {
+              <small class="err">La dirección es obligatoria.</small>
+            }
+          </label>
+          <label class="campo">
+            <span>Teléfono</span>
+            <input type="text" formControlName="telefono" />
+          </label>
+          <span></span>
+          <label class="campo">
+            <span>Hora de apertura</span>
+            <input type="time" formControlName="horaApertura" />
+          </label>
+          <label class="campo">
+            <span>Hora de cierre</span>
+            <input type="time" formControlName="horaCierre" />
+          </label>
+        </div>
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="cerrarModalSucursal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="busy()">Guardar</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ============ CONFIRMAR ESTADO ============ -->
+  @if (confirmarEstado(); as s) {
+    <div class="overlay" (click)="confirmarEstado.set(null)">
+      <div class="modal chico" (click)="$event.stopPropagation()">
+        <h2>{{ s.activo ? 'Desactivar' : 'Activar' }} sucursal</h2>
+        <p>¿Confirma que desea {{ s.activo ? 'desactivar' : 'activar' }} la sucursal <strong>{{ s.nombre }}</strong>?</p>
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" (click)="confirmarEstado.set(null)">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="ejecutarCambioEstado()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
