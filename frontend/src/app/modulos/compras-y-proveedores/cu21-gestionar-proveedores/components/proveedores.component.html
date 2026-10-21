@@ -1,0 +1,280 @@
+<div class="header">
+  <div>
+    <h2>Proveedores</h2>
+    <p>Maestro de proveedores para órdenes de compra, compras y cuentas por pagar.</p>
+  </div>
+  @if (vista() === 'lista' && !forbidden() && admin()) {
+    <button class="primary" (click)="nuevo()">Nuevo proveedor</button>
+  } @else if (vista() !== 'lista') {
+    <button (click)="volver()">← Volver al listado</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- ============================================================ LISTADO -->
+    @case ('lista') {
+      <form class="filters" (ngSubmit)="load(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="search" maxlength="150" placeholder="Razón social o NIT/CI" />
+        </label>
+        <label>
+          Estado
+          <select name="activo" [(ngModel)]="activo" (change)="load(true)">
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+            <option value="">Todos</option>
+          </select>
+        </label>
+        <label>
+          Ciudad
+          <select name="ciudad" [(ngModel)]="ciudad" (change)="load(true)">
+            <option value="">Todas</option>
+            @for (c of ciudades(); track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+      </form>
+      @if (loading()) {
+        <p role="status">Cargando proveedores...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Proveedores registrados</caption>
+            <thead>
+              <tr>
+                <th>Razón social</th>
+                <th>NIT/CI</th>
+                <th>Contacto</th>
+                <th>Ciudad</th>
+                <th>Condición</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of proveedores(); track p.id) {
+                <tr>
+                  <td><strong>{{ p.razonSocial }}</strong></td>
+                  <td class="mono">{{ p.nitCi }}</td>
+                  <td>{{ p.contacto || '—' }}@if (p.telefono) {<br /><small>{{ p.telefono }}</small>}</td>
+                  <td>{{ p.ciudad || '—' }}</td>
+                  <td>{{ p.condicionPago === 'CREDITO' ? 'Crédito ' + p.diasCredito + ' días' : 'Contado' }}</td>
+                  <td>
+                    <span class="badge" [attr.data-estado]="p.activo ? 'ACTIVO' : 'INACTIVO'">
+                      {{ p.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <button [disabled]="busy()" (click)="abrir(p)">Ver</button>
+                    @if (admin()) {
+                      <button [disabled]="busy()" (click)="editar(p)">Editar</button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7">No hay proveedores con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} proveedores</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ============================================================= EDITOR -->
+    @case ('editor') {
+      <form class="panel" aria-label="Formulario de proveedor" (ngSubmit)="guardar()" novalidate>
+        <h3>{{ editandoId() ? 'Modificar proveedor' : 'Nuevo proveedor' }}</h3>
+        @if (editandoId()) {
+          <p class="hint">Los cambios valen para las órdenes y compras nuevas; las ya emitidas no cambian.</p>
+        }
+
+        <div class="form-grid">
+          <label class="wide">
+            Razón social *
+            <input name="razonSocial" [(ngModel)]="form.razonSocial" maxlength="150" required
+              [attr.aria-invalid]="!!errores().razonSocial" />
+            @if (errores().razonSocial) { <small class="field-error">{{ errores().razonSocial }}</small> }
+          </label>
+          <label>
+            NIT/CI *
+            <input name="nitCi" [(ngModel)]="form.nitCi" maxlength="30" inputmode="numeric" required
+              [attr.aria-invalid]="!!errores().nitCi" />
+            @if (errores().nitCi) { <small class="field-error">{{ errores().nitCi }}</small> }
+          </label>
+          <label>
+            Persona de contacto
+            <input name="contacto" [(ngModel)]="form.contacto" maxlength="100" />
+          </label>
+          <label>
+            Teléfono
+            <input name="telefono" [(ngModel)]="form.telefono" maxlength="30" inputmode="tel"
+              [attr.aria-invalid]="!!errores().telefono" />
+            @if (errores().telefono) { <small class="field-error">{{ errores().telefono }}</small> }
+          </label>
+          <label>
+            Correo
+            <input name="email" type="email" [(ngModel)]="form.email" maxlength="100"
+              [attr.aria-invalid]="!!errores().email" />
+            @if (errores().email) { <small class="field-error">{{ errores().email }}</small> }
+          </label>
+          <label class="wide">
+            Dirección
+            <input name="direccion" [(ngModel)]="form.direccion" maxlength="255" />
+          </label>
+          <label>
+            Ciudad
+            <input name="ciudad" [(ngModel)]="form.ciudad" maxlength="100" list="ciudades-proveedor" />
+            <datalist id="ciudades-proveedor">
+              @for (c of ciudades(); track c) { <option [value]="c"></option> }
+            </datalist>
+          </label>
+          <label>
+            Condición de pago *
+            <select name="condicionPago" [ngModel]="form.condicionPago" (ngModelChange)="cambiarCondicion($event)">
+              <option value="CONTADO">Contado</option>
+              <option value="CREDITO">Crédito</option>
+            </select>
+          </label>
+          <label>
+            Días de crédito
+            <input name="diasCredito" type="number" min="1" max="365" class="short"
+              [(ngModel)]="form.diasCredito" [disabled]="condicion() === 'CONTADO'"
+              [attr.aria-invalid]="!!errores().diasCredito" />
+            @if (errores().diasCredito) { <small class="field-error">{{ errores().diasCredito }}</small> }
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="submit" [disabled]="busy()">
+            {{ busy() ? 'Guardando...' : editandoId() ? 'Guardar cambios' : 'Registrar proveedor' }}
+          </button>
+          <button type="button" [disabled]="busy()" (click)="volver()">Cancelar</button>
+        </div>
+      </form>
+    }
+
+    <!-- ============================================================== FICHA -->
+    @case ('ficha') {
+      @if (ficha(); as h) {
+        <section class="panel">
+          <div class="detail-head">
+            <h3>
+              {{ h.proveedor.razonSocial }}
+              <span class="badge" [attr.data-estado]="h.proveedor.activo ? 'ACTIVO' : 'INACTIVO'">
+                {{ h.proveedor.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </h3>
+          </div>
+          <dl class="ficha">
+            <dt>NIT/CI</dt><dd class="mono">{{ h.proveedor.nitCi }}</dd>
+            <dt>Contacto</dt><dd>{{ h.proveedor.contacto || '—' }}</dd>
+            <dt>Teléfono</dt><dd>{{ h.proveedor.telefono || '—' }}</dd>
+            <dt>Correo</dt><dd>{{ h.proveedor.email || '—' }}</dd>
+            <dt>Dirección</dt><dd>{{ h.proveedor.direccion || '—' }}</dd>
+            <dt>Ciudad</dt><dd>{{ h.proveedor.ciudad || '—' }}</dd>
+            <dt>Condición de pago</dt>
+            <dd>{{ h.proveedor.condicionPago === 'CREDITO' ? 'Crédito a ' + h.proveedor.diasCredito + ' días' : 'Contado' }}</dd>
+          </dl>
+
+          <div class="kpis">
+            <div><span>Saldo por pagar</span><strong>Bs {{ h.saldoPendiente | number: '1.2-2' }}</strong></div>
+            <div><span>Órdenes abiertas</span><strong>{{ h.ordenesAbiertas }}</strong></div>
+            <div><span>Compras registradas</span><strong>{{ h.compras.length }}</strong></div>
+          </div>
+
+          <h4>Órdenes de compra</h4>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Número</th><th>Fecha</th><th class="num">Total Bs</th><th>Estado</th></tr></thead>
+              <tbody>
+                @for (o of h.ordenes; track o.id) {
+                  <tr>
+                    <td><strong>{{ o.numero }}</strong></td><td>{{ o.fecha }}</td>
+                    <td class="num">{{ o.total | number: '1.2-2' }}</td>
+                    <td><span class="badge" [attr.data-estado]="o.estado">{{ o.estado }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4">Todavía no tiene órdenes de compra.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Compras</h4>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Factura</th><th>Fecha</th><th class="num">Total Bs</th><th>Estado</th></tr></thead>
+              <tbody>
+                @for (c of h.compras; track c.id) {
+                  <tr>
+                    <td><strong>{{ c.numero }}</strong></td><td>{{ c.fecha }}</td>
+                    <td class="num">{{ c.total | number: '1.2-2' }}</td>
+                    <td><span class="badge" [attr.data-estado]="c.estado">{{ c.estado }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4">Todavía no tiene compras registradas.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (admin()) {
+            <div class="actions">
+              <button [disabled]="busy()" (click)="editar(h.proveedor)">Editar</button>
+              @if (h.proveedor.activo) {
+                <button class="danger" [disabled]="busy()" (click)="motivo = ''; desactivando.set(true)">Desactivar</button>
+              } @else {
+                <button class="primary" [disabled]="busy()" (click)="reactivar(h.proveedor)">Reactivar</button>
+              }
+            </div>
+          }
+        </section>
+
+        @if (desactivando()) {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="desactivar-title">
+              <h3 id="desactivar-title">Desactivar {{ h.proveedor.razonSocial }}</h3>
+              <p>
+                No se borra: su historial se conserva y se puede reactivar. No se permite si tiene órdenes
+                abiertas o saldo por pagar.
+              </p>
+              @if (h.ordenesAbiertas > 0 || h.saldoPendiente > 0) {
+                <p class="message error">
+                  Tiene {{ h.ordenesAbiertas }} orden(es) abiertas y Bs {{ h.saldoPendiente | number: '1.2-2' }} por pagar:
+                  el sistema no lo va a permitir.
+                </p>
+              }
+              <label>
+                Motivo
+                <input name="motivo" [(ngModel)]="motivo" maxlength="255" placeholder="Ej.: dejó de operar" />
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="desactivando.set(false)">Cancelar</button>
+                <button class="danger" [disabled]="busy() || !motivo.trim()" (click)="desactivar()">Desactivar</button>
+              </div>
+            </section>
+          </div>
+        }
+      }
+    }
+  }
+}

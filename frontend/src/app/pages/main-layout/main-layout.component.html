@@ -105,6 +105,10 @@
       <app-backups-restore />
       } @else if (fn.id === 'consultar-bitacora' || fn.id === 'cu08-consultar-bitacora') {
       <app-bitacora-tenant />
+      } @else if (fn.id === 'gestionar-proveedores' || fn.id === 'cu21-gestionar-proveedores') {
+      <app-proveedores />
+      } @else if (fn.id === 'gestionar-ordenes-de-compra' || fn.id === 'cu23-ordenes-de-compra' || fn.id === 'cu22-ordenes-de-compra' || fn.id === 'cu22-gestionar-ordenes-de-compra') {
+      <app-ordenes-compra />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

@@ -1,0 +1,42 @@
+@use '../../compras-comun';
+
+.ficha {
+  grid-template-columns: max-content 1fr;
+  justify-content: start;
+
+  dd {
+    text-align: left;
+  }
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  strong {
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (max-width: 650px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+}

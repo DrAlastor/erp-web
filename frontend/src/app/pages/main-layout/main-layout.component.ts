@@ -30,6 +30,8 @@ import { BitacoraTenantComponent } from '../../modulos/seguridad-y-auditoria/cu0
 import { PersonalizarAparienciaComponent } from '../../modulos/seguridad-y-auditoria/cu06-personalizar-apariencia/components/personalizar-apariencia.component';
 import { AparienciaService } from '../../modulos/seguridad-y-auditoria/cu06-personalizar-apariencia/services/apariencia.service';
 import { ReportesPredefinidosComponent } from '../../modulos/reportes-y-bi/cu37-reportes-predefinidos/components/reportes-predefinidos.component';
+import { ProveedoresComponent } from '../../modulos/compras-y-proveedores/cu21-gestionar-proveedores/components/proveedores.component';
+import { OrdenesCompraComponent } from '../../modulos/compras-y-proveedores/cu23-ordenes-de-compra/components/ordenes-compra.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -38,7 +40,8 @@ import { ReportesPredefinidosComponent } from '../../modulos/reportes-y-bi/cu37-
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
     ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
-    BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent],
+    BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,
+    ProveedoresComponent, OrdenesCompraComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
