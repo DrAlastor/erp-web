@@ -40,6 +40,9 @@ jobs:
           echo "IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: 5. Actualizar ECS Fargate y Enrutar CloudFront
+        env:
+          AWS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_KEY_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           python3 - << 'EOF'
           import json
@@ -73,6 +76,55 @@ jobs:
               td.pop(k, None)
 
           td["containerDefinitions"][0]["image"] = IMAGE_URI
+
+          # Actualizar variables de entorno del contenedor para apuntar a la base RDS c49qmms6qw5e
+          env_actual = {e["name"]: e["value"] for e in td["containerDefinitions"][0].get("environment", [])}
+          print(f"[*] Variables de entorno previas en task: {list(env_actual.keys())}")
+
+          env_nuevas = {
+              "DB_URL": "jdbc:postgresql://erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432/ERP_Asus",
+              "DB_USERNAME": "AdminAWS",
+              "DB_PASSWORD": "Adminaws123!",
+              "SPRING_DATASOURCE_URL": "jdbc:postgresql://erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432/ERP_Asus",
+              "SPRING_DATASOURCE_USERNAME": "AdminAWS",
+              "SPRING_DATASOURCE_PASSWORD": "Adminaws123!",
+              "MASTER_DB_URL": "jdbc:postgresql://erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432/ERP_Master",
+              "MASTER_DB_USERNAME": "AdminAWS",
+              "MASTER_DB_PASSWORD": "Adminaws123!",
+              "TENANT_DB_USERNAME": "AdminAWS",
+              "TENANT_DB_PASSWORD": "Adminaws123!",
+              "PROVISIONING_DB_URL": "jdbc:postgresql://erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432/postgres",
+              "PROVISIONING_DB_BASE_URL": "jdbc:postgresql://erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432",
+              "PROVISIONING_DB_USERNAME": "AdminAWS",
+              "PROVISIONING_DB_PASSWORD": "Adminaws123!",
+              "RDS_HOST": "erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com",
+              "SPRING_JPA_HIBERNATE_DDL_AUTO": "none",
+              "CORS_ORIGIN": "https://erp-contable-comercial.online",
+              "TZ": "America/La_Paz",
+              "JWT_SECRET": "0793e09c40e6e55bb4c3a9dca66c9798d8ce07e5ed145be87799397c231eabbd",
+              "AWS_CLOUDWATCH_ENABLED": "true",
+              "AWS_REGION": "us-east-1",
+              "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora"
+          }
+
+          aws_key = os.environ.get("AWS_KEY_ID", "")
+          aws_sec = os.environ.get("AWS_KEY_SECRET", "")
+          if aws_key and aws_sec:
+              env_nuevas["AWS_ACCESS_KEY_ID"] = aws_key
+              env_nuevas["AWS_SECRET_ACCESS_KEY"] = aws_sec
+
+          # Purgar cualquier variable residual del host antiguo coxoq4mwa6sg
+          env_combinado = {}
+          for k, v in env_actual.items():
+              if "coxoq4mwa6sg" not in str(v):
+                  env_combinado[k] = v
+          env_combinado.update(env_nuevas)
+
+          td["containerDefinitions"][0]["environment"] = [
+              {"name": k, "value": str(v)} for k, v in env_combinado.items()
+          ]
+          print(f"[*] Variables de entorno actualizadas en task: {list(env_combinado.keys())}")
+
           Path("td-temp.json").write_text(json.dumps(td), encoding="utf-8")
           nuevo = json.loads(run_aws("ecs", "register-task-definition", "--cli-input-json", "file://td-temp.json"))
           Path("td-temp.json").unlink(missing_ok=True)
