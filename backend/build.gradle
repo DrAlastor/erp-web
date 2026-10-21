@@ -13,6 +13,10 @@ java {
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-parameters")
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -52,7 +56,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // AWS CloudWatch Logs para Bitácora de Auditoría Inmutable Externa (CU08)
+    implementation platform('software.amazon.awssdk:bom:2.29.50')
+    implementation 'software.amazon.awssdk:cloudwatchlogs'
+
     // Test Starters
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -70,6 +79,12 @@ sourceSets {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.named('processResources') {
+    from('Base de Datos/ERP_Asus.sql') {
+        into 'db/tenant'
+    }
 }
 
 tasks.named('bootJar') {

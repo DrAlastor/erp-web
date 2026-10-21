@@ -634,11 +634,28 @@
             </div>
 
             <div class="pricing-card-amount">
-              <span class="currency-symbol">Bs</span>
-              <span class="amount-val">
-                {{ (billingCycle() === 'anual' ? plan.precioAnual : plan.precioMensual) | number }}
-              </span>
-              <span class="cycle-text">/ {{ billingCycle() === 'anual' ? 'año' : 'mes' }}</span>
+              @if (plan.esPrueba) {
+                <span class="currency-symbol">Bs</span>
+                <span class="amount-val">0</span>
+                <span class="cycle-text">/ 7 días</span>
+                <div class="pricing-savings-hint badge-trial">✨ 100% Gratuito · Sin tarjeta</div>
+              } @else {
+                <span class="currency-symbol">Bs</span>
+                <span class="amount-val">
+                  {{ (billingCycle() === 'anual' ? plan.precioAnual : plan.precioMensual) | number }}
+                </span>
+                <span class="cycle-text">/ {{ billingCycle() === 'anual' ? 'año' : 'mes' }}</span>
+
+                @if (billingCycle() === 'anual') {
+                  <div class="pricing-savings-hint badge-saving">
+                    🎉 Equivale a Bs {{ (plan.precioAnual / 12) | number:'1.0-0' }}/mes (Ahorras 2 meses)
+                  </div>
+                } @else {
+                  <div class="pricing-savings-hint badge-monthly">
+                    Facturación mensual recurrente
+                  </div>
+                }
+              }
             </div>
 
             <div class="pricing-quotas">
@@ -683,7 +700,11 @@
               [class.btn-featured]="plan.destacado"
               (click)="seleccionarPlan(plan.codigo)"
             >
-              <span>Comenzar con {{ plan.nombre }}</span>
+              @if (plan.esPrueba) {
+                <span>Probar 7 Días Gratis</span>
+              } @else {
+                <span>Comenzar con {{ plan.nombre }}</span>
+              }
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>

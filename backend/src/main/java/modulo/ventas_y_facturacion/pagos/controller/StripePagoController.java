@@ -1,5 +1,7 @@
 package modulo.ventas_y_facturacion.pagos.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import comun.saas.SaasOnboardingService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +21,13 @@ public class StripePagoController {
     private static final Logger log = LoggerFactory.getLogger(StripePagoController.class);
 
     private final StripePaymentService stripePaymentService;
+    private final SaasOnboardingService onboardingService;
 
-    public StripePagoController(StripePaymentService stripePaymentService) {
+    public StripePagoController(
+            StripePaymentService stripePaymentService,
+            SaasOnboardingService onboardingService) {
         this.stripePaymentService = stripePaymentService;
+        this.onboardingService = onboardingService;
     }
 
     /**
@@ -53,7 +59,14 @@ public class StripePagoController {
     public ResponseEntity<Map<String, String>> webhookStripe(
             @RequestBody String payload,
             @RequestHeader(value = "Stripe-Signature", required = false) String sigHeader) {
-        log.info("Webhook recibido de Stripe. Longitud payload: {}", payload.length());
+        JsonNode event = stripePaymentService.verifyWebhook(payload, sigHeader);
+        String eventType = event.path("type").asText();
+        if ("checkout.session.completed".equals(eventType)) {
+            String sessionId = event.path("data").path("object").path("id").asText();
+            if (!sessionId.isBlank()) {
+                onboardingService.confirmStripeSession(sessionId);
+            }
+        }
         return ResponseEntity.ok(Map.of("status", "received"));
     }
 }

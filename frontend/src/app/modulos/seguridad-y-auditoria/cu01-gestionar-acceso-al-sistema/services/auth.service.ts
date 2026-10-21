@@ -8,7 +8,7 @@ import { ClienteRegisterRequest, LoginRequest, RefreshTokenRequest, TokenRespons
 import { UserSession } from '../models/user-session.model';
 
 const STORAGE_KEY = 'erp_session';
-interface TokenClaims { exp: number; authorities?: string[]; roles?: string[]; }
+interface TokenClaims { exp: number; authorities?: string[]; roles?: string[]; codigoEmpresa?: string; tenantId?: number; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -28,7 +28,7 @@ export class AuthService {
     return this.http.post<TokenResponse>(`${environment.apiUrl}/auth/login`, request).pipe(
       tap(response => {
         this.rememberMe = rememberMe;
-        this.persistSession(response);
+        this.persistSession(response, request.codigoEmpresa);
       })
     );
   }
@@ -37,7 +37,7 @@ export class AuthService {
     return this.http.post<TokenResponse>(`${environment.apiUrl}/auth/register/cliente`, request).pipe(
       tap(response => {
         this.rememberMe = rememberMe;
-        this.persistSession(response);
+        this.persistSession(response, request.codigoEmpresa);
       }),
     );
   }
@@ -46,12 +46,15 @@ export class AuthService {
     if (this.refreshRequest) return this.refreshRequest;
     const session = this.sessionSignal();
     if (!session?.refreshToken) return throwError(() => new Error('No hay sesión activa para refrescar'));
-    const body: RefreshTokenRequest = { refreshToken: session.refreshToken };
+    const body: RefreshTokenRequest = {
+      codigoEmpresa: session.codigoEmpresa,
+      refreshToken: session.refreshToken,
+    };
     const pending = this.http.post<TokenResponse>(`${environment.apiUrl}/auth/refresh`, body).pipe(
       tap(response => {
         // Una respuesta tardia no debe restaurar una sesion cerrada o reemplazar otro login.
         if (this.sessionSignal() !== session) throw new Error('La sesión ha cambiado');
-        this.persistSession(response);
+        this.persistSession(response, session.codigoEmpresa);
       }),
       catchError(error => {
         if (this.sessionSignal() === session && error instanceof HttpErrorResponse &&
@@ -82,10 +85,13 @@ export class AuthService {
   }
 
   logout(): void {
-    const refreshToken = this.getRefreshToken();
+    const session = this.sessionSignal();
     this.clearSession();
-    if (refreshToken) {
-      this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken }).subscribe({ error: () => {} });
+    if (session?.refreshToken && session.codigoEmpresa) {
+      this.http.post(`${environment.apiUrl}/auth/logout`, {
+        codigoEmpresa: session.codigoEmpresa,
+        refreshToken: session.refreshToken,
+      }).subscribe({ error: () => {} });
     }
     this.router.navigate(['/login']);
   }
@@ -105,8 +111,12 @@ export class AuthService {
   }
 
   private tokenClaims(): TokenClaims | null {
+    return this.tokenClaimsFrom(this.getAccessToken());
+  }
+
+  private tokenClaimsFrom(token: string | null): TokenClaims | null {
     try {
-      const payload = this.getAccessToken()?.split('.')[1];
+      const payload = token?.split('.')[1];
       if (!payload) return null;
       const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
       const claims: unknown = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')));
@@ -116,9 +126,18 @@ export class AuthService {
     } catch { return null; }
   }
 
-  private persistSession(response: TokenResponse): void {
+  private persistSession(response: TokenResponse, codigoEmpresa?: string): void {
     this.permisos.limpiar();
+    const claims = this.tokenClaimsFrom(response.accessToken);
+    const resolvedCompanyCode = (
+      codigoEmpresa ||
+      claims?.codigoEmpresa ||
+      response.codigoEmpresa ||
+      'ASUS-7K4P2M'
+    ).trim().toUpperCase();
+
     const session: UserSession = {
+      codigoEmpresa: resolvedCompanyCode,
       accessToken: response.accessToken, refreshToken: response.refreshToken, usuario: response.usuario
     };
     this.sessionSignal.set(session);
@@ -145,7 +164,8 @@ export class AuthService {
       if (!stored) return null;
       const session = JSON.parse(stored) as Partial<UserSession> | null;
       return session && typeof session.accessToken === 'string' &&
-        typeof session.refreshToken === 'string' && session.usuario &&
+        typeof session.refreshToken === 'string' && typeof session.codigoEmpresa === 'string' &&
+        session.codigoEmpresa.length > 0 && session.usuario &&
         typeof session.usuario.username === 'string' ? session as UserSession : null;
     } catch { return null; }
   }

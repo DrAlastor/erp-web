@@ -102,6 +102,10 @@
       <app-facturacion />
       } @else if (fn.id === 'devoluciones-y-notas-de-credito' || fn.id === 'devoluciones' || fn.id === 'cu20-devoluciones-de-venta' || fn.id === 'cu20-gestionar-devoluciones-y-notas-de-credito') {
       <app-devoluciones />
+      } @else if (fn.id === 'backups-y-restore' || fn.id === 'cu07-gestionar-backups') {
+      <app-backups-restore />
+      } @else if (fn.id === 'consultar-bitacora' || fn.id === 'cu08-consultar-bitacora') {
+      <app-bitacora-tenant />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

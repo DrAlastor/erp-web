@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 import comun.exception.ResourceNotFoundException;
 
-import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.service.SesionService;
 import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.dto.UsuarioRequest;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.dto.UsuarioResponse;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import comun.saas.TenantEntitlementsService;
 
 /**
  * CU-02: reglas de negocio de la administración de cuentas de usuario.
@@ -61,9 +61,9 @@ public class UsuarioService {
     private final RolRepositorio rolRepositorio;
     private final ServicioAsignaciones servicioAsignaciones;
     private final UsuarioAuditoriaService auditoria;
-    private final SesionService sesionService;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TenantEntitlementsService entitlements;
 
     private final modulo.seguridad_y_auditoria.compartido.repository.RolRepository rolRepository;
 
@@ -122,6 +122,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse create(UsuarioRequest request, String actor, String ip) {
         UUID empresaId = UsuarioActual.obtener().empresaId();
+        entitlements.requireCapacity("USUARIOS", usuarioGestionRepository.count());
 
         if (request.fullname().trim().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre es obligatorio");
@@ -228,9 +229,6 @@ public class UsuarioService {
             usuario.setEnable(enable);
             usuario.setUpdatedBy(actor);
             usuarioGestionRepository.saveAndFlush(usuario);
-            if (!enable) {
-                sesionService.cerrarActivas(id);
-            }
             auditoria.registrar(enable ? "USUARIO_ACTIVADO" : "USUARIO_DESACTIVADO", actor, id, ip);
         }
 

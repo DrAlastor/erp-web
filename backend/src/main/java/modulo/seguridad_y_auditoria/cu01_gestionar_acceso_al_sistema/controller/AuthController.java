@@ -1,5 +1,9 @@
 package modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.controller;
 
+import comun.multitenancy.MasterTenantResolver;
+import comun.multitenancy.TenantContext;
+import comun.multitenancy.TenantDescriptor;
+import comun.saas.SaasOnboardingService;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.LoginRequest;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.ClienteRegisterRequest;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.OnboardingEmpresaRequest;
@@ -14,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,12 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final MasterTenantResolver tenantResolver;
+    private final SaasOnboardingService onboardingService;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ip = extraerIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        return ResponseEntity.ok(authService.login(request, ip, userAgent));
+        TenantDescriptor tenant = tenantResolver.resolveUserTenant(
+                request.getUsernameOrEmail(), request.getCodigoEmpresa());
+        return ResponseEntity.ok(TenantContext.execute(
+                tenant,
+                () -> authService.login(request, ip, userAgent)));
     }
 
     @PostMapping("/register/cliente")
@@ -35,7 +46,10 @@ public class AuthController {
             @Valid @RequestBody ClienteRegisterRequest request, HttpServletRequest httpRequest) {
         String ip = extraerIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        return ResponseEntity.status(201).body(authService.registerCliente(request, ip, userAgent));
+        TenantDescriptor tenant = tenantResolver.resolve(request.codigoEmpresa());
+        return ResponseEntity.status(201).body(TenantContext.execute(
+                tenant,
+                () -> authService.registerCliente(request, ip, userAgent)));
     }
 
     @PostMapping("/onboarding-empresa")
@@ -43,17 +57,31 @@ public class AuthController {
             @Valid @RequestBody OnboardingEmpresaRequest request, HttpServletRequest httpRequest) {
         String ip = extraerIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        return ResponseEntity.status(201).body(authService.onboardingEmpresa(request, ip, userAgent));
+        return ResponseEntity.status(201).body(onboardingService.register(request));
+    }
+
+    @PostMapping("/onboarding-confirmar")
+    public ResponseEntity<java.util.Map<String, String>> confirmarOnboarding(
+            @RequestParam String sessionId) {
+        String codigoEmpresa = onboardingService.confirmStripeSession(sessionId);
+        return ResponseEntity.ok(java.util.Map.of(
+                "estado", "ACTIVA",
+                "codigoEmpresa", codigoEmpresa));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        return ResponseEntity.ok(authService.refresh(request));
+        TenantDescriptor tenant = tenantResolver.resolve(request.getCodigoEmpresa());
+        return ResponseEntity.ok(TenantContext.execute(tenant, () -> authService.refresh(request)));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
-        authService.logout(request);
+        TenantDescriptor tenant = tenantResolver.resolve(request.getCodigoEmpresa());
+        TenantContext.execute(tenant, () -> {
+            authService.logout(request);
+            return null;
+        });
         return ResponseEntity.noContent().build();
     }
 

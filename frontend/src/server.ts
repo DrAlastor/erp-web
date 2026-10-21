@@ -39,7 +39,7 @@ app.use(
  * Proxy inverso para peticiones de API hacia el backend
  */
 app.use('/api', async (req, res) => {
-  const backendUrl = process.env['BACKEND_URL'] || 'http://backend:8080';
+  const backendUrl = process.env['BACKEND_URL'] || 'http://localhost:8080';
   const targetUrl = `${backendUrl}${req.originalUrl}`;
   try {
     const skipHeaders = ['host', 'expect', 'connection', 'content-length'];

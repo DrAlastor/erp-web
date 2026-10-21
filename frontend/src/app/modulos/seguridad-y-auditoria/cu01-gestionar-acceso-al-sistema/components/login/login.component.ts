@@ -60,7 +60,10 @@ export class LoginComponent {
     const { usernameOrEmail, password, rememberMe } = this.form.getRawValue();
 
     this.authService
-      .login({ usernameOrEmail: usernameOrEmail.trim(), password }, rememberMe)
+      .login({
+        usernameOrEmail: usernameOrEmail.trim(),
+        password,
+      }, rememberMe)
       .subscribe({
         next: () => {
           this.loading.set(false);

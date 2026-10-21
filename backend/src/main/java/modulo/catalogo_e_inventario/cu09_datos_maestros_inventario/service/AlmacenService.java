@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import comun.saas.TenantEntitlementsService;
 
 @Service
 public class AlmacenService {
@@ -34,15 +35,18 @@ public class AlmacenService {
     private final SucursalRepository sucursalRepository;
     private final BitacoraLogRepository bitacoraLogRepository;
     private final JdbcTemplate jdbc;
+    private final TenantEntitlementsService entitlements;
 
     @Autowired
     public AlmacenService(
             SucursalRepository sucursalRepository,
             BitacoraLogRepository bitacoraLogRepository,
-            JdbcTemplate jdbc) {
+            JdbcTemplate jdbc,
+            TenantEntitlementsService entitlements) {
         this.sucursalRepository = sucursalRepository;
         this.bitacoraLogRepository = bitacoraLogRepository;
         this.jdbc = jdbc;
+        this.entitlements = entitlements;
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +69,9 @@ public class AlmacenService {
 
     @Transactional
     public AlmacenDTO crearAlmacen(CrearAlmacenRequest req, UUID empresaId, String actor, String ip) {
+        long currentCount = sucursalRepository.count();
+        entitlements.requireCapacity("SUCURSALES", currentCount);
+        entitlements.requireCapacity("ALMACENES", currentCount);
         String nombre = req.getNombre() != null ? req.getNombre().trim() : "";
         if (nombre.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la sucursal es obligatorio.");

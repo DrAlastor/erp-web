@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 @Order(120)
 public class InicializadorDatosMaestrosInventario implements ApplicationRunner {
 

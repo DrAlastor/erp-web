@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
 
+import modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioAuditoriaService {
 
     private final BitacoraLogRepository bitacoraLogRepository;
+    private final BitacoraAuditoriaService bitacoraAuditoriaService;
 
     /** Registra la acción dentro de la transacción de quien la llama. */
     @Transactional
@@ -29,5 +31,20 @@ public class UsuarioAuditoriaService {
         } catch (Exception ignored) {
             // No interrumpir la operación principal de la cuenta si la tabla de bitácora no está disponible
         }
+
+        try {
+            String severidad = (accion != null && (accion.contains("DESACTIVADO") || accion.contains("ELIMINADO") || accion.contains("BLOQUEADO")))
+                    ? "ALTA"
+                    : "MEDIA";
+
+            bitacoraAuditoriaService.registrarEventoActual(
+                    accion != null ? accion : "ACCION_USUARIO",
+                    "SEGURIDAD",
+                    String.format("Operación %s sobre el usuario ID #%d efectuada por '%s'.", accion, usuarioId, actor),
+                    "EXITO",
+                    severidad,
+                    String.format("{\"usuarioId\":%d,\"actor\":\"%s\",\"ip\":\"%s\"}", usuarioId, actor, ip != null ? ip : "127.0.0.1")
+            );
+        } catch (Exception ignored) {}
     }
 }

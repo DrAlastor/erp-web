@@ -34,6 +34,7 @@ public class InventarioVentaService {
     private final StockVentaRepository stockRepository;
     private final KardexMovimientoRepository kardexRepository;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
 
     /** Descuenta stock de la sucursal; rechaza la operación si no alcanza. */
     public void registrarSalida(Almacen sucursal, Producto producto, BigDecimal cantidad,
@@ -83,6 +84,23 @@ public class InventarioVentaService {
                 .usuarioId(usuarioId.intValue())
                 .unidadMedidaId(producto.getUnidadMedidaId() != null ? producto.getUnidadMedidaId() : 1)
                 .build());
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "DESCUENTO_STOCK",
+                    "INVENTARIO",
+                    String.format("%s de stock por venta/operación: %s u. de '%s' (SKU: %s) en sucursal '%s'. Saldo: %s u.",
+                            tipo, cantidad.stripTrailingZeros().toPlainString(),
+                            producto.getNombre(), producto.getCodigoSku(), sucursal.getNombre(),
+                            nuevoSaldo.stripTrailingZeros().toPlainString()),
+                    "EXITO",
+                    "BAJA",
+                    String.format("{\"productoId\":%d,\"sku\":\"%s\",\"sucursalId\":%d,\"tipo\":\"%s\",\"cantidad\":%s,\"saldo\":%s,\"doc\":\"%s\"}",
+                            producto.getId(), producto.getCodigoSku(), sucursal.getId(), tipo,
+                            cantidad.stripTrailingZeros().toPlainString(), nuevoSaldo.stripTrailingZeros().toPlainString(),
+                            documento != null ? documento : "")
+            );
+        } catch (Exception ignored) {}
 
         BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo()
                 : (producto.getStockMinimo() != null ? producto.getStockMinimo() : BigDecimal.ZERO);

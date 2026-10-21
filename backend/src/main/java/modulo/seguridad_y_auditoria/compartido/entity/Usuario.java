@@ -28,7 +28,7 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "username", length = 100)
+    @Transient
     private String username;
 
     @Column(nullable = false, length = 255)
@@ -62,7 +62,7 @@ public class Usuario {
     @Transient
     private Boolean rbacInicializado = true;
 
-    @Column(name = "fullname", length = 150)
+    @Transient
     private String fullname;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -74,14 +74,15 @@ public class Usuario {
         if (this.username != null && !this.username.isBlank()) {
             return this.username;
         }
-        return this.email != null ? this.email : "";
+        if (this.email == null || this.email.isBlank()) {
+            return "";
+        }
+        int separator = this.email.indexOf('@');
+        return separator > 0 ? this.email.substring(0, separator) : this.email;
     }
 
     public void setUsername(String username) {
         this.username = username;
-        if (this.email == null || this.email.isBlank()) {
-            this.email = username;
-        }
     }
 
     public String getFullname() {

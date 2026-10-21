@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @org.springframework.core.annotation.Order(100)
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 public class ArranqueSeguridad implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ArranqueSeguridad.class);

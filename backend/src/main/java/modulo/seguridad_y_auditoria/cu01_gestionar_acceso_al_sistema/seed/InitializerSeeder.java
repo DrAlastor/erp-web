@@ -20,6 +20,7 @@ import java.util.List;
  */
 @org.springframework.core.annotation.Order(0)
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 @RequiredArgsConstructor
 @Slf4j
 public class InitializerSeeder implements ApplicationRunner {
@@ -51,8 +52,10 @@ public class InitializerSeeder implements ApplicationRunner {
         // 1. Sembrar Superadmin solo si no existe
         asegurarUsuario("superadmin@nexoerp.com", "Admin2026!", "Superadmin Central", "SUPERADMIN", adminRol);
 
-        // 2. Sembrar Administrador ASUS solo si no existe
+        // 2. Sembrar Administradores ASUS solo si no existen
         asegurarUsuario("admin@asustech.bo", "Asus2026!", "Administrador ASUS Tech", "GERENCIA", adminRol);
+        asegurarUsuario("alessandro@asustech.bo", "Asus2026!", "Alessandro Yevara Ponce", "GERENCIA", adminRol);
+        asegurarUsuario("admin@asus.com", "Asus2026!", "Administrador ASUS", "GERENCIA", adminRol);
 
         // 3. Sembrar Administrador General ERP solo si no existe
         asegurarUsuario("admin@erp.com", "Admin123!", "Administrador General", "GERENCIA", adminRol);

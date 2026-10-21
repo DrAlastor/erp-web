@@ -92,6 +92,22 @@ public class GlobalExceptionHandler {
                 null);
     }
 
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<ErrorResponse> generic(Throwable ex, HttpServletRequest request) {
+        String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            msg += " -> " + cause.getClass().getSimpleName() + ": " + cause.getMessage();
+            cause = cause.getCause();
+        }
+        return build(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "SERVER_ERROR",
+                msg,
+                request,
+                null);
+    }
+
     private ResponseEntity<ErrorResponse> build(
             HttpStatus status,
             String error,

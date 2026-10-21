@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/guards/auth.guard';
+import { superAdminGuard } from './core/guards/superadmin.guard';
 
 export const routes: Routes = [
   {
@@ -42,6 +43,21 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [authGuard],
     title: 'Panel | NexoERP'
+  },
+  {
+    path: 'superadmin/login',
+    loadComponent: () => import('./pages/superadmin/superadmin-login/superadmin-login.component').then(m => m.SuperadminLoginComponent),
+    title: 'Super Admin Portal | NexoERP'
+  },
+  {
+    path: 'superadmin/dashboard',
+    loadComponent: () => import('./pages/superadmin/superadmin-dashboard/superadmin-dashboard.component').then(m => m.SuperadminDashboardComponent),
+    canActivate: [superAdminGuard],
+    title: 'Monitor Maestro & Backups | NexoERP'
+  },
+  {
+    path: 'superadmin',
+    redirectTo: 'superadmin/dashboard'
   },
   {
     path: '**',

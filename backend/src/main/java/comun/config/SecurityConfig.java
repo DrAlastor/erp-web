@@ -71,6 +71,7 @@ public class SecurityConfig {
                         auth ->
                                 auth.requestMatchers(
                                                 "/api/auth/**",
+                                                "/api/superadmin/auth/**",
                                                 "/api/public/**",
                                                 "/api/health/**",
                                                 "/api/pagos/webhook/**",
@@ -78,6 +79,7 @@ public class SecurityConfig {
                                                 "/api/notificaciones/evento-password",
                                                 "/error")
                                         .permitAll()
+                                        .requestMatchers("/api/superadmin/**").hasAnyRole("SUPER_ADMIN", "SUPERADMIN")
                                         .anyRequest()
                                         .authenticated())
                 .addFilterBefore(

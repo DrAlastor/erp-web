@@ -23,7 +23,12 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.HexFormat;
 import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Servicio de integración con la API REST oficial de Stripe.
@@ -44,6 +49,9 @@ public class StripePaymentService {
     @Value("${stripe.public-key:}")
     private String publicKey;
 
+    @Value("${stripe.webhook-secret:}")
+    private String webhookSecret;
+
     @Value("${app.frontend-url:https://erp-contable-comercial.online}")
     private String defaultFrontendUrl;
 
@@ -61,6 +69,45 @@ public class StripePaymentService {
 
     public String getPublicKey() {
         return publicKey;
+    }
+
+    public JsonNode verifyWebhook(String payload, String signatureHeader) {
+        if (webhookSecret == null || webhookSecret.isBlank()) {
+            throw new IllegalStateException("El secreto del webhook de Stripe no está configurado");
+        }
+        if (signatureHeader == null || signatureHeader.isBlank()) {
+            throw new IllegalArgumentException("Falta la firma de Stripe");
+        }
+        try {
+            String timestamp = null;
+            String signature = null;
+            for (String part : signatureHeader.split(",")) {
+                String[] pair = part.trim().split("=", 2);
+                if (pair.length == 2 && "t".equals(pair[0])) timestamp = pair[1];
+                if (pair.length == 2 && "v1".equals(pair[0])) signature = pair[1];
+            }
+            if (timestamp == null || signature == null) {
+                throw new IllegalArgumentException("Firma de Stripe inválida");
+            }
+            long eventTime = Long.parseLong(timestamp);
+            if (Math.abs(Instant.now().getEpochSecond() - eventTime) > 300) {
+                throw new IllegalArgumentException("La firma de Stripe expiró");
+            }
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(webhookSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            String expected = HexFormat.of().formatHex(
+                    mac.doFinal((timestamp + "." + payload).getBytes(StandardCharsets.UTF_8)));
+            if (!java.security.MessageDigest.isEqual(
+                    expected.getBytes(StandardCharsets.US_ASCII),
+                    signature.getBytes(StandardCharsets.US_ASCII))) {
+                throw new IllegalArgumentException("Firma de Stripe inválida");
+            }
+            return objectMapper.readTree(payload);
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("No se pudo validar el webhook de Stripe", exception);
+        }
     }
 
     /** Indica si hay una clave secreta configurada para hablar con Stripe. */

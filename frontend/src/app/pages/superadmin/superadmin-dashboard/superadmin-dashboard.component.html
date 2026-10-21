@@ -1,0 +1,618 @@
+<div class="sa-dashboard-container">
+  <!-- Top Navigation Header -->
+  <header class="sa-topbar">
+    <div class="sa-topbar-left">
+      <div class="sa-logo-mark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+          <line x1="6" y1="6" x2="6.01" y2="6"></line>
+          <line x1="6" y1="18" x2="6.01" y2="18"></line>
+        </svg>
+      </div>
+      <div>
+        <div class="sa-title-row">
+          <h1 class="sa-app-title">NexoERP Global Master Console</h1>
+          <span class="sa-version-pill">SaaS v2.0 Multi-Tenant</span>
+        </div>
+        <div class="sa-infra-row">
+          <span class="sa-status-dot"></span>
+          <span class="sa-infra-text">AWS RDS PostgreSQL 16 · Catalog: <code>ERP_Master</code></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sa-topbar-right">
+      <div class="sa-user-badge">
+        <div class="sa-avatar">
+          {{ superAdminService.currentAdmin()?.nombre?.charAt(0) || 'A' }}
+        </div>
+        <div class="sa-user-details">
+          <span class="sa-user-name">{{ superAdminService.currentAdmin()?.nombre }} {{ superAdminService.currentAdmin()?.apellido }}</span>
+          <span class="sa-user-role">SUPER ADMINISTRADOR MASTER</span>
+        </div>
+      </div>
+      <button class="sa-btn-logout" (click)="logout()" title="Cerrar sesión Master">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Salir</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Toast -->
+  @if (notification()) {
+    <div class="sa-notification" [class.sa-noti-error]="notification()?.type === 'error'">
+      <div class="sa-noti-content">
+        @if (notification()?.type === 'error') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        }
+        <span>{{ notification()?.message }}</span>
+      </div>
+      <button class="sa-noti-close" (click)="notification.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- Main Content Layout -->
+  <main class="sa-main">
+    <!-- Stat Cards Overview -->
+    <section class="sa-stats-grid">
+      <div class="sa-stat-card">
+        <div class="sa-stat-icon icon-blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="sa-stat-body">
+          <span class="sa-stat-label">Tenants Registrados</span>
+          <span class="sa-stat-value">{{ totalTenants }}</span>
+          <span class="sa-stat-sub">Empresas en arquitectura SaaS</span>
+        </div>
+      </div>
+
+      <div class="sa-stat-card">
+        <div class="sa-stat-icon icon-green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="sa-stat-body">
+          <span class="sa-stat-label">Bases de Datos Activas</span>
+          <span class="sa-stat-value">{{ activeTenantsCount }}</span>
+          <span class="sa-stat-sub">Instancias operando en tiempo real</span>
+        </div>
+      </div>
+
+      <div class="sa-stat-card">
+        <div class="sa-stat-icon icon-amber">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="sa-stat-body">
+          <span class="sa-stat-label">Empresas Suspendidas</span>
+          <span class="sa-stat-value">{{ suspendedTenantsCount }}</span>
+          <span class="sa-stat-sub">Aislamiento por falta de pago / mora</span>
+        </div>
+      </div>
+
+      <div class="sa-stat-card">
+        <div class="sa-stat-icon icon-purple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+        <div class="sa-stat-body">
+          <span class="sa-stat-label">Copias de Seguridad (Backups)</span>
+          <span class="sa-stat-value">{{ totalBackupsCount }}</span>
+          <span class="sa-stat-sub">{{ formatBytes(totalBackupStorageBytes) }} almacenados</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabbed Navigation Bar -->
+    <div class="sa-tabs-bar">
+      <div class="sa-tabs">
+        <button 
+          class="sa-tab-btn" 
+          [class.active]="activeTab() === 'tenants'"
+          (click)="setTab('tenants')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+          <span>Monitor de Tenants & Bases de Datos</span>
+          <span class="sa-tab-badge">{{ tenants().length }}</span>
+        </button>
+
+        <button 
+          class="sa-tab-btn" 
+          [class.active]="activeTab() === 'backups'"
+          (click)="setTab('backups')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Historial de Backups Realizados</span>
+          <span class="sa-tab-badge">{{ backups().length }}</span>
+        </button>
+
+        <button 
+          class="sa-tab-btn" 
+          [class.active]="activeTab() === 'bitacora'"
+          (click)="setTab('bitacora')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Bitácora de Auditoría Global</span>
+          <span class="sa-tab-badge">{{ bitacora().length }}</span>
+        </button>
+      </div>
+
+      <button class="sa-btn-refresh" (click)="cargarDatos()" title="Refrescar datos en vivo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.sa-spin]="loading()">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refrescar</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: MONITOR DE TENANTS -->
+    @if (activeTab() === 'tenants') {
+      <div class="sa-view-card">
+        <div class="sa-view-header">
+          <div class="sa-search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Buscar por Empresa, Código, Base de Datos o NIT..." 
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+            />
+          </div>
+          <div class="sa-view-actions">
+            <span class="sa-count-pill">{{ filteredTenants.length }} empresas encontradas</span>
+          </div>
+        </div>
+
+        <div class="sa-table-wrapper">
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>Empresa / Cliente</th>
+                <th>Código Tenant</th>
+                <th>Base de Datos Aprovisionada</th>
+                <th>Plan SaaS</th>
+                <th>Estado Empresa</th>
+                <th>Estado DB</th>
+                <th>Fecha Alta</th>
+                <th class="text-right">Acciones de Desarrollador</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of filteredTenants; track t.id) {
+                <tr>
+                  <td>
+                    <div class="sa-cell-main">
+                      <strong>{{ t.razonSocial }}</strong>
+                      @if (t.nombreComercial && t.nombreComercial !== t.razonSocial) {
+                        <span class="sa-sub-name">{{ t.nombreComercial }}</span>
+                      }
+                      <small class="sa-sub-info">NIT: {{ t.nit }} · {{ t.email }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="sa-code-badge">{{ t.codigoEmpresa }}</span>
+                  </td>
+                  <td>
+                    <div class="sa-db-info">
+                      <span class="sa-db-name">{{ t.nombreDatabase || 'Sin asignar' }}</span>
+                      <small class="sa-host-port">{{ t.host || 'localhost' }}:{{ t.port || 5432 }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="sa-plan-badge" [class.plan-trial]="t.esPrueba">
+                      {{ t.planNombre || t.planCodigo || 'PRUEBA' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="sa-pill" [class.pill-active]="t.estadoEmpresa === 'ACTIVA'" [class.pill-suspended]="t.estadoEmpresa === 'SUSPENDIDA'">
+                      {{ t.estadoEmpresa }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="sa-pill" [class.pill-active]="t.estadoDb === 'ACTIVA'" [class.pill-suspended]="t.estadoDb === 'SUSPENDIDA'">
+                      {{ t.estadoDb || 'ACTIVA' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="sa-date-cell">{{ t.fechaCreacion ? (t.fechaCreacion | date:'dd/MM/yyyy HH:mm') : '—' }}</span>
+                  </td>
+                  <td class="text-right">
+                    <div class="sa-btn-group">
+                      <!-- Acción Generar Backup Inmediato -->
+                      <button 
+                        class="sa-action-btn btn-backup" 
+                        (click)="generarBackup(t.id)" 
+                        [disabled]="actionLoadingId() === t.id"
+                        title="Generar Backup SQL inmediato de esta empresa">
+                        @if (actionLoadingId() === t.id) {
+                          <span class="sa-mini-spin"></span>
+                        } @else {
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                        }
+                        <span>Backup</span>
+                      </button>
+
+                      <!-- Acción Suspender / Reactivar -->
+                      @if (t.estadoEmpresa === 'ACTIVA') {
+                        <button 
+                          class="sa-action-btn btn-suspend" 
+                          (click)="suspenderTenant(t)"
+                          [disabled]="actionLoadingId() === t.id"
+                          title="Suspender acceso por política comercial">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                          </svg>
+                          <span>Suspender</span>
+                        </button>
+                      } @else {
+                        <button 
+                          class="sa-action-btn btn-activate" 
+                          (click)="reactivarTenant(t)"
+                          [disabled]="actionLoadingId() === t.id"
+                          title="Reactivar acceso a la empresa">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span>Reactivar</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="sa-empty-state">
+                    No se encontraron empresas ni bases de datos con ese criterio de búsqueda.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: HISTORIAL DE BACKUPS -->
+    @if (activeTab() === 'backups') {
+      <div class="sa-view-card">
+        <div class="sa-backup-actions-bar">
+          <div class="sa-backup-launcher">
+            <label for="selectEmpresaBackup">Generar Copia de Seguridad bajo demanda:</label>
+            <div class="sa-launcher-controls">
+              <select 
+                id="selectEmpresaBackup"
+                [ngModel]="selectedEmpresaForBackup()"
+                (ngModelChange)="selectedEmpresaForBackup.set(+$event)">
+                @for (t of tenants(); track t.id) {
+                  <option [value]="t.id">{{ t.razonSocial }} ({{ t.codigoEmpresa }} - {{ t.nombreDatabase }})</option>
+                }
+              </select>
+              <button 
+                class="sa-btn-primary-backup" 
+                (click)="selectedEmpresaForBackup() && generarBackup(selectedEmpresaForBackup()!)"
+                [disabled]="!selectedEmpresaForBackup() || actionLoadingId() !== null">
+                @if (actionLoadingId() !== null) {
+                  <span class="sa-mini-spin"></span>
+                  <span>Generando Volcado SQL...</span>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Generar Backup Ahora</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sa-table-wrapper">
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Empresa / Tenant</th>
+                <th>Base de Datos</th>
+                <th>Nombre de Archivo SQL</th>
+                <th>Tamaño</th>
+                <th>Integridad SHA-256</th>
+                <th>Estado</th>
+                <th>Fecha de Ejecución</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of backups(); track b.id) {
+                <tr>
+                  <td><strong>#{{ b.id }}</strong></td>
+                  <td>
+                    <div class="sa-cell-main">
+                      <strong>{{ b.razonSocial }}</strong>
+                      <span class="sa-code-badge">{{ b.codigoEmpresa }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="sa-db-name">{{ b.nombreDatabase }}</span>
+                  </td>
+                  <td>
+                    <code class="sa-file-name">{{ b.nombreArchivo }}</code>
+                    <div class="sa-storage-path">{{ b.rutaStorage }}</div>
+                  </td>
+                  <td>
+                    <span class="sa-size-badge">{{ b.tamanoFormateado || formatBytes(b.tamanoBytes) }}</span>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                      <span class="sa-pill" [ngClass]="b.estadoVerificacion === 'VERIFICADO' ? 'pill-active' : 'pill-suspended'">
+                        {{ b.estadoVerificacion || 'VERIFICADO' }}
+                      </span>
+                      @if (b.checksumSha256) {
+                        <code style="font-size: 0.7rem; color: #0284c7;" [title]="b.checksumSha256">{{ b.checksumSha256 | slice:0:8 }}...</code>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="sa-pill pill-active">{{ b.estado }}</span>
+                  </td>
+                  <td>
+                    <span class="sa-date-cell">{{ b.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </td>
+                  <td class="text-right">
+                    <button class="sa-btn-action" (click)="verificarIntegridad(b)" title="Verificar checksum SHA-256">
+                      🛡️
+                    </button>
+                    <button class="sa-btn-action sa-btn-action-restore" (click)="restaurarBackup(b)" title="Restaurar base de datos">
+                      🔄 Restaurar
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="sa-empty-state">
+                    Aún no se han ejecutado copias de seguridad en la plataforma.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: BITÁCORA GLOBAL DE AUDITORÍA (INMUTABLE - CU08) -->
+    @if (activeTab() === 'bitacora') {
+      <div class="sa-view-card">
+        <div class="sa-view-header">
+          <div>
+            <h3 class="sa-card-title">Auditoría Inmutable Multi-Tenant (Master Audit Log - CU08)</h3>
+            <p class="sa-card-desc">Registro criptográficamente encadenado (SHA-256 Hash Chaining) externo a las bases de datos operativas.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <button class="sa-btn-secondary" (click)="verificarCadenaBitacora()" [disabled]="verificandoCadena()">
+              🛡️ {{ verificandoCadena() ? 'Verificando...' : 'Verificar Cadena de Hashes' }}
+            </button>
+            <span class="sa-count-pill">{{ bitacoraInmutable().length || bitacora().length }} registros auditados</span>
+          </div>
+        </div>
+
+        @if (cloudwatchStatus(); as cw) {
+          <div style="margin: 0 1.5rem 1rem 1.5rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; background: rgba(52, 199, 89, 0.1); border: 1px solid rgba(52, 199, 89, 0.25); color: #248a3d;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span>☁️ <strong>Amazon CloudWatch Logs:</strong> {{ cw.conectado ? 'Conectado e Inmutable' : 'Buffer Local' }} (Región: <code>{{ cw.region }}</code> • Grupo: <code>{{ cw.logGroup }}</code>)</span>
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 700; background: #34c759; color: white; padding: 0.2rem 0.55rem; border-radius: 9999px;">WORM ACTIVO</span>
+          </div>
+        }
+
+        <!-- Filtros Bitácora Global -->
+        <div style="display: flex; gap: 0.75rem; padding: 0 1.5rem 1rem 1.5rem; flex-wrap: wrap; align-items: center;">
+          <div style="flex: 1; min-width: 200px;">
+            <input type="text" class="sa-form-input" [ngModel]="bitacoraSearchTerm()" (ngModelChange)="bitacoraSearchTerm.set($event); cargarBitacora()" placeholder="Buscar por actor, evento, detalle...">
+          </div>
+          <select class="sa-form-select" style="width: auto;" [ngModel]="bitacoraTenantFilter()" (ngModelChange)="bitacoraTenantFilter.set($event ? +$event : null); cargarBitacora()">
+            <option [ngValue]="null">Todos los Tenants</option>
+            @for (t of tenants(); track t.id) {
+              <option [ngValue]="t.id">{{ t.codigoEmpresa }} - {{ t.razonSocial }}</option>
+            }
+          </select>
+          <select class="sa-form-select" style="width: auto;" [ngModel]="bitacoraModuloFilter()" (ngModelChange)="bitacoraModuloFilter.set($event); cargarBitacora()">
+            <option value="TODOS">Todos los Módulos</option>
+            <option value="SEGURIDAD">Seguridad y Acceso</option>
+            <option value="USUARIOS">Gestión de Usuarios</option>
+            <option value="ROLES_PERMISOS">Roles y Permisos (RBAC)</option>
+            <option value="EMPLEADOS">Colaboradores / Empleados</option>
+            <option value="BACKUPS">Backups y Restore</option>
+            <option value="CATALOGO">Catálogo de Artículos</option>
+            <option value="CATEGORIAS">Categorías de Productos</option>
+            <option value="UNIDADES_MEDIDA">Unidades de Medida</option>
+            <option value="INVENTARIO">Movimientos de Inventario</option>
+            <option value="ALMACENES">Almacenes y Sucursales</option>
+            <option value="STOCK">Control de Existencias / Stock</option>
+            <option value="KARDEX">Consulta de Kardex</option>
+            <option value="CLIENTES">Gestión de Clientes</option>
+            <option value="COTIZACIONES">Cotizaciones de Venta</option>
+            <option value="PEDIDOS">Pedidos de Venta</option>
+            <option value="VALIDACION_COMERCIAL">Aprobaciones Comerciales</option>
+            <option value="PRECIOS_DESCUENTOS">Precios y Descuentos</option>
+            <option value="VENTAS">Ventas y Facturación</option>
+            <option value="DEVOLUCIONES">Devoluciones / Notas de Crédito</option>
+            <option value="DESPACHOS">Despachos y Entregas</option>
+            <option value="PAGOS">Pasarela de Pagos (Stripe)</option>
+            <option value="NOTIFICACIONES">Notificaciones del Sistema</option>
+            <option value="SUPERADMIN">Super Admin / SaaS</option>
+            <option value="SISTEMA">Configuración del Sistema</option>
+          </select>
+          <select class="sa-form-select" style="width: auto;" [ngModel]="bitacoraSeveridadFilter()" (ngModelChange)="bitacoraSeveridadFilter.set($event); cargarBitacora()">
+            <option value="TODAS">Todas las Severidades</option>
+            <option value="BAJA">Baja</option>
+            <option value="MEDIA">Media</option>
+            <option value="ALTA">Alta</option>
+            <option value="CRITICA">Crítica</option>
+          </select>
+          <button class="sa-btn-secondary" style="padding: 0.45rem 0.85rem;" (click)="bitacoraSearchTerm.set(''); bitacoraTenantFilter.set(null); bitacoraModuloFilter.set('TODOS'); bitacoraSeveridadFilter.set('TODAS'); cargarBitacora()">
+            Limpiar
+          </button>
+        </div>
+
+        @if (resultadoCadena(); as rc) {
+          <div style="margin: 0 1.5rem 1rem 1.5rem; padding: 0.85rem 1rem; border-radius: 8px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;"
+               [style.background]="rc.valida ? '#f0fdf4' : '#fef2f2'"
+               [style.border]="rc.valida ? '1px solid #86efac' : '1px solid #fca5a5'"
+               [style.color]="rc.valida ? '#14532d' : '#991b1b'">
+            <span><strong>{{ rc.valida ? '🔒 Cadena Válida:' : '⚠️ Alerta:' }}</strong> {{ rc.mensaje }}</span>
+            <button style="background: none; border: none; cursor: pointer; font-size: 1rem;" (click)="resultadoCadena.set(null)">×</button>
+          </div>
+        }
+
+        <div class="sa-table-wrapper">
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>Fecha / Hora (Bolivia)</th>
+                <th>Evento ID</th>
+                <th>Operación</th>
+                <th>Módulo</th>
+                <th>Detalle del Evento</th>
+                <th>Actor</th>
+                <th>Tenant</th>
+                <th>Severidad</th>
+                <th>CloudWatch</th>
+                <th>Encadenamiento (Previo → Actual)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (bitacoraInmutable().length > 0) {
+                @for (item of bitacoraInmutable(); track item.id) {
+                  <tr>
+                    <td>
+                      <span class="sa-date-cell">{{ (item.fecha_hora_bolivia || item.fecha_hora_utc) | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+                    </td>
+                    <td>
+                      <code style="font-size: 0.75rem;">{{ item.evento_id | slice:0:12 }}...</code>
+                    </td>
+                    <td>
+                      <span class="sa-action-tag">{{ item.tipo_operacion }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-module-tag">{{ item.modulo }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-event-detail">{{ item.detalle }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-actor-badge">{{ item.actor }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-code-badge">{{ item.codigo_empresa || 'GLOBAL' }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-pill" [ngClass]="item.severidad === 'ALTA' || item.severidad === 'CRITICA' ? 'pill-suspended' : 'pill-active'">
+                        {{ item.severidad || 'MEDIA' }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (item.cloudwatch_ingested) {
+                        <span style="font-size: 0.75rem; color: #16a34a; font-weight: 600;">✓ AWS CW</span>
+                      } @else {
+                        <span style="font-size: 0.75rem; color: #64748b;">Local</span>
+                      }
+                    </td>
+                    <td>
+                      <div style="font-family: monospace; font-size: 0.7rem; display: flex; align-items: center; gap: 0.25rem;">
+                        <span style="background: #f1f5f9; padding: 0.1rem 0.3rem; border-radius: 3px;" [title]="item.hash_previo">{{ item.hash_previo | slice:0:6 }}</span>
+                        <span>→</span>
+                        <span style="background: #e0f2fe; color: #0284c7; padding: 0.1rem 0.3rem; border-radius: 3px; font-weight: bold;" [title]="item.hash_actual">{{ item.hash_actual | slice:0:6 }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+ @else {
+                @for (item of bitacora(); track item.id) {
+                  <tr>
+                    <td>
+                      <span class="sa-date-cell">{{ item.fecha ? (item.fecha | date:'dd/MM/yyyy HH:mm:ss') : '—' }}</span>
+                    </td>
+                    <td><code>#{{ item.id }}</code></td>
+                    <td>
+                      <span class="sa-action-tag">{{ item.accion }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-module-tag">{{ item.modulo }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-event-detail">{{ item.detalle }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-actor-badge">{{ item.usuario }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-code-badge">{{ item.codigoEmpresa }}</span>
+                    </td>
+                    <td>
+                      <span class="sa-pill pill-active">{{ item.estado }}</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="sa-empty-state">
+                      No se han registrado eventos en la bitácora aún.
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </main>
+</div>

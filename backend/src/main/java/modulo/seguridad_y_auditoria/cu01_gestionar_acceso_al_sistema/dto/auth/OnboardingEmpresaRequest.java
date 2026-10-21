@@ -11,6 +11,7 @@ public record OnboardingEmpresaRequest(
         @NotBlank @Size(max = 200) String razonSocial,
         @Size(max = 200) String nombreComercial,
         @NotBlank @Size(max = 30) String nit,
+        @NotBlank @Size(min = 2, max = 2) String paisCodigo,
         @Size(max = 100) String ciudad,
         @Size(max = 255) String direccion,
         @Size(max = 30) String telefonoEmpresa,

@@ -112,6 +112,7 @@ public class VentaService {
     private final ImpuestoVentaService impuestoService;
     private final VentaMapper mapper;
     private final modulo.notificaciones.service.NotificacionService notificacionService;
+    private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
 
     @Transactional
     public VentaResponse registrar(VentaRequest request) {
@@ -193,6 +194,27 @@ public class VentaService {
         log.info("{} emitida: venta #{}, total {}, asiento {}", venta.descripcionComprobante(), venta.getId(), total, asiento);
 
         try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "EMISION_VENTA",
+                    "VENTAS",
+                    String.format("Emisión de %s (#%s) por Bs. %s para cliente '%s'.",
+                            venta.descripcionComprobante(),
+                            venta.getNumeroFactura() != null ? String.valueOf(venta.getNumeroFactura()) : String.valueOf(venta.getId()),
+                            total.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(),
+                            cliente != null ? cliente.getRazonSocial() : "Cliente General"),
+                    "EXITO",
+                    "MEDIA",
+                    String.format("{\"ventaId\":%d,\"factura\":\"%s\",\"total\":%s,\"clienteId\":%d,\"comprobante\":\"%s\",\"asiento\":\"%s\"}",
+                            venta.getId(),
+                            venta.getNumeroFactura() != null ? String.valueOf(venta.getNumeroFactura()) : "",
+                            total.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(),
+                            cliente != null ? cliente.getId() : 0,
+                            venta.getTipoComprobante(),
+                            asiento != null ? asiento : "")
+            );
+        } catch (Exception ignored) {}
+
+        try {
             notificacionService.notificar(
                     usuarioId,
                     "Venta Registrada",
@@ -257,6 +279,19 @@ public class VentaService {
         }
 
         log.info("{} anulada por el usuario #{} (asiento {})", comprobante, usuarioId, asiento);
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "ANULACION_VENTA",
+                    "VENTAS",
+                    String.format("Anulación de %s (#%d) por usuario #%d. Motivo: %s.",
+                            comprobante, venta.getId(), usuarioId, motivo.trim()),
+                    "EXITO",
+                    "ALTA",
+                    String.format("{\"ventaId\":%d,\"comprobante\":\"%s\",\"motivo\":\"%s\",\"asiento\":\"%s\"}",
+                            venta.getId(), comprobante, motivo.trim(), asiento != null ? asiento : "")
+            );
+        } catch (Exception ignored) {}
 
         try {
             notificacionService.notificar(

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
  * Los inserts son idempotentes y no duplican información si los pedidos ya fueron cargados previamente.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 @Order(140)
 public class InicializadorPedidosValidacion implements ApplicationRunner {
 

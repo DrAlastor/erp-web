@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
  * en kardex_movimientos para la sucursal principal, permitiendo consultar el Kardex valorado de cualquier artículo.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 @Order(145)
 public class InicializadorKardex implements ApplicationRunner {
 

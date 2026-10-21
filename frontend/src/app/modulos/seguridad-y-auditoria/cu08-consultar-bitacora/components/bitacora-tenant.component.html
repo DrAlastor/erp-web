@@ -1,0 +1,367 @@
+<div class="bitacora-page">
+  <header class="page-header">
+    <div class="header-titles">
+      <h2>Bitácora de Auditoría del Tenant</h2>
+      <p class="subtitle">
+        Registro de auditoría inmutable, externo a la base de datos operativa y replicado en
+        <strong>Amazon CloudWatch Logs</strong> con encadenamiento criptográfico (SHA-256 Hash Chaining).
+        Consulta exclusiva para el Administrador y auditores autorizados de la empresa.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="verificarCadena()" [disabled]="verificando()">
+        <span class="icon">🛡️</span>
+        {{ verificando() ? 'Verificando Cadena...' : 'Verificar Integridad Criptográfica' }}
+      </button>
+      <button class="btn btn-secondary" (click)="exportarAuditoria()" [disabled]="exportando()">
+        <span class="icon">📥</span>
+        {{ exportando() ? 'Exportando...' : 'Exportar Auditoría (JSON)' }}
+      </button>
+      <button class="btn btn-secondary" (click)="cargarEventos()">
+        <span class="icon">🔄</span> Refrescar
+      </button>
+    </div>
+  </header>
+
+  <!-- Banner de Resultado de Verificación de Integridad -->
+  @if (resultadoVerificacion(); as res) {
+    <div class="crypto-proof-banner" [class.valid]="res.valida" [class.invalid]="!res.valida">
+      <div class="proof-icon">
+        {{ res.valida ? '🔒' : '⚠️' }}
+      </div>
+      <div class="proof-content">
+        <h4>{{ res.valida ? 'Cadena Criptográfica Íntegra' : 'Alerta de Inconsistencia Criptográfica' }}</h4>
+        <p>{{ res.mensaje }}</p>
+        <div class="proof-meta">
+          <span>Algoritmo: {{ res.algoritmo || 'SHA-256 Hash Chaining' }}</span>
+          @if (res.totalBloques) {
+            <span> • Bloques validados: {{ res.totalBloques }}</span>
+          }
+          @if (res.ultimoHash) {
+            <span> • Último Hash: <code>{{ res.ultimoHash.slice(0, 16) }}...</code></span>
+          }
+        </div>
+      </div>
+      <button class="proof-close" (click)="resultadoVerificacion.set(null)">×</button>
+    </div>
+  }
+
+  <!-- KPIs de Auditoría e Infraestructura CloudWatch -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap primary">
+        <span>📜</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Eventos</span>
+        <span class="kpi-value">{{ totalEventos() }}</span>
+        <span class="kpi-hint">Registros inmutables auditados</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap success">
+        <span>✓</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Operaciones Exitosas</span>
+        <span class="kpi-value text-success">{{ totalCompletados() }}</span>
+        <span class="kpi-hint">Ejecutadas con éxito</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap warning">
+        <span>⚠️</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Incidentes / Rechazos</span>
+        <span class="kpi-value text-danger">{{ totalFallidos() }}</span>
+        <span class="kpi-hint">Fallas o accesos denegados</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap info">
+        <span>☁️</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Amazon CloudWatch</span>
+        @if (cloudwatchStatus(); as cw) {
+          <span class="kpi-value" [style.color]="cw.conectado ? '#34C759' : '#FF9500'">
+            {{ cw.conectado ? 'Conectado' : 'Local Buffer' }}
+          </span>
+          <span class="kpi-hint">{{ cw.region }} • {{ cw.logGroup }}</span>
+        } @else {
+          <span class="kpi-value">WORM</span>
+          <span class="kpi-hint">Almacenamiento inmutable externo</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Avanzados -->
+  <div class="filters-card">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="form-control"
+        [ngModel]="filtroTexto()"
+        (ngModelChange)="filtroTexto.set($event)"
+        placeholder="Buscar por actor, operación, IP, ID de evento o detalle...">
+    </div>
+
+    <div class="module-filter-wrap">
+      <label>Módulo:</label>
+      <select class="form-control" [ngModel]="filtroModulo()" (ngModelChange)="filtroModulo.set($event); cargarEventos()">
+        <option value="TODOS">Todos los Módulos</option>
+        <option value="SEGURIDAD">Seguridad y Acceso</option>
+        <option value="USUARIOS">Gestión de Usuarios</option>
+        <option value="ROLES_PERMISOS">Roles y Permisos (RBAC)</option>
+        <option value="EMPLEADOS">Colaboradores / Empleados</option>
+        <option value="BACKUPS">Backups y Restore</option>
+        <option value="CATALOGO">Catálogo de Artículos</option>
+        <option value="CATEGORIAS">Categorías de Productos</option>
+        <option value="UNIDADES_MEDIDA">Unidades de Medida</option>
+        <option value="INVENTARIO">Movimientos de Inventario</option>
+        <option value="ALMACENES">Almacenes y Sucursales</option>
+        <option value="STOCK">Control de Existencias / Stock</option>
+        <option value="KARDEX">Consulta de Kardex</option>
+        <option value="CLIENTES">Gestión de Clientes</option>
+        <option value="COTIZACIONES">Cotizaciones de Venta</option>
+        <option value="PEDIDOS">Pedidos de Venta</option>
+        <option value="VALIDACION_COMERCIAL">Aprobaciones Comerciales</option>
+        <option value="PRECIOS_DESCUENTOS">Precios y Descuentos</option>
+        <option value="VENTAS">Ventas y Facturación</option>
+        <option value="DEVOLUCIONES">Devoluciones / Notas de Crédito</option>
+        <option value="DESPACHOS">Despachos y Entregas</option>
+        <option value="PAGOS">Pasarela de Pagos (Stripe)</option>
+        <option value="NOTIFICACIONES">Notificaciones del Sistema</option>
+        <option value="SUPERADMIN">Super Admin / SaaS</option>
+        <option value="SISTEMA">Configuración del Sistema</option>
+      </select>
+    </div>
+
+    <div class="module-filter-wrap">
+      <label>Severidad:</label>
+      <select class="form-control" [ngModel]="filtroSeveridad()" (ngModelChange)="filtroSeveridad.set($event); cargarEventos()">
+        <option value="TODAS">Todas</option>
+        <option value="BAJA">Baja</option>
+        <option value="MEDIA">Media</option>
+        <option value="ALTA">Alta</option>
+        <option value="CRITICA">Crítica</option>
+      </select>
+    </div>
+
+    <div class="module-filter-wrap">
+      <label>Resultado:</label>
+      <select class="form-control" [ngModel]="filtroResultado()" (ngModelChange)="filtroResultado.set($event); cargarEventos()">
+        <option value="TODOS">Todos</option>
+        <option value="COMPLETADO">Completado / Éxito</option>
+        <option value="FALLIDO">Fallido</option>
+        <option value="VERIFICADO">Verificado</option>
+      </select>
+    </div>
+
+    <div class="module-filter-wrap">
+      <label>Desde:</label>
+      <input type="date" class="form-control" [ngModel]="filtroDesde()" (ngModelChange)="filtroDesde.set($event); cargarEventos()">
+    </div>
+
+    <div class="module-filter-wrap">
+      <label>Hasta:</label>
+      <input type="date" class="form-control" [ngModel]="filtroHasta()" (ngModelChange)="filtroHasta.set($event); cargarEventos()">
+    </div>
+
+    <button class="btn btn-secondary btn-sm" (click)="limpiarFiltros()">Limpiar</button>
+  </div>
+
+  <!-- Tabla de Bitácora Inmutable -->
+  <div class="card-table-wrap">
+    <div class="table-header-row">
+      <div>
+        <h3>Registros de Auditoría Inmutable</h3>
+        <p class="table-subtitle">
+          Listado de operaciones registradas fuera de la base de datos de producción con prueba de encadenamiento SHA-256.
+        </p>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <div class="empty-state">
+        <span class="empty-icon">⏳</span>
+        <h4>Consultando registros de auditoría...</h4>
+        <p>Recuperando bloques y verificando firmas criptográficas.</p>
+      </div>
+    } @else if (eventosFiltrados().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📂</span>
+        <h4>No se encontraron eventos</h4>
+        <p>No hay eventos registrados que coincidan con los filtros seleccionados.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha / Hora (Bolivia)</th>
+              <th>Actor / IP</th>
+              <th>Módulo</th>
+              <th>Operación</th>
+              <th>Detalle</th>
+              <th>Severidad</th>
+              <th>Resultado</th>
+              <th>CloudWatch</th>
+              <th>Hash SHA-256</th>
+              <th class="text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of eventosFiltrados(); track e.id) {
+              <tr>
+                <td><strong>#{{ e.id }}</strong></td>
+                <td>
+                  <div>{{ (e.fecha_hora_bolivia || e.fecha_hora_utc) | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+                  <small class="text-muted">{{ e.evento_id.slice(0, 12) }}...</small>
+                </td>
+                <td>
+                  <div class="actor-cell">
+                    <span class="actor-name">{{ e.actor }}</span>
+                    <span class="actor-ip">{{ e.ip_origen || '127.0.0.1' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-info">{{ e.modulo }}</span>
+                </td>
+                <td>
+                  <strong>{{ e.tipo_operacion }}</strong>
+                </td>
+                <td>
+                  <div class="payload-cell" [title]="e.detalle">{{ e.detalle }}</div>
+                </td>
+                <td>
+                  <span class="badge-severidad" [ngClass]="'sev-' + (e.severidad || 'media').toLowerCase()">
+                    {{ e.severidad || 'MEDIA' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="e.resultado === 'COMPLETADO' || e.resultado === 'VERIFICADO' ? 'badge-success' : 'badge-danger'">
+                    {{ e.resultado }}
+                  </span>
+                </td>
+                <td>
+                  @if (e.cloudwatch_ingested) {
+                    <span class="badge badge-success" title="Replicado en Amazon CloudWatch Logs">✓ AWS CW</span>
+                  } @else {
+                    <span class="badge badge-neutral" title="Buffer local inmutable">Local</span>
+                  }
+                </td>
+                <td>
+                  <div class="hash-cell">
+                    <button class="btn-hash" (click)="verDetalle(e)" title="Ver bloque criptográfico completo">
+                      {{ e.hash_actual.slice(0, 10) }}...
+                    </button>
+                    <button class="btn btn-action" (click)="copiarTexto(e.hash_actual)" title="Copiar Hash">📋</button>
+                  </div>
+                </td>
+                <td class="actions-cell">
+                  <button class="btn btn-secondary btn-xs" (click)="verDetalle(e)">
+                    Ver Bloque
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL: DETALLE DEL BLOQUE CRIPTOGRÁFICO -->
+  @if (eventoDetalle(); as ev) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3>Detalle del Evento de Auditoría Inmutable #{{ ev.id }}</h3>
+          <button class="modal-close" (click)="cerrarDetalle()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>ID Universal de Evento:</label>
+              <span><code>{{ ev.evento_id }}</code></span>
+            </div>
+            <div class="detail-item">
+              <label>Fecha y Hora UTC:</label>
+              <span>{{ ev.fecha_hora_utc | date:'dd/MM/yyyy HH:mm:ss' }} UTC</span>
+            </div>
+            <div class="detail-item">
+              <label>Actor Responsable:</label>
+              <span><strong>{{ ev.actor }}</strong></span>
+            </div>
+            <div class="detail-item">
+              <label>Dirección IP de Origen:</label>
+              <span>{{ ev.ip_origen }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Módulo:</label>
+              <span><span class="badge badge-info">{{ ev.modulo }}</span></span>
+            </div>
+            <div class="detail-item">
+              <label>Operación:</label>
+              <span><strong>{{ ev.tipo_operacion }}</strong></span>
+            </div>
+            <div class="detail-item">
+              <label>Severidad:</label>
+              <span class="badge-severidad" [ngClass]="'sev-' + (ev.severidad || 'media').toLowerCase()">
+                {{ ev.severidad || 'MEDIA' }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Resultado:</label>
+              <span class="badge" [ngClass]="ev.resultado === 'COMPLETADO' || ev.resultado === 'VERIFICADO' ? 'badge-success' : 'badge-danger'">
+                {{ ev.resultado }}
+              </span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Descripción / Detalle del Evento:</label>
+              <span>{{ ev.detalle }}</span>
+            </div>
+          </div>
+
+          <h4 class="mt-3">Encadenamiento Criptográfico de Hashes (Blockchain-style)</h4>
+          <div class="hash-chain-visual">
+            <div class="chain-step">
+              <label>1. Hash Previo del Bloque Anterior (SHA-256):</label>
+              <div class="hash-val">{{ ev.hash_previo }}</div>
+            </div>
+            <div class="chain-arrow">↓ <em>(Incorporado en el payload canónico para sellado matemático)</em></div>
+            <div class="chain-step">
+              <label>2. Hash Resultante del Bloque Actual (SHA-256):</label>
+              <div class="hash-val">{{ ev.hash_actual }}</div>
+            </div>
+          </div>
+
+          @if (ev.metadatos) {
+            <h4 class="mt-3">Metadatos Estructurados (JSON):</h4>
+            <div class="code-block">{{ ev.metadatos }}</div>
+          }
+
+          <div class="info-box mt-2">
+            <strong>Replicación Externa:</strong> Este evento está asegurado en
+            <strong>Amazon CloudWatch Logs</strong> (Stream: <code>tenant-{{ ev.codigo_empresa || 'ASUS' }}</code>)
+            y no puede ser modificado ni eliminado desde la base de datos operativa.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="copiarTexto(ev.hash_actual)">
+            Copiar Hash Actual
+          </button>
+          <button class="btn btn-primary" (click)="cerrarDetalle()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

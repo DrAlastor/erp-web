@@ -41,14 +41,37 @@ export class LandingComponent {
   // Subscription plans from ERP_Master
   readonly planes = [
     {
-      codigo: 'PLAN-BASICO',
+      codigo: 'PRUEBA',
+      nombre: 'Prueba Gratuita',
+      tagline: 'Acceso completo durante 7 días sin costo ni tarjeta.',
+      precioMensual: 0,
+      precioAnual: 0,
+      precioUsdMensual: 0,
+      precioUsdAnual: 0,
+      limiteUsuarios: 3,
+      limiteSucursales: 1,
+      limiteAlmacenes: 1,
+      esPrueba: true,
+      caracteristicas: [
+        'Hasta 3 usuarios concurrentes',
+        '1 sucursal y 1 almacén',
+        'Facturación, cotizaciones y ventas',
+        'Base de datos PostgreSQL dedicada',
+        'Sin compromiso de permanencia'
+      ]
+    },
+    {
+      codigo: 'BASICO',
       nombre: 'Plan Emprendedor Start',
       tagline: 'Diseñado para microempresas y comercios en crecimiento.',
       precioMensual: 299,
       precioAnual: 2990,
+      precioUsdMensual: 29.90,
+      precioUsdAnual: 299,
       limiteUsuarios: 20,
       limiteSucursales: 1,
       limiteAlmacenes: 1,
+      esPrueba: false,
       caracteristicas: [
         'Hasta 20 usuarios incluidos',
         '1 sucursal y 1 almacén',
@@ -58,15 +81,18 @@ export class LandingComponent {
       ]
     },
     {
-      codigo: 'PLAN-PRO',
+      codigo: 'PREMIUM',
       nombre: 'Plan Profesional PyME',
       tagline: 'Para empresas en expansión que operan múltiples puntos de venta.',
       precioMensual: 699,
       precioAnual: 6990,
+      precioUsdMensual: 69.90,
+      precioUsdAnual: 699,
       limiteUsuarios: 100,
       limiteSucursales: 3,
       limiteAlmacenes: 5,
       destacado: true,
+      esPrueba: false,
       caracteristicas: [
         'Hasta 100 usuarios incluidos',
         '3 sucursales y 5 almacenes',
@@ -77,14 +103,17 @@ export class LandingComponent {
       ]
     },
     {
-      codigo: 'PLAN-CORP',
+      codigo: 'CORPORATIVO',
       nombre: 'Plan Corporativo Enterprise',
       tagline: 'Capacidad total con contabilidad analítica en tiempo real.',
       precioMensual: 1499,
       precioAnual: 14990,
+      precioUsdMensual: 149.90,
+      precioUsdAnual: 1499,
       limiteUsuarios: 200,
       limiteSucursales: 10,
       limiteAlmacenes: 20,
+      esPrueba: false,
       caracteristicas: [
         'Hasta 200 usuarios incluidos',
         '10 sucursales y 20 almacenes',
@@ -92,6 +121,27 @@ export class LandingComponent {
         'Reportes ejecutivos, estados financieros y QBE',
         'Bitácora inmutable de auditoría',
         'Soporte prioritario y copias de seguridad diarias'
+      ]
+    },
+    {
+      codigo: 'EMPRESARIAL',
+      nombre: 'Plan Empresarial Multi-Holding',
+      tagline: 'Máxima infraestructura y soporte para grandes organizaciones.',
+      precioMensual: 2999,
+      precioAnual: 29990,
+      precioUsdMensual: 299.90,
+      precioUsdAnual: 2999,
+      limiteUsuarios: 500,
+      limiteSucursales: 50,
+      limiteAlmacenes: 100,
+      esPrueba: false,
+      caracteristicas: [
+        'Hasta 500 usuarios incluidos',
+        '50 sucursales y 100 almacenes',
+        'Multi-holding y consolidación contable',
+        'Hasta 200.000 productos y transacciones ilimitadas',
+        'Auditoría total y backups automatizados a S3',
+        'SLA garantizado y soporte prioritario 24/7'
       ]
     }
   ];

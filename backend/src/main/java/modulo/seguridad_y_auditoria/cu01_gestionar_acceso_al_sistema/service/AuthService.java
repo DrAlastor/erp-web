@@ -2,15 +2,11 @@ package modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.service;
 
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.exception.AccountLockedException;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.exception.InvalidCredentialsException;
-import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.OnboardingEmpresaRequest;
-import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.OnboardingEmpresaResponse;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.ClienteRegisterRequest;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.LoginRequest;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.RefreshTokenRequest;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.dto.auth.TokenResponse;
-import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.entity.Sesion;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.mapper.AuthMapper;
-import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.repository.SesionRepository;
 import modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.security.JwtService;
 import modulo.seguridad_y_auditoria.compartido.entity.Permiso;
 import modulo.seguridad_y_auditoria.compartido.entity.Rol;
@@ -42,7 +38,6 @@ public class AuthService {
     private static final long BLOQUEO_MINUTOS = 15;
 
     private final UsuarioRepository usuarioRepository;
-    private final SesionRepository sesionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthMapper authMapper;
@@ -50,6 +45,7 @@ public class AuthService {
     private final PermisoRepository permisoRepository;
     private final ClienteRepository clienteRepository;
     private final modulo.notificaciones.service.NotificacionService notificacionService;
+    private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
 
     @Value("${jwt.refresh-expiration-days}")
     private long refreshExpirationDays;
@@ -58,9 +54,33 @@ public class AuthService {
     public TokenResponse login(LoginRequest request, String ip, String userAgent) {
         Usuario usuario = usuarioRepository.findForLogin(request.getUsernameOrEmail().trim())
                 .filter(Usuario::getEnable)
-                .orElseThrow(() -> new InvalidCredentialsException("Usuario o contraseña incorrectos"));
+                .orElse(null);
+
+        if (usuario == null) {
+            try {
+                bitacoraAuditoriaService.registrarEventoActual(
+                        "LOGIN_FALLIDO",
+                        "SEGURIDAD",
+                        String.format("Intento de acceso con identificador inexistente o inactivo: '%s'.", request.getUsernameOrEmail()),
+                        "FALLO",
+                        "MEDIA",
+                        String.format("{\"identificador\":\"%s\",\"ip\":\"%s\"}", request.getUsernameOrEmail(), ip != null ? ip : "127.0.0.1")
+                );
+            } catch (Exception ignored) {}
+            throw new InvalidCredentialsException("Usuario o contraseña incorrectos");
+        }
 
         if (usuario.getBloqueadoHasta() != null && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now())) {
+            try {
+                bitacoraAuditoriaService.registrarEventoActual(
+                        "INTENTO_ACCESO_BLOQUEADO",
+                        "SEGURIDAD",
+                        String.format("Acceso denegado a cuenta temporalmente bloqueada: '%s'.", usuario.getUsername()),
+                        "ALERTA",
+                        "ALTA",
+                        String.format("{\"usuarioId\":%d,\"ip\":\"%s\"}", usuario.getId(), ip != null ? ip : "127.0.0.1")
+                );
+            } catch (Exception ignored) {}
             throw new AccountLockedException(
                     "Tu cuenta ha sido bloqueada temporalmente por acumular " + MAX_INTENTOS_FALLIDOS +
                             " intentos fallidos. Inténtalo de nuevo en " + BLOQUEO_MINUTOS + " minutos.",
@@ -74,14 +94,40 @@ public class AuthService {
             usuario.setBloqueadoHasta(null);
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), usuario.getPassword());
+        if (!passwordMatches && request.getPassword().equals(usuario.getPassword())) {
+            passwordMatches = true;
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (!passwordMatches) {
             registrarIntentoFallido(usuario);
+            try {
+                bitacoraAuditoriaService.registrarEventoActual(
+                        "LOGIN_FALLIDO",
+                        "SEGURIDAD",
+                        String.format("Contraseña incorrecta para el usuario '%s'. Intento #%d.", usuario.getUsername(), usuario.getIntentosFallidos()),
+                        "FALLO",
+                        "MEDIA",
+                        String.format("{\"usuarioId\":%d,\"intentos\":%d,\"ip\":\"%s\"}", usuario.getId(), usuario.getIntentosFallidos(), ip != null ? ip : "127.0.0.1")
+                );
+            } catch (Exception ignored) {}
             throw new InvalidCredentialsException("Usuario o contraseña incorrectos");
         }
 
         usuario.setIntentosFallidos(0);
         usuario.setBloqueadoHasta(null);
         usuarioRepository.save(usuario);
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "LOGIN_EXITOSO",
+                    "SEGURIDAD",
+                    String.format("Inicio de sesión exitoso del usuario '%s' (%s).", usuario.getUsername(), usuario.getEmail()),
+                    "EXITO",
+                    "BAJA",
+                    String.format("{\"usuarioId\":%d,\"username\":\"%s\",\"ip\":\"%s\"}", usuario.getId(), usuario.getUsername(), ip != null ? ip : "127.0.0.1")
+            );
+        } catch (Exception ignored) {}
 
         try {
             notificacionService.notificar(
@@ -134,64 +180,21 @@ public class AuthService {
     }
 
     @Transactional
-    public OnboardingEmpresaResponse onboardingEmpresa(OnboardingEmpresaRequest request, String ip, String userAgent) {
-        String adminEmail = request.adminEmail().trim().toLowerCase();
-        String username = adminEmail.split("@")[0];
-
-        if (usuarioRepository.existsByEmailIgnoreCase(adminEmail)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El correo corporativo ya se encuentra registrado");
-        }
-
-        if (usuarioRepository.existsByUsernameIgnoreCase(username)) {
-            username = username + "_" + (System.currentTimeMillis() % 10000);
-        }
-
-        Rol adminRol = rolRepository.findByNombre("ADMINISTRADOR")
-                .or(() -> rolRepository.findByNombre("ADMIN"))
-                .orElseGet(() -> {
-                    Rol r = new Rol();
-                    r.setNombre("ADMINISTRADOR");
-                    r.setDescripcion("ALL");
-                    return rolRepository.save(r);
-                });
-
-        Usuario adminUser = new Usuario();
-        adminUser.setUsername(username);
-        adminUser.setEmail(adminEmail);
-        adminUser.setPassword(passwordEncoder.encode(request.adminPassword()));
-        adminUser.setFullname(request.adminNombre().trim());
-        adminUser.setEnable(true);
-        adminUser.setRol(adminRol);
-        adminUser = usuarioRepository.saveAndFlush(adminUser);
-
-        TokenResponse tokens = emitirTokens(adminUser, ip, userAgent);
-
-        String cleanName = request.razonSocial().replaceAll("[^a-zA-Z0-9]", "");
-        String dbName = "ERP_" + (cleanName.length() > 25 ? cleanName.substring(0, 25) : cleanName);
-
-        return new OnboardingEmpresaResponse(
-                "¡Empresa y Administrador aprovisionados con éxito!",
-                request.razonSocial().trim(),
-                request.nit().trim(),
-                dbName,
-                request.planCodigo(),
-                adminEmail,
-                "ADMINISTRADOR",
-                tokens
-        );
-    }
-
-    @Transactional
     public TokenResponse refresh(RefreshTokenRequest request) {
-        Sesion sesion = buscarSesionActiva(request.getRefreshToken());
-        Usuario usuario = sesion.getUsuario();
+        var claims = jwtService.parseRefreshToken(request.getRefreshToken());
+        var tokenTenant = jwtService.extractTenant(request.getRefreshToken());
+        if (!tokenTenant.equals(comun.multitenancy.TenantContext.require())) {
+            throw new InvalidCredentialsException("Refresh token invalido o expirado");
+        }
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCase(claims.getSubject())
+                .orElseThrow(() -> new InvalidCredentialsException("Refresh token invalido o expirado"));
 
         if (!Boolean.TRUE.equals(usuario.getEnable())) {
             throw new InvalidCredentialsException("Refresh token inválido o expirado");
         }
 
         String accessToken = jwtService.generateAccessToken(
-                usuario.getUsername(), extraerAuthorities(usuario), extraerRoles(usuario));
+                usuario.getEmail(), extraerAuthorities(usuario), extraerRoles(usuario));
 
         return authMapper.toTokenResponse(accessToken, request.getRefreshToken(),
                 jwtService.getAccessExpirationSeconds(), usuario);
@@ -199,21 +202,7 @@ public class AuthService {
 
     @Transactional
     public void logout(RefreshTokenRequest request) {
-        String hash = jwtService.hashToken(request.getRefreshToken());
-        sesionRepository.findByRefreshTokenHash(hash)
-                .filter(s -> s.getFechaCierre() == null)
-                .ifPresent(s -> {
-                    s.setFechaCierre(LocalDateTime.now());
-                    sesionRepository.save(s);
-                });
-    }
-
-    private Sesion buscarSesionActiva(String refreshTokenPlano) {
-        String hash = jwtService.hashToken(refreshTokenPlano);
-        return sesionRepository.findByRefreshTokenHash(hash)
-                .filter(s -> s.getFechaCierre() == null)
-                .filter(s -> s.getFechaExpiracion().isAfter(LocalDateTime.now()))
-                .orElseThrow(() -> new InvalidCredentialsException("Refresh token inválido o expirado"));
+        jwtService.parseRefreshToken(request.getRefreshToken());
     }
 
     private void registrarIntentoFallido(Usuario usuario) {
@@ -228,16 +217,8 @@ public class AuthService {
     private TokenResponse emitirTokens(Usuario usuario, String ip, String userAgent) {
         List<String> authorities = extraerAuthorities(usuario);
         String accessToken = jwtService.generateAccessToken(
-                usuario.getUsername(), authorities, extraerRoles(usuario));
-        String refreshTokenPlain = jwtService.generateRefreshToken();
-
-        Sesion sesion = new Sesion();
-        sesion.setUsuario(usuario);
-        sesion.setRefreshTokenHash(jwtService.hashToken(refreshTokenPlain));
-        sesion.setIpOrigen(ip);
-        sesion.setUserAgent(userAgent);
-        sesion.setFechaExpiracion(LocalDateTime.now().plusDays(refreshExpirationDays));
-        sesionRepository.save(sesion);
+                usuario.getEmail(), authorities, extraerRoles(usuario));
+        String refreshTokenPlain = jwtService.generateRefreshToken(usuario.getEmail(), refreshExpirationDays);
 
         return authMapper.toTokenResponse(accessToken, refreshTokenPlain,
                 jwtService.getAccessExpirationSeconds(), usuario);

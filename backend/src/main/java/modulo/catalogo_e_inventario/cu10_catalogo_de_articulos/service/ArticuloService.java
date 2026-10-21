@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import comun.saas.TenantEntitlementsService;
 
 /**
  * HU-05: catálogo maestro de artículos.
@@ -32,6 +33,8 @@ public class ArticuloService {
     private final ArticuloRepository articulos;
     private final CategoriaRepository categorias;
     private final ArticuloMapper mapper;
+    private final TenantEntitlementsService entitlements;
+    private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
 
     public List<ArticuloResponse> listarTodos() {
         return articulos.findAllWithCategoria().stream().map(mapper::toResponse).toList();
@@ -49,6 +52,7 @@ public class ArticuloService {
 
     @Transactional
     public ArticuloResponse crear(ArticuloRequest request) {
+        entitlements.requireCapacity("PRODUCTOS", articulos.count());
         String sku = request.sku().trim();
         if (articulos.existsBySku(sku)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El SKU " + sku + " ya existe");
@@ -56,7 +60,23 @@ public class ArticuloService {
 
         Articulo articulo = mapper.toEntity(request);
         articulo.setCategoria(resolverCategoria(request.categoriaId()));
-        return mapper.toResponse(articulos.save(articulo));
+        Articulo guardado = articulos.save(articulo);
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "CREAR_ARTICULO",
+                    "CATALOGO",
+                    String.format("Creación de nuevo artículo '%s' con SKU '%s' en categoría '%s'.",
+                            guardado.getNombre(), guardado.getSku(),
+                            guardado.getCategoria() != null ? guardado.getCategoria().getNombre() : "Sin Categoría"),
+                    "EXITO",
+                    "MEDIA",
+                    String.format("{\"articuloId\":%d,\"sku\":\"%s\",\"nombre\":\"%s\"}",
+                            guardado.getId(), guardado.getSku(), guardado.getNombre())
+            );
+        } catch (Exception ignored) {}
+
+        return mapper.toResponse(guardado);
     }
 
     @Transactional
@@ -69,7 +89,22 @@ public class ArticuloService {
 
         mapper.aplicar(articulo, request);
         articulo.setCategoria(resolverCategoria(request.categoriaId()));
-        return mapper.toResponse(articulos.save(articulo));
+        Articulo guardado = articulos.save(articulo);
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "MODIFICAR_ARTICULO",
+                    "CATALOGO",
+                    String.format("Modificación del artículo #%d ('%s', SKU: '%s').",
+                            guardado.getId(), guardado.getNombre(), guardado.getSku()),
+                    "EXITO",
+                    "MEDIA",
+                    String.format("{\"articuloId\":%d,\"sku\":\"%s\",\"nombre\":\"%s\"}",
+                            guardado.getId(), guardado.getSku(), guardado.getNombre())
+            );
+        } catch (Exception ignored) {}
+
+        return mapper.toResponse(guardado);
     }
 
     /** Baja lógica: desactiva el artículo sin borrarlo. */
@@ -77,7 +112,22 @@ public class ArticuloService {
     public ArticuloResponse desactivar(Long id) {
         Articulo articulo = buscarEntidad(id);
         articulo.setActivo(false);
-        return mapper.toResponse(articulos.save(articulo));
+        Articulo guardado = articulos.save(articulo);
+
+        try {
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "DESACTIVAR_ARTICULO",
+                    "CATALOGO",
+                    String.format("Baja lógica del artículo #%d ('%s', SKU: '%s').",
+                            guardado.getId(), guardado.getNombre(), guardado.getSku()),
+                    "EXITO",
+                    "ALTA",
+                    String.format("{\"articuloId\":%d,\"sku\":\"%s\"}",
+                            guardado.getId(), guardado.getSku())
+            );
+        } catch (Exception ignored) {}
+
+        return mapper.toResponse(guardado);
     }
 
     private Articulo buscarEntidad(Long id) {

@@ -1,0 +1,519 @@
+<div class="backups-page">
+  <!-- Encabezado y Acciones Principales -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h2>Gestionar Backups y Puntos de Restauración</h2>
+      <p class="subtitle">
+        Administración de copias de seguridad de la base de datos de la empresa, programación de políticas de retención,
+        auditoría SHA-256 y restauración granular o total.
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="abrirModalPolitica()">
+        <span class="icon">⚙️</span> Configurar Política
+      </button>
+      <button class="btn btn-primary" (click)="abrirCrearBackup()" [disabled]="guardando()">
+        <span class="icon">💾</span> Crear Respaldo Ahora
+      </button>
+    </div>
+  </header>
+
+  <!-- Banner de Mensaje Global -->
+  @if (mensaje(); as msg) {
+    <div class="alert-banner" [ngClass]="msg.tipo">
+      <span class="alert-icon">
+        @if (msg.tipo === 'exito') { ✓ }
+        @else if (msg.tipo === 'error') { ✕ }
+        @else { ℹ }
+      </span>
+      <span class="alert-text">{{ msg.texto }}</span>
+      <button class="alert-close" (click)="mensaje.set(null)">×</button>
+    </div>
+  }
+
+  <!-- KPIs de Respaldo y Continuidad -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap info">
+        <span>📦</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Puntos Disponibles</span>
+        <span class="kpi-value">{{ totalPuntos() }}</span>
+        <span class="kpi-hint">Respaldos verificados para recuperación</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap success">
+        <span>🛡️</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Último Respaldo</span>
+        <span class="kpi-value">
+          {{ ultimoBackup() ? ultimoBackup()?.tamanoFormateado : 'Ninguno' }}
+        </span>
+        <span class="kpi-hint">
+          {{ ultimoBackup() ? (ultimoBackup()?.fechaCreacion | date:'dd/MM/yyyy HH:mm') : 'Sin respaldos previos' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap warning">
+        <span>⏰</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Política Automática</span>
+        <span class="kpi-value">
+          {{ politica()?.activo ? politica()?.frecuencia : 'DESACTIVADA' }}
+        </span>
+        <span class="kpi-hint">
+          Hora: {{ politica()?.horaEjecucion || '02:00' }} • Retención: {{ politica()?.diasRetencion || 30 }} días
+        </span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap primary">
+        <span>🔐</span>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Integridad de Datos</span>
+        <span class="kpi-value text-success">SHA-256</span>
+        <span class="kpi-hint">Hash criptográfico verificado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación por Pestañas -->
+  <div class="tabs-bar">
+    <button
+      class="tab-btn"
+      [class.active]="tabActiva() === 'backups'"
+      (click)="cambiarTab('backups')">
+      📋 Puntos de Restauración ({{ backups().length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="tabActiva() === 'restauraciones'"
+      (click)="cambiarTab('restauraciones')">
+      🔄 Historial de Restauraciones ({{ restauraciones().length }})
+    </button>
+  </div>
+
+  <!-- TAB 1: PUNTOS DE RESTAURACIÓN -->
+  @if (tabActiva() === 'backups') {
+    <div class="card-table-wrap">
+      <div class="table-header-row">
+        <div>
+          <h3>Catálogo de Respaldos de la Base de Datos</h3>
+          <p class="table-subtitle">Consulte y restaure estados de información previos de su ERP de forma completa o por tablas específicas.</p>
+        </div>
+        <button class="btn btn-sm btn-ghost" (click)="cargarDatos()">🔄 Refrescar</button>
+      </div>
+
+      @if (cargando()) {
+        <div class="empty-state">
+          <p>Cargando catálogo de respaldos...</p>
+        </div>
+      } @else if (backups().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📂</span>
+          <h4>No se encontraron respaldos registrados</h4>
+          <p>Genere su primer respaldo bajo demanda para proteger los datos operativos de su empresa.</p>
+          <button class="btn btn-primary" (click)="abrirCrearBackup()">Crear Respaldo Ahora</button>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha / Hora</th>
+                <th>Nombre de Archivo</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Verificación SHA-256</th>
+                <th>Estado</th>
+                <th class="text-right">Acciones de Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of backups(); track b.id) {
+                <tr>
+                  <td>
+                    <strong>{{ b.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</strong>
+                    <div class="text-muted small">Job: {{ b.jobId }}</div>
+                  </td>
+                  <td>
+                    <span class="filename" [title]="b.nombreArchivo">{{ b.nombreArchivo }}</span>
+                    <div class="text-muted small">Por: {{ b.solicitadoPor }}</div>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="b.tipoBackup === 'AUTOMATICO' ? 'badge-info' : 'badge-neutral'">
+                      {{ b.tipoBackup }}
+                    </span>
+                  </td>
+                  <td><strong>{{ b.tamanoFormateado }}</strong></td>
+                  <td>
+                    <div class="hash-col">
+                      <span class="badge" [ngClass]="b.estadoVerificacion === 'VERIFICADO' ? 'badge-success' : 'badge-danger'">
+                        {{ b.estadoVerificacion }}
+                      </span>
+                      @if (b.checksumSha256) {
+                        <button class="btn-hash" (click)="verHashCompleto(b)" title="Ver firma SHA-256">
+                          🔍 {{ b.checksumSha256 | slice:0:8 }}...
+                        </button>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge-status" [ngClass]="b.estado === 'COMPLETADO' ? 'status-active' : 'status-danger'">
+                      {{ b.estado }}
+                    </span>
+                  </td>
+                  <td class="text-right actions-cell">
+                    <button class="btn-action" (click)="verificarIntegridad(b)" title="Verificar checksum en tiempo real">
+                      🛡️
+                    </button>
+                    <button class="btn-action" (click)="descargarBackup(b)" title="Descargar archivo .sql">
+                      ⬇️
+                    </button>
+                    <button class="btn btn-xs btn-outline-danger" (click)="abrirRestaurarCompleta(b)" title="Restaurar toda la BD">
+                      Restaurar Todo
+                    </button>
+                    <button class="btn btn-xs btn-outline-primary" (click)="abrirRestaurarSelectiva(b)" title="Restaurar tablas puntuales">
+                      Selectivo...
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB 2: HISTORIAL DE RESTAURACIONES -->
+  @if (tabActiva() === 'restauraciones') {
+    <div class="card-table-wrap">
+      <div class="table-header-row">
+        <div>
+          <h3>Trazabilidad de Restauraciones Ejecutadas</h3>
+          <p class="table-subtitle">Auditoría detallada de todos los procesos de restauración aplicados sobre la instancia del ERP.</p>
+        </div>
+      </div>
+
+      @if (restauraciones().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">🕒</span>
+          <h4>No hay registros de restauraciones</h4>
+          <p>No se ha ejecutado ninguna operación de recuperación hasta el momento.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha Inicio / Fin</th>
+                <th>Tipo</th>
+                <th>Alcance (Tablas)</th>
+                <th>Solicitado Por</th>
+                <th>Estado</th>
+                <th>Detalles Técnicos</th>
+                <th>Snapshot Reversión</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of restauraciones(); track r.id) {
+                <tr>
+                  <td><strong>#{{ r.id }}</strong></td>
+                  <td>
+                    <div>{{ r.fechaInicio | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+                    @if (r.fechaFin) {
+                      <div class="text-muted small">Fin: {{ r.fechaFin | date:'HH:mm:ss' }}</div>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="r.tipoRestauracion === 'COMPLETA' ? 'badge-danger' : 'badge-primary'">
+                      {{ r.tipoRestauracion }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="code-pill">{{ r.tablasSeleccionadas }}</span>
+                  </td>
+                  <td><strong>{{ r.solicitadoPor }}</strong></td>
+                  <td>
+                    <span class="badge-status" [ngClass]="r.estado === 'COMPLETADO' ? 'status-active' : 'status-danger'">
+                      {{ r.estado }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-muted small">{{ r.detalles }}</span>
+                  </td>
+                  <td>
+                    @if (r.reversionDisponible) {
+                      <span class="badge badge-success">✓ Disponible</span>
+                    } @else {
+                      <span class="badge badge-neutral">No</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- MODAL: CREAR RESPALDO BAJO DEMANDA -->
+  @if (modalCrearBackup()) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Crear Respaldo Bajo Demanda</h3>
+          <button class="modal-close" (click)="cerrarCrearBackup()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Esta operación generará una copia lógica íntegra de la base de datos de su empresa,
+            incluyendo catálogos maestros, transacciones comerciales y configuraciones.
+          </p>
+          <div class="info-box">
+            <strong>Garantías de Seguridad:</strong>
+            <ul>
+              <li>Cifrado en tránsito y en reposo.</li>
+              <li>Generación automática de firma criptográfica <strong>SHA-256</strong>.</li>
+              <li>Registro inmediato e inmutable en la bitácora de auditoría externa.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="cerrarCrearBackup()">Cancelar</button>
+          <button class="btn btn-primary" (click)="ejecutarCrearBackup('BAJO_DEMANDA')">
+            Iniciar Generación
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: RESTAURACIÓN COMPLETA -->
+  @if (modalRestaurarCompleta()) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog modal-danger">
+        <div class="modal-header">
+          <h3>⚠️ Advertencia: Restauración Completa de Base de Datos</h3>
+          <button class="modal-close" (click)="cerrarRestaurarCompleta()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="danger-box">
+            <h4>Impacto Crítico:</h4>
+            <p>
+              Está a punto de restaurar la base de datos completa al punto:
+              <br><strong>{{ backupSeleccionado()?.nombreArchivo }}</strong> ({{ backupSeleccionado()?.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}).
+            </p>
+            <p>
+              Todos los datos introducidos después de esta fecha serán reemplazados por el estado del respaldo.
+            </p>
+          </div>
+
+          <div class="safety-checkpoint">
+            <span class="icon">🛡️</span>
+            <div>
+              <strong>Mecanismo de Reversión Automático:</strong>
+              <p>Antes de aplicar los cambios, el sistema generará automáticamente un snapshot de seguridad de la base de datos actual para que pueda revertir en caso de anomalías.</p>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label>Motivo de la restauración (obligatorio para auditoría):</label>
+            <input type="text" class="form-control" [(ngModel)]="motivoRestauracion" placeholder="Ej: Error operacional en inventarios / Reversión técnica">
+          </div>
+
+          <div class="form-group mt-3">
+            <label>Para autorizar, escriba exactamente <strong>CONFIRMAR</strong>:</label>
+            <input type="text" class="form-control input-danger" [(ngModel)]="confirmacionTexto" placeholder="CONFIRMAR">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="cerrarRestaurarCompleta()">Cancelar</button>
+          <button
+            class="btn btn-danger"
+            [disabled]="confirmacionTexto().trim().toUpperCase() !== 'CONFIRMAR'"
+            (click)="ejecutarRestaurarCompleta()">
+            Proceder con la Restauración Completa
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: RESTAURACIÓN SELECTIVA -->
+  @if (modalRestaurarSelectiva()) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3>Restauración Selectiva de Información</h3>
+          <button class="modal-close" (click)="cerrarRestaurarSelectiva()">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="subtitle">
+            Seleccione únicamente las entidades o tablas que desea reponer desde el respaldo
+            <strong>{{ backupSeleccionado()?.nombreArchivo }}</strong>. Las demás tablas operativas permanecerán intactas.
+          </p>
+
+          <div class="table-selection-toolbar">
+            <button class="btn btn-xs btn-ghost" (click)="seleccionarTodasTablas()">Seleccionar Todo</button>
+            <button class="btn btn-xs btn-ghost" (click)="deseleccionarTodasTablas()">Limpiar Selección</button>
+          </div>
+
+          <div class="tables-checkbox-grid">
+            @for (tabla of tablasDisponibles(); track tabla) {
+              <label class="checkbox-card" [class.selected]="tablasSeleccionadas().has(tabla)">
+                <input
+                  type="checkbox"
+                  [checked]="tablasSeleccionadas().has(tabla)"
+                  (change)="toggleTabla(tabla)">
+                <span class="table-name">{{ tabla }}</span>
+              </label>
+            }
+          </div>
+
+          <div class="form-group mt-3">
+            <label>Motivo de la recuperación:</label>
+            <input type="text" class="form-control" [(ngModel)]="motivoRestauracion" placeholder="Ej: Reposición de lista de clientes eliminados accidentalmente">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="cerrarRestaurarSelectiva()">Cancelar</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="tablasSeleccionadas().size === 0"
+            (click)="ejecutarRestaurarSelectiva()">
+            Restaurar {{ tablasSeleccionadas().size }} Tablas Seleccionadas
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: CONFIGURAR POLÍTICA AUTOMÁTICA -->
+  @if (modalPolitica()) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Configurar Política de Respaldos Automáticos</h3>
+          <button class="modal-close" (click)="cerrarModalPolitica()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="formPolitica.activo">
+              <span class="slider"></span>
+              <span class="toggle-label">Habilitar programación automática</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label>Frecuencia de Respaldo:</label>
+            <select class="form-control" [(ngModel)]="formPolitica.frecuencia">
+              <option value="DIARIO">Diario (Recomendado)</option>
+              <option value="SEMANAL">Semanal</option>
+              <option value="MENSUAL">Mensual</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Hora de Ejecución (UTC / Hora local del servidor):</label>
+            <input type="time" class="form-control" [(ngModel)]="formPolitica.horaEjecucion">
+          </div>
+
+          <div class="form-group">
+            <label>Período de Retención (Días):</label>
+            <input type="number" class="form-control" [(ngModel)]="formPolitica.diasRetencion" min="7" max="365">
+            <small class="text-muted">Los respaldos más antiguos que este período se depuran automáticamente según el plan contratado.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Correo Electrónico para Notificaciones y Alertas:</label>
+            <input type="email" class="form-control" [(ngModel)]="formPolitica.notificarEmail" placeholder="admin@empresa.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="cerrarModalPolitica()">Cancelar</button>
+          <button class="btn btn-primary" (click)="guardarPolitica()" [disabled]="guardando()">
+            Guardar Política
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: DETALLE HASH SHA-256 -->
+  @if (modalDetalleHash(); as b) {
+    <div class="modal-backdrop">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+          <h3>Firma Criptográfica de Integridad (SHA-256)</h3>
+          <button class="modal-close" (click)="cerrarModalHash()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="hash-info-banner">
+            <span class="icon">ℹ️</span>
+            <div>
+              <strong>¿Para qué sirve y dónde se ejecuta este comando?</strong>
+              <p>
+                El hash SHA-256 es la <em>huella digital</em> única del archivo. Al descargar el respaldo, tu navegador lo guarda en tu carpeta <strong>Descargas (Downloads)</strong>. Para verificarlo en la terminal de Windows:
+              </p>
+              <div class="cmd-snippet">
+                <span>Opción 1: Entrar a tu carpeta de Descargas y ejecutar:</span>
+                <code>cd %USERPROFILE%\Downloads</code><br>
+                <code>certutil -hashfile {{ b.nombreArchivo }} SHA256</code>
+              </div>
+              <div class="cmd-snippet" style="margin-top: 6px;">
+                <span>Opción 2: O ejecutar directamente indicando la ruta:</span>
+                <code>certutil -hashfile "%USERPROFILE%\Downloads\{{ b.nombreArchivo }}" SHA256</code>
+              </div>
+            </div>
+          </div>
+
+
+          <p class="mt-3"><strong>Hash registrado en el servidor:</strong></p>
+          <div class="hash-box">
+            <code>{{ b.checksumSha256 }}</code>
+          </div>
+
+          <div class="form-group mt-3">
+            <label><strong>Validador / Comparador en línea:</strong> (Pega aquí el hash que calculaste para contrastarlo)</label>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="hashAComparar()"
+              (ngModelChange)="hashAComparar.set($event)"
+              placeholder="Pega el hash SHA-256 aquí para comparar...">
+          </div>
+
+          @if (coincidenciaHash() !== null) {
+            @if (coincidenciaHash()) {
+              <div class="match-success">
+                ✓ <strong>¡Coincidencia Exacta (100%)!</strong> El archivo descargado está completamente íntegro y auténtico.
+              </div>
+            } @else {
+              <div class="match-error">
+                ✕ <strong>No coincide.</strong> El hash ingresado es diferente al registrado. Verifica que sea el mismo archivo.
+              </div>
+            }
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="copiarAlPortapapeles(b.checksumSha256)">Copiar Hash</button>
+          <button class="btn btn-primary" (click)="cerrarModalHash()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

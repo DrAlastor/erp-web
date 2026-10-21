@@ -1,9 +1,11 @@
 export interface LoginRequest {
+  codigoEmpresa?: string;
   usernameOrEmail: string;
   password: string;
 }
 
 export interface ClienteRegisterRequest {
+  codigoEmpresa: string;
   username: string;
   email: string;
   password: string;
@@ -14,6 +16,7 @@ export interface ClienteRegisterRequest {
 }
 
 export interface RefreshTokenRequest {
+  codigoEmpresa: string;
   refreshToken: string;
 }
 
@@ -29,5 +32,6 @@ export interface TokenResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  codigoEmpresa?: string;
   usuario: UsuarioPerfil;
 }

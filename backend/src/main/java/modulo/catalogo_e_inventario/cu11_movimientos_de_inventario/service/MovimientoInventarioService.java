@@ -36,6 +36,7 @@ public class MovimientoInventarioService {
     private final MovimientoInventarioMapper mapper;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     private final modulo.notificaciones.service.NotificacionService notificacionService;
+    private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
 
     /**
      * HU-06: Registra de forma atómica e inmutable un movimiento de inventario (Kardex)
@@ -146,6 +147,25 @@ public class MovimientoInventarioService {
 
         KardexMovimiento guardado = kardexRepository.save(movimiento);
         log.info("Movimiento Kardex #{} registrado con éxito. Nuevo stock: {}", guardado.getId(), nuevoStock);
+
+        try {
+            String severidad = tipoNorm.startsWith("AJUSTE") ? "MEDIA" : "BAJA";
+            bitacoraAuditoriaService.registrarEventoActual(
+                    "MOVIMIENTO_STOCK",
+                    "INVENTARIO",
+                    String.format("Movimiento %s de %s %s para '%s' (SKU: %s) en almacén '%s'. Saldo resultante: %s.",
+                            tipoEfectivo, cantidad.stripTrailingZeros().toPlainString(),
+                            producto.getUnidadMedida() != null ? producto.getUnidadMedida() : "u",
+                            producto.getNombre(), producto.getCodigoSku(), almacen.getNombre(),
+                            nuevoStock.stripTrailingZeros().toPlainString()),
+                    "EXITO",
+                    severidad,
+                    String.format("{\"productoId\":%d,\"sku\":\"%s\",\"almacenId\":%d,\"tipo\":\"%s\",\"cantidad\":%s,\"saldo\":%s,\"doc\":\"%s\"}",
+                            producto.getId(), producto.getCodigoSku(), almacen.getId(), tipoEfectivo,
+                            cantidad.stripTrailingZeros().toPlainString(), nuevoStock.stripTrailingZeros().toPlainString(),
+                            request.getReferenciaDoc() != null ? request.getReferenciaDoc() : "")
+            );
+        } catch (Exception ignored) {}
 
         BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo() : BigDecimal.ZERO;
         if (min.compareTo(BigDecimal.ZERO) > 0 && nuevoStock.compareTo(min) <= 0) {

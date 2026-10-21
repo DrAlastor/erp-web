@@ -21,7 +21,7 @@ describe('CU-01 authentication flow', () => {
   });
   const service = () => TestBed.inject(AuthService);
   function login(rememberMe = false, seconds = 900) {
-    service().login({ usernameOrEmail: 'admin', password: 'test-password' }, rememberMe).subscribe();
+    service().login({ codigoEmpresa: 'ASUS-7K4P2M', usernameOrEmail: 'admin', password: 'test-password' }, rememberMe).subscribe();
     const req = http.expectOne(`${api}/auth/login`);
     expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush(response(seconds));
@@ -65,7 +65,7 @@ describe('CU-01 authentication flow', () => {
     client.get(`${api}/first`).subscribe();
     client.get(`${api}/second`).subscribe();
     const refresh = http.expectOne(`${api}/auth/refresh`);
-    expect(refresh.request.body).toEqual({ refreshToken: 'refresh-token' });
+    expect(refresh.request.body).toEqual({ codigoEmpresa: 'ASUS-7K4P2M', refreshToken: 'refresh-token' });
     expect(refresh.request.headers.has('Authorization')).toBe(false);
     const renewed = response();
     refresh.flush(renewed);
@@ -120,7 +120,7 @@ describe('CU-01 authentication flow', () => {
     const refresh = http.expectOne(`${api}/auth/refresh`);
     service().logout();
     const logout = http.expectOne(`${api}/auth/logout`);
-    expect(logout.request.body).toEqual({ refreshToken: 'refresh-token' });
+    expect(logout.request.body).toEqual({ codigoEmpresa: 'ASUS-7K4P2M', refreshToken: 'refresh-token' });
     logout.flush(null);
     refresh.flush(response());
     expect(service().getAccessToken()).toBeNull();
@@ -161,7 +161,7 @@ describe('CU-01 authentication flow', () => {
     client.get(`${api}/protected`).subscribe({ error: () => {} });
     http.expectOne(`${api}/protected`).flush({}, { status: 401, statusText: 'Unauthorized' });
     const pending = http.expectOne(`${api}/auth/refresh`);
-    service().login({ usernameOrEmail: 'other', password: 'test' }).subscribe();
+    service().login({ codigoEmpresa: 'OTHER-1', usernameOrEmail: 'other', password: 'test' }).subscribe();
     const newer = { ...response(), refreshToken: 'new-session-refresh-token' };
     http.expectOne(`${api}/auth/login`).flush(newer);
     pending.flush({}, { status: 401, statusText: 'Unauthorized' });

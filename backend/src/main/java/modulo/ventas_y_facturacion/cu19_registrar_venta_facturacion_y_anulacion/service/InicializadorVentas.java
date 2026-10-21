@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
  * como facturas.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.demo-initializers.enabled", havingValue = "true")
 @Order(130)
 public class InicializadorVentas implements ApplicationRunner {
 

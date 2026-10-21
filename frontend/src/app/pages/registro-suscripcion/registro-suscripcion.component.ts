@@ -19,6 +19,19 @@ export interface PlanInfo {
   destacado?: boolean;
 }
 
+interface MonedaCatalogo {
+  codigo: string;
+  nombre: string;
+  simbolo: string;
+}
+
+interface PaisCatalogo {
+  codigoIso2: string;
+  codigoIso3: string;
+  nombre: string;
+  monedas: MonedaCatalogo[];
+}
+
 @Component({
   selector: 'app-registro-suscripcion',
   standalone: true,
@@ -37,26 +50,40 @@ export class RegistroSuscripcionComponent {
   // Pasos del Asistente (1: Plan, 2: Empresa, 3: Administrador, 4: Éxito)
   readonly currentStep = signal<number>(1);
   readonly cicloFacturacion = signal<'mensual' | 'anual'>('mensual');
-  readonly planSeleccionado = signal<string>('PLAN-PRO');
+  readonly planSeleccionado = signal<string>('PRUEBA');
   readonly loading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly showPassword = signal<boolean>(false);
+  readonly paises = signal<PaisCatalogo[]>([]);
+  readonly monedas = signal<MonedaCatalogo[]>([]);
   readonly provisionedResult = signal<{
     empresaNombre: string;
     nit: string;
     dbName: string;
     adminEmail: string;
+    codigoEmpresa: string;
     planNombre: string;
   } | null>(null);
 
   readonly planes: PlanInfo[] = [
     {
-      codigo: 'PLAN-BASICO',
+      codigo: 'PRUEBA',
+      nombre: 'Prueba gratuita',
+      tagline: 'Siete días sin necesidad de realizar un pago.',
+      precioMensual: 0,
+      precioAnual: 0,
+      limiteUsuarios: 3,
+      limiteSucursales: 1,
+      limiteAlmacenes: 1,
+      caracteristicas: ['Sin tarjeta', 'Base PostgreSQL dedicada', 'Hasta 100 productos']
+    },
+    {
+      codigo: 'BASICO',
       nombre: 'Plan Emprendedor Start',
       tagline: 'Ideal para microempresas y comercios en fase inicial.',
-      precioMensual: 299,
-      precioAnual: 2990,
-      limiteUsuarios: 20,
+      precioMensual: 29.90,
+      precioAnual: 299,
+      limiteUsuarios: 10,
       limiteSucursales: 1,
       limiteAlmacenes: 1,
       caracteristicas: [
@@ -68,12 +95,12 @@ export class RegistroSuscripcionComponent {
       ]
     },
     {
-      codigo: 'PLAN-PRO',
+      codigo: 'PREMIUM',
       nombre: 'Plan Profesional PyME',
       tagline: 'Para empresas en expansión con múltiples puntos de venta.',
-      precioMensual: 699,
-      precioAnual: 6990,
-      limiteUsuarios: 100,
+      precioMensual: 69.90,
+      precioAnual: 699,
+      limiteUsuarios: 30,
       limiteSucursales: 3,
       limiteAlmacenes: 5,
       destacado: true,
@@ -87,12 +114,12 @@ export class RegistroSuscripcionComponent {
       ]
     },
     {
-      codigo: 'PLAN-CORP',
+      codigo: 'CORPORATIVO',
       nombre: 'Plan Corporativo Enterprise',
       tagline: 'Capacidad total para empresas comerciales y contables consolidadas.',
-      precioMensual: 1499,
-      precioAnual: 14990,
-      limiteUsuarios: 200,
+      precioMensual: 149.90,
+      precioAnual: 1499,
+      limiteUsuarios: 100,
       limiteSucursales: 10,
       limiteAlmacenes: 20,
       caracteristicas: [
@@ -103,6 +130,17 @@ export class RegistroSuscripcionComponent {
         'Historial de auditoría inmutable (Bitácora)',
         'Soporte prioritario y copias de seguridad diarias'
       ]
+    },
+    {
+      codigo: 'EMPRESARIAL',
+      nombre: 'Plan Empresarial',
+      tagline: 'Capacidad ampliada para grandes organizaciones.',
+      precioMensual: 299.90,
+      precioAnual: 2999,
+      limiteUsuarios: 500,
+      limiteSucursales: 50,
+      limiteAlmacenes: 100,
+      caracteristicas: ['Hasta 100.000 productos', 'Acceso completo', 'Analítica avanzada']
     }
   ];
 
@@ -112,7 +150,8 @@ export class RegistroSuscripcionComponent {
     razonSocial: ['', [Validators.required, Validators.maxLength(200)]],
     nombreComercial: ['', [Validators.maxLength(200)]],
     nit: ['', [Validators.required, Validators.pattern(/^[0-9]{6,15}$/)]],
-    ciudad: ['Santa Cruz de la Sierra', [Validators.required]],
+    paisCodigo: ['BO', [Validators.required]],
+    ciudad: ['', [Validators.required]],
     direccion: ['', [Validators.maxLength(255)]],
     telefonoEmpresa: ['', [Validators.maxLength(30)]],
     monedaPrincipal: ['BOB', [Validators.required]],
@@ -126,7 +165,13 @@ export class RegistroSuscripcionComponent {
   });
 
   constructor() {
+    this.cargarCatalogos();
     this.route.queryParams.subscribe(params => {
+      if (params['pago'] === 'exito' && params['session_id']) {
+        this.confirmarPago(params['session_id']);
+      } else if (params['pago'] === 'cancelado') {
+        this.errorMessage.set('El pago fue cancelado. La empresa permanecerá pendiente de activación.');
+      }
       if (params['plan']) {
         const found = this.planes.find(p => p.codigo === params['plan']);
         if (found) {
@@ -200,6 +245,7 @@ export class RegistroSuscripcionComponent {
       direccion: formValues.direccion,
       telefonoEmpresa: formValues.telefonoEmpresa,
       monedaPrincipal: formValues.monedaPrincipal,
+      paisCodigo: formValues.paisCodigo,
       adminNombre: formValues.adminNombre,
       adminEmail: formValues.adminEmail,
       adminPassword: formValues.adminPassword,
@@ -209,36 +255,78 @@ export class RegistroSuscripcionComponent {
     this.http.post<any>(`${environment.apiUrl}/auth/onboarding-empresa`, payload).subscribe({
       next: (res) => {
         this.loading.set(false);
-        this.provisionedResult.set({
+        const result = {
           empresaNombre: res.empresaNombre || formValues.razonSocial,
           nit: res.nit || formValues.nit,
-          dbName: res.dbName || `ERP_${formValues.razonSocial.replace(/[^a-zA-Z0-9]/g, '')}`,
+          dbName: res.dbName,
           adminEmail: res.adminEmail || formValues.adminEmail,
+          codigoEmpresa: res.codigoEmpresa,
           planNombre: this.planActual.nombre
-        });
+        };
+        if (res.checkoutUrl) {
+          sessionStorage.setItem('erp_pending_onboarding', JSON.stringify(result));
+          window.location.assign(res.checkoutUrl);
+          return;
+        }
+        this.provisionedResult.set(result);
         this.currentStep.set(4);
       },
       error: (err) => {
         this.loading.set(false);
-        // Si el backend responde error o no está levantado en vivo, proveer simulación exitosa pedagógica para testing
-        if (err.status === 409) {
-          this.errorMessage.set(err.error?.message || 'El correo o NIT ya se encuentra registrado.');
-        } else {
-          // Aprovisionamiento simulado para demostración completa sin bloquear al usuario
-          this.provisionedResult.set({
-            empresaNombre: formValues.razonSocial,
-            nit: formValues.nit,
-            dbName: `ERP_${formValues.razonSocial.replace(/[^a-zA-Z0-9]/g, '')}`,
-            adminEmail: formValues.adminEmail,
-            planNombre: this.planActual.nombre
-          });
-          this.currentStep.set(4);
-        }
+        this.errorMessage.set(err.error?.message || 'No se pudo crear la empresa. Inténtalo nuevamente.');
       }
     });
   }
 
   irAlLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  seleccionarPais(codigoIso2: string): void {
+    const country = this.paises().find(item => item.codigoIso2 === codigoIso2);
+    const currencies = country?.monedas ?? [];
+    this.monedas.set(currencies);
+    if (currencies.length > 0) {
+      this.onboardingForm.controls.monedaPrincipal.setValue(currencies[0].codigo);
+    }
+  }
+
+  private cargarCatalogos(): void {
+    this.http.get<PaisCatalogo[]>(`${environment.apiUrl}/public/catalogos/paises`).subscribe({
+      next: countries => {
+        this.paises.set(countries);
+        this.seleccionarPais(this.onboardingForm.controls.paisCodigo.value);
+      },
+      error: () => this.errorMessage.set('No se pudo cargar el catálogo mundial de países y monedas.')
+    });
+  }
+
+  private confirmarPago(sessionId: string): void {
+    this.loading.set(true);
+    this.http.post<{ estado: string; codigoEmpresa: string }>(
+      `${environment.apiUrl}/auth/onboarding-confirmar`,
+      null,
+      { params: { sessionId } }
+    ).subscribe({
+      next: response => {
+        const stored = sessionStorage.getItem('erp_pending_onboarding');
+        const pending = stored ? JSON.parse(stored) : null;
+        sessionStorage.removeItem('erp_pending_onboarding');
+        this.provisionedResult.set({
+          empresaNombre: pending?.empresaNombre ?? 'Empresa registrada',
+          nit: pending?.nit ?? '',
+          dbName: pending?.dbName ?? '',
+          adminEmail: pending?.adminEmail ?? '',
+          codigoEmpresa: response.codigoEmpresa,
+          planNombre: pending?.planNombre ?? 'Suscripción activa'
+        });
+        this.loading.set(false);
+        this.currentStep.set(4);
+      },
+      error: err => {
+        this.loading.set(false);
+        this.errorMessage.set(err.error?.message || 'Stripe todavía no confirmó el pago.');
+      }
+    });
   }
 }

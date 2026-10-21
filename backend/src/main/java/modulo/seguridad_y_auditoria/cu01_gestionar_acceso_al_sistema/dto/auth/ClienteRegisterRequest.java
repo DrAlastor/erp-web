@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record ClienteRegisterRequest(
+        @NotBlank @Size(max = 30) String codigoEmpresa,
         @NotBlank @Size(max = 50) String username,
         @NotBlank @Email @Size(max = 100) String email,
         @NotBlank @Size(min = 8, max = 72) String password,

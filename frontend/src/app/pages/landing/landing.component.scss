@@ -2271,14 +2271,22 @@
 
 .pricing-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
   margin-top: 3rem;
   margin-bottom: 3rem;
 
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   @media (max-width: 990px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
     grid-template-columns: 1fr;
-    max-width: 520px;
+    max-width: 480px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -2362,6 +2370,7 @@
 .pricing-card-amount {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 0.35rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
@@ -2391,6 +2400,32 @@
 .cycle-text {
   font-size: 0.92rem;
   color: var(--text-secondary, #64748b);
+}
+
+.pricing-savings-hint {
+  width: 100%;
+  font-size: 0.725rem;
+  font-weight: 700;
+  margin-top: 0.45rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  line-height: 1.3;
+
+  &.badge-trial {
+    background: rgba(52, 199, 89, 0.12);
+    color: #248a3d;
+  }
+
+  &.badge-saving {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+
+  &.badge-monthly {
+    color: var(--text-secondary, #64748b);
+    font-weight: 500;
+    padding: 0;
+  }
 }
 
 .pricing-quotas {

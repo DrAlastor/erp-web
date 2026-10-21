@@ -1,5 +1,8 @@
 package modulo.seguridad_y_auditoria.cu01_gestionar_acceso_al_sistema.security;
 
+import comun.multitenancy.TenantContext;
+import comun.multitenancy.TenantDescriptor;
+import comun.multitenancy.MasterTenantResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,25 +28,49 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final MasterTenantResolver tenantResolver;
     private final UsuarioRepository usuarioRepository;
     private final modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.service.ServicioAutorizacion servicioAutorizacion;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        TenantContext.clear();
+        try {
+            authenticate(request);
+            filterChain.doFilter(request, response);
+        } finally {
+            TenantContext.clear();
+        }
+    }
+
+    private void authenticate(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+        if (header == null || !header.startsWith("Bearer ")
+                || SecurityContextHolder.getContext().getAuthentication() != null) {
             return;
         }
 
         String token = header.substring(7);
+        try {
+            if (jwtService.isSuperAdmin(token)) {
+                String email = jwtService.parseClaims(token).getSubject();
+                List<GrantedAuthority> authorities = List.of(
+                        new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"),
+                        new SimpleGrantedAuthority("ROLE_SUPERADMIN"),
+                        new SimpleGrantedAuthority("ALL"));
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                return;
+            }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
-                String username = jwtService.parseClaims(token).getSubject();
-                usuarioRepository.findByUsername(username)
+            TenantDescriptor tenant = tenantResolver.requireActive(jwtService.extractTenant(token));
+            TenantContext.set(tenant);
+            String username = jwtService.parseClaims(token).getSubject();
+            usuarioRepository.findByEmailIgnoreCase(username)
                         .filter(u -> Boolean.TRUE.equals(u.getEnable()))
                         .ifPresent(usuario -> {
                             List<GrantedAuthority> authorities = new java.util.ArrayList<>();
@@ -73,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     new ApplicationUserPrincipal(username, authorities,
                                         new modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioPrincipal(
                                             usuario.getId(),
-                                            usuario.getEmpresaId() != null ? usuario.getEmpresaId() : java.util.UUID.nameUUIDFromBytes("ERP_TENANT_DEFAULT".getBytes()),
+                                            java.util.UUID.nameUUIDFromBytes(tenant.codigoEmpresa().getBytes(java.nio.charset.StandardCharsets.UTF_8)),
                                             usuario.getFullname(),
                                             usuario.getEmail()));
                             UsernamePasswordAuthenticationToken authToken =
@@ -81,11 +108,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                             SecurityContextHolder.getContext().setAuthentication(authToken);
                         });
-            } catch (Exception ex) {
-                // Un JWT invalido o vencido queda sin autenticar (401 en rutas protegidas).
-            }
+        } catch (Exception ex) {
+            TenantContext.clear();
         }
-
-        filterChain.doFilter(request, response);
     }
 }

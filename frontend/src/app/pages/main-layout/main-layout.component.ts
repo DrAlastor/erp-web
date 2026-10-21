@@ -13,6 +13,7 @@ import { ClientePortalComponent } from '../../modulos/ventas-y-facturacion/cu13-
 import { CotizacionesComponent } from '../../modulos/ventas-y-facturacion/cu15-gestionar-cotizaciones/components/cotizaciones.component';
 import { DespachosComponent } from '../../modulos/ventas-y-facturacion/cu18-gestionar-despacho-de-venta/components/despachos.component';
 import { ERP_MODULES, ErpModule } from '../../core/models/erp-navigation';
+import { SaasEntitlementsService } from '../../core/services/saas-entitlements.service';
 
 import { EmpleadosComponent } from '../../modulos/seguridad-y-auditoria/cu04-gestionar-empleados/components/empleados.component';
 import { DatosMaestrosInventarioComponent } from '../../modulos/catalogo-e-inventario/cu09-datos-maestros-inventario/components/datos-maestros-inventario.component';
@@ -25,6 +26,8 @@ import { FacturacionComponent } from '../../modulos/ventas-y-facturacion/cu19-re
 import { DevolucionesComponent } from '../../modulos/ventas-y-facturacion/cu20-devoluciones-de-venta/components/devoluciones.component';
 
 import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-venta.component';
+import { BackupsRestoreComponent } from '../../modulos/seguridad-y-auditoria/cu07-gestionar-backups/components/backups-restore.component';
+import { BitacoraTenantComponent } from '../../modulos/seguridad-y-auditoria/cu08-consultar-bitacora/components/bitacora-tenant.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -32,19 +35,22 @@ import { PedidosVentaComponent } from '../../modulos/ventas-y-facturacion/cu16-p
   imports: [RouterLink, UsuariosComponent, RolesComponent, MovimientoInventarioComponent,
     CatalogoComponent, ClientesComponent, ClientePortalComponent, EmpleadosComponent, DatosMaestrosInventarioComponent,
     PreciosYListasComponent, CotizacionesComponent, PedidosVentaComponent, DespachosComponent, NotificationBellComponent, DashboardHomeComponent,
-    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent],
+    ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
+    BackupsRestoreComponent, BitacoraTenantComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {
   readonly permisos = inject(PermisosService);
+  readonly saas = inject(SaasEntitlementsService);
   readonly modules = ERP_MODULES;
   readonly authService = inject(AuthService);
   readonly themeService = inject(ThemeService);
 
   constructor() {
     this.permisos.cargar().subscribe({ error: () => this.permisos.limpiar() });
+    this.saas.load().subscribe({ error: () => this.saas.clear() });
     effect(() => {
       const mod = this.selectedModule();
       if (mod) {
@@ -70,6 +76,7 @@ export class MainLayoutComponent {
     return this.modules
       .map(module => {
         const functions = module.functions.filter(fn => {
+          if (!this.saas.allows(fn.name)) return false;
           if (esAdmin) return true;
           return fn.rolesPermitidos?.some(rp => roles.includes(rp)) ?? false;
         });

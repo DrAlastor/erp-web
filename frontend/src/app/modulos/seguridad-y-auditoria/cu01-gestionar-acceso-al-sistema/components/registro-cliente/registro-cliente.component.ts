@@ -24,6 +24,7 @@ export class RegistroClienteComponent {
   private readonly router = inject(Router);
 
   readonly form = this.fb.nonNullable.group({
+    codigoEmpresa: ['', [Validators.required, Validators.maxLength(30)]],
     username: ['', [Validators.required, Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
     password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
@@ -50,7 +51,11 @@ export class RegistroClienteComponent {
     }
     this.loading.set(true);
     this.error.set('');
-    this.auth.registerCliente(this.form.getRawValue()).subscribe({
+    const request = this.form.getRawValue();
+    this.auth.registerCliente({
+      ...request,
+      codigoEmpresa: request.codigoEmpresa.trim().toUpperCase(),
+    }).subscribe({
       next: () => this.router.navigate(['/app']),
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
