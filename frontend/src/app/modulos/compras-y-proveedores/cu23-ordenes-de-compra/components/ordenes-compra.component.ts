@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -68,6 +75,8 @@ export class OrdenesCompraComponent {
 
   // formulario
   readonly editandoId = signal<number | null>(null);
+  /** Estado de la orden que se está corrigiendo: una PENDIENTE no vuelve a borrador. */
+  readonly editandoEstado = signal<EstadoOrdenCompra | null>(null);
   readonly renglones = signal<RenglonOrden[]>([]);
   readonly descuento = signal(0);
   proveedorId: number | null = null;
@@ -89,7 +98,12 @@ export class OrdenesCompraComponent {
       subtotal += this.redondear((Number(r.cantidad) || 0) * (Number(r.costoUnitario) || 0));
     }
     const descuento = Number(this.descuento()) || 0;
-    return { subtotal, descuento, total: subtotal - descuento, excede: descuento > subtotal + 0.001 };
+    return {
+      subtotal,
+      descuento,
+      total: subtotal - descuento,
+      excede: descuento > subtotal + 0.001,
+    };
   });
 
   /** Lo que impide guardar, para avisarlo antes de ir al servidor. */
@@ -98,7 +112,8 @@ export class OrdenesCompraComponent {
     const usados = new Set<number>();
     for (const r of this.renglones()) {
       if (!r.productoId) continue;
-      if (usados.has(Number(r.productoId))) p.push('Hay un producto repetido: suma las cantidades en un solo renglón.');
+      if (usados.has(Number(r.productoId)))
+        p.push('Hay un producto repetido: suma las cantidades en un solo renglón.');
       usados.add(Number(r.productoId));
       if (!(Number(r.cantidad) > 0) || !(Number(r.costoUnitario) > 0)) {
         p.push('Cantidades y costos deben ser mayores a cero.');
@@ -110,7 +125,10 @@ export class OrdenesCompraComponent {
   });
 
   constructor() {
-    this.permisos.asegurarCargados().pipe(takeUntilDestroyed(this.destroy)).subscribe({ error: () => undefined });
+    this.permisos
+      .asegurarCargados()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({ error: () => undefined });
     this.load();
     this.cargarOpciones();
   }
@@ -124,7 +142,13 @@ export class OrdenesCompraComponent {
     this.error.set('');
     this.api
       .list(
-        { search: this.search.trim(), estado: this.estado, proveedorId: this.proveedorFiltro, desde: this.desde, hasta: this.hasta },
+        {
+          search: this.search.trim(),
+          estado: this.estado,
+          proveedorId: this.proveedorFiltro,
+          desde: this.desde,
+          hasta: this.hasta,
+        },
         this.page,
       )
       .pipe(takeUntilDestroyed(this.destroy))
@@ -163,6 +187,7 @@ export class OrdenesCompraComponent {
     this.limpiarMensajes();
     this.cargarOpciones();
     this.editandoId.set(null);
+    this.editandoEstado.set(null);
     this.proveedorId = null;
     this.fechaEntrega = '';
     this.observaciones = '';
@@ -175,6 +200,7 @@ export class OrdenesCompraComponent {
     this.limpiarMensajes();
     this.cargarOpciones();
     this.editandoId.set(o.id);
+    this.editandoEstado.set(o.estado);
     this.proveedorId = o.proveedorId;
     this.fechaEntrega = o.fechaEntrega ?? '';
     this.observaciones = '';
@@ -253,7 +279,11 @@ export class OrdenesCompraComponent {
       for (const s of elegidas) {
         const existente = conProducto.find((r) => Number(r.productoId) === s.productoId);
         if (existente) continue;
-        conProducto.push({ productoId: s.productoId, cantidad: Number(s.cantidadSugerida), costoUnitario: Number(s.ultimoCosto) });
+        conProducto.push({
+          productoId: s.productoId,
+          cantidad: Number(s.cantidadSugerida),
+          costoUnitario: Number(s.ultimoCosto),
+        });
       }
       return conProducto.length ? conProducto : actuales;
     });
@@ -284,8 +314,16 @@ export class OrdenesCompraComponent {
       })),
     };
     const id = this.editandoId();
+    const antes = this.editandoEstado();
     this.ejecutar(id ? this.api.update(id, body) : this.api.create(body), (o) => {
-      this.mostrar(o, borrador ? 'Borrador guardado.' : `Orden ${o.numeroOrden} registrada y enviada a aprobación.`);
+      this.mostrar(
+        o,
+        o.estado === 'BORRADOR'
+          ? 'Borrador guardado.'
+          : antes === 'PENDIENTE'
+            ? 'Cambios guardados. La orden sigue pendiente de aprobación.'
+            : `Orden ${o.numeroOrden} ${antes ? 'corregida' : 'registrada'} y enviada a aprobación.`,
+      );
     });
   }
 
@@ -310,25 +348,39 @@ export class OrdenesCompraComponent {
   }
 
   solicitarAprobacion(o: OrdenCompra): void {
-    this.ejecutar(this.api.requestApproval(o.id), (r) => this.mostrar(r, 'Orden enviada a aprobación.'));
+    this.ejecutar(this.api.requestApproval(o.id), (r) =>
+      this.mostrar(r, 'Orden enviada a aprobación.'),
+    );
   }
 
   aprobar(o: OrdenCompra): void {
-    this.ejecutar(this.api.approve(o.id), (r) => this.mostrar(r, `Orden ${r.numeroOrden} aprobada.`));
+    this.ejecutar(this.api.approve(o.id), (r) =>
+      this.mostrar(r, `Orden ${r.numeroOrden} aprobada.`),
+    );
   }
 
   enviar(o: OrdenCompra): void {
-    this.ejecutar(this.api.send(o.id), (r) => this.mostrar(r, 'Orden marcada como enviada al proveedor.'));
+    this.ejecutar(this.api.send(o.id), (r) =>
+      this.mostrar(r, 'Orden marcada como enviada al proveedor.'),
+    );
   }
 
   confirmarMotivo(): void {
     const o = this.seleccionada();
     const tipo = this.dialogo();
     if (!o || !this.motivo.trim() || (tipo !== 'rechazar' && tipo !== 'anular')) return;
-    const peticion = tipo === 'rechazar' ? this.api.reject(o.id, this.motivo.trim()) : this.api.cancel(o.id, this.motivo.trim());
+    const peticion =
+      tipo === 'rechazar'
+        ? this.api.reject(o.id, this.motivo.trim())
+        : this.api.cancel(o.id, this.motivo.trim());
     this.ejecutar(peticion, (r) => {
       this.dialogo.set(null);
-      this.mostrar(r, tipo === 'rechazar' ? 'Orden rechazada: volvió a borrador para corregirla.' : 'Orden anulada.');
+      this.mostrar(
+        r,
+        tipo === 'rechazar'
+          ? 'Orden rechazada: volvió a borrador para corregirla.'
+          : 'Orden anulada.',
+      );
     });
   }
 

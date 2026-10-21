@@ -4,13 +4,28 @@ const bs = (n: number) =>
   Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const escapar = (texto: string | null | undefined) =>
-  (texto ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  (texto ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
+
+/** Anotaciones que deja el sistema al cambiar de estado: son internas, no van al proveedor. */
+const NOTA_INTERNA = /^(Aprobada|Rechazada|Anulada|Enviada al proveedor) por /;
+
+/** Las observaciones sin el rastro interno de aprobaciones, rechazos y envíos. */
+export function notasParaProveedor(observaciones: string | null): string {
+  return (observaciones ?? '')
+    .split('\n')
+    .filter((linea) => linea.trim() && !NOTA_INTERNA.test(linea.trim()))
+    .join('\n');
+}
 
 /**
  * Abre la orden de compra en una ventana aparte y lanza la impresión del navegador, desde
  * donde se guarda como PDF para mandarla al proveedor. Igual que la proforma de CU15.
  */
 export function imprimirOrdenCompra(o: OrdenCompra): void {
+  const notas = notasParaProveedor(o.observaciones);
   const filas = o.detalles
     .map(
       (d) => `<tr>
@@ -23,7 +38,9 @@ export function imprimirOrdenCompra(o: OrdenCompra): void {
     )
     .join('');
   const condicion =
-    o.proveedorCondicionPago === 'CREDITO' ? `Crédito a ${o.proveedorDiasCredito ?? 0} días` : 'Contado';
+    o.proveedorCondicionPago === 'CREDITO'
+      ? `Crédito a ${o.proveedorDiasCredito ?? 0} días`
+      : 'Contado';
 
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8">
   <title>Orden de compra ${escapar(o.numeroOrden)}</title>
@@ -68,7 +85,7 @@ export function imprimirOrdenCompra(o: OrdenCompra): void {
     <tr><td>Descuento</td><td class="n">- ${bs(o.descuento)}</td></tr>
     <tr class="t"><td>Total Bs</td><td class="n">${bs(o.total)}</td></tr>
   </table>
-  ${o.observaciones ? `<p class="nota"><strong>Observaciones:</strong>\n${escapar(o.observaciones)}</p>` : ''}
+  ${notas ? `<p class="nota"><strong>Observaciones:</strong>\n${escapar(notas)}</p>` : ''}
   <div class="firmas"><div>Solicitado por</div><div>Aprobado por</div><div>Recibido por el proveedor</div></div>
   </body></html>`;
 

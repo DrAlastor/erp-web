@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -58,6 +59,7 @@ class ProveedorServiceTest {
         existente.setDiasCredito(30);
         existente.setActivo(true);
         when(proveedores.findById(5)).thenReturn(Optional.of(existente));
+        when(proveedores.bloquear(5)).thenReturn(Optional.of(existente));
         when(proveedores.saldoPendiente(5)).thenReturn(BigDecimal.ZERO);
     }
 
@@ -132,7 +134,7 @@ class ProveedorServiceTest {
 
         assertThat(r.activo()).isFalse();
         verify(avisos).registrar("PROVEEDOR_DESACTIVADO", admin, "proveedores", 5);
-        verify(avisos).avisarAdministradores(eq("Proveedor desactivado"), anyString());
+        verify(avisos).avisarAdministradores(eq("Proveedor desactivado"), anyString(), isNull());
 
         assertThat(service.reactivar(5, admin).activo()).isTrue();
         verify(avisos).registrar("PROVEEDOR_REACTIVADO", admin, "proveedores", 5);
@@ -152,6 +154,17 @@ class ProveedorServiceTest {
         assertThat(h.ordenes().get(0).fecha()).isEqualTo(LocalDate.of(2026, 10, 1));
         assertThat(h.saldoPendiente()).isEqualByComparingTo("80.00");
         assertThat(h.ordenesAbiertas()).isEqualTo(1L);
+    }
+
+    @Test
+    void leeCondicionesDePagoEscritasAManoEnLaBase() {
+        modulo.compras_y_proveedores.cu21_gestionar_proveedores.entity.CondicionPagoConverter c =
+                new modulo.compras_y_proveedores.cu21_gestionar_proveedores.entity.CondicionPagoConverter();
+        assertThat(c.convertToEntityAttribute(" credito ")).isEqualTo(CondicionPago.CREDITO);
+        assertThat(c.convertToEntityAttribute("Crédito")).isEqualTo(CondicionPago.CREDITO);
+        assertThat(c.convertToEntityAttribute("contado")).isEqualTo(CondicionPago.CONTADO);
+        assertThat(c.convertToEntityAttribute(null)).isNull();
+        assertThat(c.convertToDatabaseColumn(CondicionPago.CREDITO)).isEqualTo("CREDITO");
     }
 
     private static ProveedorRequest peticion(String nit, CondicionPago condicion, Integer dias) {

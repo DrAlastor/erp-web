@@ -1,6 +1,7 @@
 import { ProveedorOpcion } from '../../cu21-gestionar-proveedores/models/proveedor.model';
 
-export type EstadoOrdenCompra = 'BORRADOR' | 'PENDIENTE' | 'APROBADA' | 'ENVIADA' | 'RECIBIDA' | 'ANULADA';
+export type EstadoOrdenCompra =
+  'BORRADOR' | 'PENDIENTE' | 'APROBADA' | 'ENVIADA' | 'RECIBIDA' | 'ANULADA';
 
 export const ESTADOS_ORDEN: { valor: EstadoOrdenCompra; etiqueta: string }[] = [
   { valor: 'BORRADOR', etiqueta: 'Borrador' },

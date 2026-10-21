@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +14,12 @@ import { Observable } from 'rxjs';
 import { PermisosService } from '../../../seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/services/permisos.service';
 import { esAdministrador } from '../../compras-roles';
 import { ProveedoresService } from '../services/proveedores.service';
-import { CondicionPago, HistorialProveedor, Proveedor, ProveedorRequest } from '../models/proveedor.model';
+import {
+  CondicionPago,
+  HistorialProveedor,
+  Proveedor,
+  ProveedorRequest,
+} from '../models/proveedor.model';
 
 type Vista = 'lista' | 'editor' | 'ficha';
 
@@ -65,7 +77,10 @@ export class ProveedoresComponent {
   motivo = '';
 
   constructor() {
-    this.permisos.asegurarCargados().pipe(takeUntilDestroyed(this.destroy)).subscribe({ error: () => undefined });
+    this.permisos
+      .asegurarCargados()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({ error: () => undefined });
     this.load();
     this.cargarCiudades();
   }
@@ -207,9 +222,14 @@ export class ProveedoresComponent {
     const e: Partial<Record<keyof ProveedorRequest, string>> = {};
     if (!f.razonSocial?.trim()) e.razonSocial = 'La razón social es obligatoria.';
     if (!NIT.test(f.nitCi?.trim() ?? '')) e.nitCi = 'El NIT/CI debe ser numérico (4 a 30 dígitos).';
-    if (f.email?.trim() && !EMAIL.test(f.email.trim())) e.email = 'El correo no tiene un formato válido.';
-    if (f.telefono?.trim() && !TELEFONO.test(f.telefono.trim())) e.telefono = 'Sólo dígitos, espacios, +, - y paréntesis.';
-    if (f.condicionPago === 'CREDITO' && !(Number(f.diasCredito) > 0 && Number(f.diasCredito) <= 365)) {
+    if (f.email?.trim() && !EMAIL.test(f.email.trim()))
+      e.email = 'El correo no tiene un formato válido.';
+    if (f.telefono?.trim() && !TELEFONO.test(f.telefono.trim()))
+      e.telefono = 'Sólo dígitos, espacios, +, - y paréntesis.';
+    if (
+      f.condicionPago === 'CREDITO' &&
+      !(Number(f.diasCredito) > 0 && Number(f.diasCredito) <= 365)
+    ) {
       e.diasCredito = 'A crédito, los días deben estar entre 1 y 365.';
     }
     this.errores.set(e);

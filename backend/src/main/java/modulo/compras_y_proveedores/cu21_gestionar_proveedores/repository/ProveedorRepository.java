@@ -2,14 +2,18 @@ package modulo.compras_y_proveedores.cu21_gestionar_proveedores.repository;
 
 import modulo.compras_y_proveedores.cu21_gestionar_proveedores.entity.Proveedor;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
 
@@ -24,6 +28,22 @@ public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
                            Pageable pagina);
 
     List<Proveedor> findByActivoTrueOrderByRazonSocialAsc();
+
+    /**
+     * Lee el proveedor bloqueándolo para escribir (SELECT ... FOR UPDATE): dos cambios de
+     * estado simultáneos esperan su turno en vez de pisarse.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Proveedor p where p.id = :id")
+    Optional<Proveedor> bloquear(@Param("id") Integer id);
+
+    /**
+     * Lee el proveedor con un bloqueo compartido (FOR SHARE): mientras se emite o aprueba
+     * una orden, nadie puede desactivarlo a la vez.
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("select p from Proveedor p where p.id = :id")
+    Optional<Proveedor> compartir(@Param("id") Integer id);
 
     boolean existsByNitCi(String nitCi);
 

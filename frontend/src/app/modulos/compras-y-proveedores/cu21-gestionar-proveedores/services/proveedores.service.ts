@@ -15,7 +15,11 @@ export class ProveedoresService {
   private readonly url = `${environment.apiUrl}/proveedores`;
 
   list(search: string, activo: string, ciudad: string, page: number) {
-    let params = new HttpParams().set('search', search).set('ciudad', ciudad).set('page', page).set('size', 15);
+    let params = new HttpParams()
+      .set('search', search)
+      .set('ciudad', ciudad)
+      .set('page', page)
+      .set('size', 15);
     if (activo) params = params.set('activo', activo);
     return this.http.get<ProveedorPage>(this.url, { params });
   }

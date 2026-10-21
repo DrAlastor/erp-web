@@ -3,10 +3,13 @@ package modulo.compras_y_proveedores.cu23_ordenes_de_compra.repository;
 import modulo.compras_y_proveedores.cu23_ordenes_de_compra.entity.EstadoOrdenCompra;
 import modulo.compras_y_proveedores.cu23_ordenes_de_compra.entity.OrdenCompra;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -34,6 +37,15 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, Intege
     @EntityGraph(attributePaths = {"proveedor", "detalles", "detalles.producto"})
     @Query("select o from OrdenCompra o where o.id = :id")
     Optional<OrdenCompra> buscarCompleta(@Param("id") Integer id);
+
+    /**
+     * Bloquea la fila de la orden (SELECT ... FOR UPDATE) antes de cambiarla: así aprobar y
+     * anular a la vez no responden las dos 200; la segunda espera y ve el estado nuevo. Va
+     * sin joins porque PostgreSQL no permite FOR UPDATE sobre el lado opcional de un LEFT JOIN.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from OrdenCompra o where o.id = :id")
+    Optional<OrdenCompra> bloquear(@Param("id") Integer id);
 
     /**
      * Serializa la numeración: dos altas simultáneas esperan su turno en vez de calcular el

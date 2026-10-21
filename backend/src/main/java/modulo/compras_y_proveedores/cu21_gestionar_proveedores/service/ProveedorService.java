@@ -102,7 +102,7 @@ public class ProveedorService {
 
     @Transactional
     public ProveedorResponse modificar(Integer id, ProveedorRequest peticion, Solicitante quien) {
-        Proveedor proveedor = cargar(id);
+        Proveedor proveedor = cargarParaCambiar(id);
         String nit = peticion.nitCi().trim();
         if (proveedores.existsByNitCiAndIdNot(nit, id)) {
             throw rechazo(HttpStatus.CONFLICT, "Ya existe otro proveedor con el NIT/CI " + nit + ".");
@@ -115,7 +115,7 @@ public class ProveedorService {
 
     @Transactional
     public ProveedorResponse desactivar(Integer id, String motivo, Solicitante quien) {
-        Proveedor proveedor = cargar(id);
+        Proveedor proveedor = cargarParaCambiar(id);
         if (!Boolean.TRUE.equals(proveedor.getActivo())) {
             throw rechazo(HttpStatus.CONFLICT, "El proveedor " + proveedor.getRazonSocial() + " ya está inactivo.");
         }
@@ -134,13 +134,13 @@ public class ProveedorService {
         // La tabla no tiene columna para el motivo: queda en el aviso a los administradores.
         avisos.avisarAdministradores("Proveedor desactivado",
                 proveedor.getRazonSocial() + " (NIT " + proveedor.getNitCi() + ") fue desactivado por "
-                        + quien.actor() + ". Motivo: " + motivo.trim());
+                        + quien.actor() + ". Motivo: " + motivo.trim(), null);
         return mapper.aRespuesta(proveedor);
     }
 
     @Transactional
     public ProveedorResponse reactivar(Integer id, Solicitante quien) {
-        Proveedor proveedor = cargar(id);
+        Proveedor proveedor = cargarParaCambiar(id);
         if (Boolean.TRUE.equals(proveedor.getActivo())) {
             throw rechazo(HttpStatus.CONFLICT, "El proveedor " + proveedor.getRazonSocial() + " ya está activo.");
         }
@@ -175,6 +175,12 @@ public class ProveedorService {
     private BigDecimal saldoDe(Integer id) {
         BigDecimal saldo = proveedores.saldoPendiente(id);
         return saldo == null ? BigDecimal.ZERO : saldo;
+    }
+
+    /** Lo bloquea para escribir: desactivar mientras se emite una orden espera su turno. */
+    private Proveedor cargarParaCambiar(Integer id) {
+        return proveedores.bloquear(id)
+                .orElseThrow(() -> rechazo(HttpStatus.NOT_FOUND, "El proveedor " + id + " no existe."));
     }
 
     private Proveedor cargar(Integer id) {

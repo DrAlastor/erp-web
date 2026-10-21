@@ -161,7 +161,8 @@ public class OrdenCompraService {
 
     @Transactional
     public OrdenCompraResponse modificar(Integer id, OrdenCompraRequest peticion, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
+        exigirCreador(orden, quien, "modificar");
         if (!EstadoOrdenCompra.MODIFICABLES.contains(orden.getEstado())) {
             throw rechazo(HttpStatus.CONFLICT, "La orden " + orden.getNumeroOrden() + " está " + orden.getEstado()
                     + " y ya no se puede modificar: anúlala y emite otra.");
@@ -183,9 +184,10 @@ public class OrdenCompraService {
     /** Manda a aprobación un borrador (por ejemplo, una orden rechazada ya corregida). */
     @Transactional
     public OrdenCompraResponse solicitarAprobacion(Integer id, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
+        exigirCreador(orden, quien, "enviar a aprobación");
         exigirEstado(orden, EstadoOrdenCompra.BORRADOR, "enviar a aprobación");
-        validarProveedorActivo(orden.getProveedor());
+        validarProveedorActivo(proveedorVigente(orden));
         orden.setEstado(EstadoOrdenCompra.PENDIENTE);
         avisos.registrar("ORDEN_POR_APROBAR", quien, ENTIDAD, id);
         avisarPorAprobar(orden, quien);
@@ -194,13 +196,13 @@ public class OrdenCompraService {
 
     @Transactional
     public OrdenCompraResponse aprobar(Integer id, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
         exigirEstado(orden, EstadoOrdenCompra.PENDIENTE, "aprobar");
         if (orden.getCreadoPor() != null && orden.getCreadoPor().equals(quien.usuarioId())) {
             throw rechazo(HttpStatus.CONFLICT, "No puedes aprobar la orden " + orden.getNumeroOrden()
                     + " porque la registraste tú: la aprueba otro Administrador (separación de funciones).");
         }
-        validarProveedorActivo(orden.getProveedor());
+        validarProveedorActivo(proveedorVigente(orden));
         orden.setEstado(EstadoOrdenCompra.APROBADA);
         orden.anotar("Aprobada por " + quien.actor() + " el " + hoy());
         avisos.registrar("ORDEN_APROBADA", quien, ENTIDAD, id);
@@ -212,7 +214,7 @@ public class OrdenCompraService {
 
     @Transactional
     public OrdenCompraResponse rechazar(Integer id, String motivo, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
         exigirEstado(orden, EstadoOrdenCompra.PENDIENTE, "rechazar");
         orden.setEstado(EstadoOrdenCompra.BORRADOR);
         orden.anotar("Rechazada por " + quien.actor() + " el " + hoy() + ": " + motivo.trim());
@@ -224,7 +226,7 @@ public class OrdenCompraService {
 
     @Transactional
     public OrdenCompraResponse enviar(Integer id, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
         exigirEstado(orden, EstadoOrdenCompra.APROBADA, "marcar como enviada");
         orden.setEstado(EstadoOrdenCompra.ENVIADA);
         orden.anotar("Enviada al proveedor por " + quien.actor() + " el " + hoy());
@@ -236,7 +238,7 @@ public class OrdenCompraService {
 
     @Transactional
     public OrdenCompraResponse anular(Integer id, String motivo, Solicitante quien) {
-        OrdenCompra orden = cargar(id);
+        OrdenCompra orden = cargarParaCambiar(id);
         if (orden.getEstado() == EstadoOrdenCompra.RECIBIDA || orden.getEstado() == EstadoOrdenCompra.ANULADA) {
             throw rechazo(HttpStatus.CONFLICT, "La orden " + orden.getNumeroOrden() + " está "
                     + orden.getEstado() + " y no se puede anular.");
@@ -253,7 +255,7 @@ public class OrdenCompraService {
 
     /** Vuelca proveedor, renglones y descuento de la petición y recalcula los importes. */
     private void aplicar(OrdenCompra orden, OrdenCompraRequest peticion) {
-        Proveedor proveedor = proveedores.findById(peticion.proveedorId())
+        Proveedor proveedor = proveedores.compartir(peticion.proveedorId())
                 .orElseThrow(() -> rechazo(HttpStatus.NOT_FOUND,
                         "El proveedor " + peticion.proveedorId() + " no existe."));
         validarProveedorActivo(proveedor);
@@ -302,6 +304,23 @@ public class OrdenCompraService {
         }
     }
 
+    /**
+     * Sólo quien registró la orden la corrige. Si otro pudiera modificarla, podría reescribir
+     * una orden ajena y aprobarla él mismo, saltándose la separación de funciones; quien
+     * quiera un cambio la rechaza con el motivo y vuelve a su autor.
+     */
+    private void exigirCreador(OrdenCompra orden, Solicitante quien, String accion) {
+        if (orden.getCreadoPor() == null || !orden.getCreadoPor().equals(quien.usuarioId())) {
+            throw rechazo(HttpStatus.CONFLICT, "Sólo quien registró la orden " + orden.getNumeroOrden()
+                    + " puede " + accion + ". Si necesita cambios, recházala indicando el motivo.");
+        }
+    }
+
+    /** Vuelve a leer el proveedor con bloqueo compartido: nadie lo desactiva mientras tanto. */
+    private Proveedor proveedorVigente(OrdenCompra orden) {
+        return proveedores.compartir(orden.getProveedor().getId()).orElse(orden.getProveedor());
+    }
+
     private void exigirEstado(OrdenCompra orden, EstadoOrdenCompra esperado, String accion) {
         if (orden.getEstado() != esperado) {
             throw rechazo(HttpStatus.CONFLICT, "Para " + accion + " la orden " + orden.getNumeroOrden()
@@ -320,7 +339,14 @@ public class OrdenCompraService {
     private void avisarPorAprobar(OrdenCompra orden, Solicitante quien) {
         avisos.avisarAdministradores("Orden de compra por aprobar",
                 "La orden " + orden.getNumeroOrden() + " a " + orden.getProveedor().getRazonSocial()
-                        + " por Bs " + orden.getTotal() + " espera aprobación (registrada por " + quien.actor() + ").");
+                        + " por Bs " + orden.getTotal() + " espera aprobación (registrada por " + quien.actor() + ").", quien.usuarioId());
+    }
+
+    /** Bloquea la fila de la orden y la carga completa: los cambios de estado van en fila. */
+    private OrdenCompra cargarParaCambiar(Integer id) {
+        ordenes.bloquear(id)
+                .orElseThrow(() -> rechazo(HttpStatus.NOT_FOUND, "La orden de compra " + id + " no existe."));
+        return cargar(id);
     }
 
     private OrdenCompra cargar(Integer id) {

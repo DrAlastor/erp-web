@@ -186,10 +186,17 @@
         <p class="hint">Los totales se vuelven a calcular en el servidor al guardar. La orden no mueve stock: eso pasa al registrar la compra.</p>
 
         <div class="actions">
-          <button class="primary" [disabled]="busy() || problemas().length > 0" (click)="guardar(false)">
-            {{ busy() ? 'Guardando...' : 'Registrar y enviar a aprobación' }}
-          </button>
-          <button [disabled]="busy() || problemas().length > 0" (click)="guardar(true)">Guardar borrador</button>
+          @if (editandoEstado() === 'PENDIENTE') {
+            <!-- Una orden ya enviada a aprobación se corrige sin volver a borrador. -->
+            <button class="primary" [disabled]="busy() || problemas().length > 0" (click)="guardar(false)">
+              {{ busy() ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          } @else {
+            <button class="primary" [disabled]="busy() || problemas().length > 0" (click)="guardar(false)">
+              {{ busy() ? 'Guardando...' : 'Registrar y enviar a aprobación' }}
+            </button>
+            <button [disabled]="busy() || problemas().length > 0" (click)="guardar(true)">Guardar borrador</button>
+          }
           <button type="button" [disabled]="busy()" (click)="volver()">Cancelar</button>
         </div>
       </section>
@@ -291,10 +298,11 @@
             @if (o.estado === 'APROBADA' || o.estado === 'ENVIADA') {
               <button (click)="imprimir(o)">Imprimir / PDF</button>
             }
-            @if (modificable(o)) {
+            <!-- Sólo quien registró la orden la corrige; el resto la rechaza con un motivo. -->
+            @if (modificable(o) && o.registradaPorMi) {
               <button [disabled]="busy()" (click)="editar(o)">Modificar</button>
             }
-            @if (o.estado === 'BORRADOR') {
+            @if (o.estado === 'BORRADOR' && o.registradaPorMi) {
               <button class="primary" [disabled]="busy()" (click)="solicitarAprobacion(o)">Enviar a aprobación</button>
             }
             @if (admin()) {

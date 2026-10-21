@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -71,7 +72,7 @@ class OrdenCompraServiceTest {
         proveedor.setCondicionPago(CondicionPago.CREDITO);
         proveedor.setDiasCredito(30);
         proveedor.setActivo(true);
-        when(proveedores.findById(3)).thenReturn(Optional.of(proveedor));
+        when(proveedores.compartir(3)).thenReturn(Optional.of(proveedor));
 
         when(productos.findById(10L)).thenReturn(Optional.of(producto(10L, "Arroz 1kg")));
         when(productos.findById(11L)).thenReturn(Optional.of(producto(11L, "Aceite 1L")));
@@ -102,7 +103,7 @@ class OrdenCompraServiceTest {
         assertThat(r.registradaPorMi()).isTrue();
         verify(ordenes).bloquearNumeracion();
         verify(avisos).registrar("ORDEN_CREADA", almacenero, "ordenes_compra", 55);
-        verify(avisos).avisarAdministradores(eq("Orden de compra por aprobar"), anyString());
+        verify(avisos).avisarAdministradores(eq("Orden de compra por aprobar"), anyString(), eq(7L));
     }
 
     @Test
@@ -111,7 +112,7 @@ class OrdenCompraServiceTest {
                 new ItemOrdenCompraRequest(10L, BigDecimal.ONE, BigDecimal.TEN)), almacenero);
 
         assertThat(r.estado()).isEqualTo("BORRADOR");
-        verify(avisos, never()).avisarAdministradores(anyString(), anyString());
+        verify(avisos, never()).avisarAdministradores(anyString(), anyString(), any());
     }
 
     @Test
@@ -201,6 +202,40 @@ class OrdenCompraServiceTest {
     }
 
     @Test
+    void otroUsuarioNoPuedeModificarUnaOrdenAjena() {
+        // Si pudiera, reescribiría la orden de otro y la aprobaría él mismo.
+        OrdenCompra orden = existente(EstadoOrdenCompra.PENDIENTE, 7L);
+
+        assertThatThrownBy(() -> service.modificar(orden.getId(), peticion(null, false,
+                new ItemOrdenCompraRequest(10L, BigDecimal.ONE, BigDecimal.TEN)), admin))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode()).isEqualTo(HttpStatus.CONFLICT))
+                .hasMessageContaining("Sólo quien registró");
+        verify(ordenes, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void elCreadorCorrigeSuBorradorYLoMandaAAprobar() {
+        OrdenCompra orden = existente(EstadoOrdenCompra.BORRADOR, 7L);
+
+        OrdenCompraResponse r = service.modificar(orden.getId(), peticion(null, false,
+                new ItemOrdenCompraRequest(10L, new BigDecimal("2"), BigDecimal.TEN)), almacenero);
+
+        assertThat(r.estado()).isEqualTo("PENDIENTE");
+        assertThat(r.total()).isEqualByComparingTo("20.00");
+        verify(avisos).avisarAdministradores(eq("Orden de compra por aprobar"), anyString(), eq(7L));
+    }
+
+    @Test
+    void cambiarDeEstadoBloqueaLaFilaDeLaOrden() {
+        OrdenCompra orden = existente(EstadoOrdenCompra.PENDIENTE, 7L);
+
+        service.aprobar(orden.getId(), admin);
+
+        verify(ordenes).bloquear(80);
+    }
+
+    @Test
     void unaRecibidaNoSeAnula() {
         OrdenCompra orden = existente(EstadoOrdenCompra.RECIBIDA, 7L);
 
@@ -251,6 +286,7 @@ class OrdenCompraServiceTest {
         orden.setFecha(HOY);
         orden.setEstado(estado);
         when(ordenes.buscarCompleta(80)).thenReturn(Optional.of(orden));
+        when(ordenes.bloquear(80)).thenReturn(Optional.of(orden));
         return orden;
     }
 

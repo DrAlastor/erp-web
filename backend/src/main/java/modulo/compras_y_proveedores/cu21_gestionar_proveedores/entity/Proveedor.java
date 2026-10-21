@@ -1,9 +1,8 @@
 package modulo.compras_y_proveedores.cu21_gestionar_proveedores.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -54,7 +53,7 @@ public class Proveedor {
     @Column(length = 100)
     private String ciudad;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = CondicionPagoConverter.class)
     @Column(name = "condicion_pago", length = 50)
     private CondicionPago condicionPago = CondicionPago.CONTADO;
 
