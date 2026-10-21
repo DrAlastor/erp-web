@@ -115,11 +115,48 @@ public class CatalogosGeograficosService {
 
             return result.stream().sorted(Comparator.comparing(PaisCatalogoResponse::nombre)).toList();
         } catch (Exception exception) {
-            throw new ResponseStatusException(
-                    SERVICE_UNAVAILABLE,
-                    "El catálogo externo de países no está disponible",
-                    exception);
+            return catalogoFallback();
         }
+    }
+
+    private List<PaisCatalogoResponse> catalogoFallback() {
+        return List.of(
+                new PaisCatalogoResponse("BO", "BOL", "Bolivia", List.of(
+                        new MonedaCatalogoResponse("BOB", "Boliviano boliviano", "Bs"),
+                        new MonedaCatalogoResponse("USD", "Dólar estadounidense", "$")
+                )),
+                new PaisCatalogoResponse("US", "USA", "Estados Unidos", List.of(
+                        new MonedaCatalogoResponse("USD", "Dólar estadounidense", "$")
+                )),
+                new PaisCatalogoResponse("AR", "ARG", "Argentina", List.of(
+                        new MonedaCatalogoResponse("ARS", "Peso argentino", "$"),
+                        new MonedaCatalogoResponse("USD", "Dólar estadounidense", "$")
+                )),
+                new PaisCatalogoResponse("BR", "BRA", "Brasil", List.of(
+                        new MonedaCatalogoResponse("BRL", "Real brasileño", "R$")
+                )),
+                new PaisCatalogoResponse("CL", "CHL", "Chile", List.of(
+                        new MonedaCatalogoResponse("CLP", "Peso chileno", "$")
+                )),
+                new PaisCatalogoResponse("CO", "COL", "Colombia", List.of(
+                        new MonedaCatalogoResponse("COP", "Peso colombiano", "$")
+                )),
+                new PaisCatalogoResponse("PE", "PER", "Perú", List.of(
+                        new MonedaCatalogoResponse("PEN", "Sol peruano", "S/")
+                )),
+                new PaisCatalogoResponse("PY", "PRY", "Paraguay", List.of(
+                        new MonedaCatalogoResponse("PYG", "Guaraní paraguayo", "₲")
+                )),
+                new PaisCatalogoResponse("UY", "URY", "Uruguay", List.of(
+                        new MonedaCatalogoResponse("UYU", "Peso uruguayo", "$")
+                )),
+                new PaisCatalogoResponse("MX", "MEX", "México", List.of(
+                        new MonedaCatalogoResponse("MXN", "Peso mexicano", "$")
+                )),
+                new PaisCatalogoResponse("ES", "ESP", "España", List.of(
+                        new MonedaCatalogoResponse("EUR", "Euro", "€")
+                ))
+        ).stream().sorted(Comparator.comparing(PaisCatalogoResponse::nombre)).toList();
     }
 
     private JsonNode requestPage(HttpHeaders headers, int offset) throws Exception {

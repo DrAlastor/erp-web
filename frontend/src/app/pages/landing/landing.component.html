@@ -635,24 +635,24 @@
 
             <div class="pricing-card-amount">
               @if (plan.esPrueba) {
-                <span class="currency-symbol">Bs</span>
+                <span class="currency-symbol">$</span>
                 <span class="amount-val">0</span>
-                <span class="cycle-text">/ 7 días</span>
+                <span class="cycle-text">USD / 7 días</span>
                 <div class="pricing-savings-hint badge-trial">✨ 100% Gratuito · Sin tarjeta</div>
               } @else {
-                <span class="currency-symbol">Bs</span>
+                <span class="currency-symbol">$</span>
                 <span class="amount-val">
-                  {{ (billingCycle() === 'anual' ? plan.precioAnual : plan.precioMensual) | number }}
+                  {{ (billingCycle() === 'anual' ? plan.precioUsdAnual : plan.precioUsdMensual) | number:'1.2-2' }}
                 </span>
-                <span class="cycle-text">/ {{ billingCycle() === 'anual' ? 'año' : 'mes' }}</span>
+                <span class="cycle-text">USD / {{ billingCycle() === 'anual' ? 'año' : 'mes' }}</span>
 
                 @if (billingCycle() === 'anual') {
                   <div class="pricing-savings-hint badge-saving">
-                    🎉 Equivale a Bs {{ (plan.precioAnual / 12) | number:'1.0-0' }}/mes (Ahorras 2 meses)
+                    🎉 Equivale a ${{ (plan.precioUsdAnual / 12) | number:'1.2-2' }} USD/mes (Ahorras 2 meses)
                   </div>
                 } @else {
                   <div class="pricing-savings-hint badge-monthly">
-                    Facturación mensual recurrente
+                    Facturación mensual en USD
                   </div>
                 }
               }
@@ -733,6 +733,31 @@
             <polyline points="12 6 12 12 16 14" />
           </svg>
           <span>Activación inmediata de catálogo y contabilidad en tiempo real</span>
+        </div>
+      </div>
+
+      <!-- Countries and Supported Currencies Global Coverage Strip -->
+      <div class="pricing-countries-strip glass-card" style="margin-top: 2rem; padding: 1.5rem 2rem; border-radius: 1rem; border: 1px solid rgba(0,122,255,0.15); background: rgba(255,255,255,0.7); backdrop-filter: blur(12px);">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="font-size: 1.6rem;">🌎</div>
+            <div>
+              <strong style="display: block; font-size: 1rem; color: #1d1d1f;">Cobertura Multidivisa y Catálogo Internacional</strong>
+              <span style="font-size: 0.85rem; color: #6e6e73;">Aprovisionamiento con planes en USD y facturación local en BOB, USD, EUR y monedas de la región</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+            @for (pais of paises().slice(0, 8); track pais.codigoIso2) {
+              <span style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 600; border-radius: 0.5rem; background: rgba(0,122,255,0.08); color: #007aff; border: 1px solid rgba(0,122,255,0.2);">
+                {{ pais.nombre }} ({{ pais.monedas[0]?.codigo || 'USD' }})
+              </span>
+            }
+            @if (paises().length > 8) {
+              <span style="padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 600; border-radius: 0.5rem; background: #f2f2f7; color: #6e6e73;">
+                +{{ paises().length - 8 }} países más
+              </span>
+            }
+          </div>
         </div>
       </div>
 

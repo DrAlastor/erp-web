@@ -28,7 +28,7 @@ public class TenantEntitlementsService {
                 JOIN suscripcion s ON s.empresa_id=e.id
                 JOIN planes_suscripcion p ON p.id=s.plan_id
                 WHERE e.id=? AND UPPER(e.estado)='ACTIVA' AND UPPER(s.estado)='ACTIVA'
-                  AND s.fecha_inicio<=CURRENT_TIMESTAMP AND s.fecha_fin>CURRENT_TIMESTAMP
+                  AND (s.fecha_fin IS NULL OR s.fecha_fin>CURRENT_TIMESTAMP)
                 ORDER BY s.fecha_inicio DESC LIMIT 1
                 """, resultSet -> {
             if (!resultSet.next()) {
@@ -49,7 +49,7 @@ public class TenantEntitlementsService {
                 JOIN funciones_saas f ON f.id=pf.funcion_id AND f.activo=TRUE
                 JOIN modulos_saas m ON m.id=f.modulo_id AND m.activo=TRUE
                 WHERE e.id=? AND UPPER(s.estado)='ACTIVA'
-                  AND s.fecha_inicio<=CURRENT_TIMESTAMP AND s.fecha_fin>CURRENT_TIMESTAMP
+                  AND (s.fecha_fin IS NULL OR s.fecha_fin>CURRENT_TIMESTAMP)
                 ORDER BY m.orden_visual,f.id
                 """, (resultSet, rowNumber) -> new TenantEntitlementsResponse.EnabledFunction(
                 resultSet.getString(1), resultSet.getString(2),

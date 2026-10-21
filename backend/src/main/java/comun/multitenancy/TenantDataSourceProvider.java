@@ -61,8 +61,7 @@ public class TenantDataSourceProvider {
                       SELECT 1 FROM suscripcion s
                       WHERE s.empresa_id = e.id
                         AND UPPER(s.estado) = 'ACTIVA'
-                        AND s.fecha_inicio <= CURRENT_TIMESTAMP
-                        AND s.fecha_fin > CURRENT_TIMESTAMP
+                        AND (s.fecha_fin IS NULL OR s.fecha_fin > CURRENT_TIMESTAMP)
                   )
                 """,
                 (resultSet, rowNumber) -> new TenantDatabaseConfig(

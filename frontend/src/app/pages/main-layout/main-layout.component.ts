@@ -82,15 +82,19 @@ export class MainLayoutComponent {
     const roles = Array.from(this.permisos.roles());
     // Si aún no cargó o es admin/superadmin, mostrar completo
     const esAdmin = roles.length === 0 || roles.some(r => {
-      const upper = r.toUpperCase();
-      return upper.includes('ADMIN') || upper.includes('SUPER') || upper.includes('GEREN');
+      const upper = (r || '').toUpperCase();
+      return upper.includes('ADMIN') || upper.includes('SUPER') || upper.includes('GEREN') || upper.includes('REGENTE');
     });
+
+    const saasEnt = this.saas.entitlements();
 
     return this.modules
       .map(module => {
         const functions = module.functions.filter(fn => {
-          if (!this.saas.allows(fn.name)) return false;
           if (esAdmin) return true;
+          if (saasEnt && saasEnt.funciones && saasEnt.funciones.length > 0) {
+            if (!this.saas.allows(fn.name)) return false;
+          }
           return fn.rolesPermitidos?.some(rp => roles.includes(rp)) ?? false;
         });
         return { ...module, functions };

@@ -172,14 +172,15 @@
           </div>
 
           <form class="search product-search-form" (ngSubmit)="buscarProductos()">
-            <input name="productoBusqueda" [(ngModel)]="productoBusqueda" maxlength="150" placeholder="Buscar por nombre, código o modelo de artículo..." />
+            <input name="productoBusqueda" [(ngModel)]="productoBusqueda" (input)="buscarProductos()" maxlength="150" placeholder="Buscar por nombre, código o modelo de artículo en tiempo real..." />
             <button class="primary" type="submit">Buscar Productos</button>
+            <button class="btn-refresh-stock" type="button" (click)="buscarProductos()" title="Actualizar existencias en tiempo real">🔄 Refrescar Stock</button>
           </form>
 
           @if (productos().length) {
             <div class="productos-grid">
               @for (p of productos(); track p.id) {
-                <div class="producto-item-card">
+                <div class="producto-item-card" [class.no-stock]="stockDisponibleReal(p) <= 0">
                   <div class="prod-header">
                     <strong class="prod-name">{{ p.nombre }}</strong>
                     <span class="prod-code">{{ p.codigo }}</span>
@@ -187,17 +188,19 @@
                   <div class="prod-footer">
                     <div class="prod-pricing">
                       <span class="prod-price">Bs {{ p.precioVenta | number: '1.2-2' }}</span>
-                      <span class="prod-stock" [class.low-stock]="p.stockDisponible < 5">Stock: {{ p.stockDisponible | number: '1.0-2' }}</span>
+                      <span class="prod-stock" [class.low-stock]="stockDisponibleReal(p) > 0 && stockDisponibleReal(p) < 5" [class.out-of-stock]="stockDisponibleReal(p) <= 0">
+                        {{ stockDisponibleReal(p) > 0 ? ('Stock: ' + (stockDisponibleReal(p) | number: '1.0-2')) : 'Sin stock' }}
+                      </span>
                     </div>
-                    <button type="button" class="btn-add-cart" [disabled]="p.stockDisponible <= 0" (click)="agregar(p)">
-                      + Agregar
+                    <button type="button" class="btn-add-cart" [disabled]="stockDisponibleReal(p) <= 0" (click)="agregar(p)">
+                      {{ stockDisponibleReal(p) > 0 ? '+ Agregar' : 'Agotado' }}
                     </button>
                   </div>
                 </div>
               }
             </div>
           } @else {
-            <p class="hint">No hay artículos con stock disponibles en esta sucursal para la búsqueda.</p>
+            <p class="hint">No hay artículos registrados para esta búsqueda en esta sucursal.</p>
           }
 
           <!-- Carrito de compras -->
@@ -315,19 +318,38 @@
                       </div>
                     </div>
 
-                    <!-- Pasarela Stripe: SOLO se muestra cuando se paga con TARJETA -->
+                    <!-- Pasarela Stripe / Pago con Tarjeta -->
                     @if (esTarjetaOPasarela(pago)) {
                       <div class="stripe-box">
                         <div class="stripe-info">
-                          <div class="stripe-badge"><span>PASARELA STRIPE CHECKOUT</span></div>
-                          <strong>Pago con Tarjeta Online (Stripe)</strong>
+                          <div class="stripe-badge"><span>TARJETA / STRIPE PAYMENTS</span></div>
+                          <strong>Cobro con Tarjeta Débito / Crédito</strong>
                           <p class="hint">
-                            Primero realiza el pago de Bs {{ (pago.importe || totalVenta()) | number: '1.2-2' }} mediante tarjeta débito/crédito. Al confirmar se emitirá la factura.
+                            Monto a cobrar: <b>Bs {{ (pago.importe || totalVenta()) | number: '1.2-2' }}</b>. Puedes procesarlo mediante Stripe Checkout Online, por POS de mostrador o simularlo para pruebas.
                           </p>
                         </div>
-                        <button type="button" class="btn-stripe" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
-                          {{ busy() ? 'Iniciando Stripe...' : '💳 Pagar con Tarjeta (Stripe)' }}
-                        </button>
+
+                        @if (pago.confirmado) {
+                          <div class="card-confirmed-banner" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                            <span style="color: #10b981; font-size: 1.2rem; font-weight: bold;">✓</span>
+                            <div style="font-size: 0.85rem; color: #d1fae5;">
+                              <strong style="color: #10b981; display: block;">Tarjeta Autorizada (Ref: {{ pago.transaccionExterna }})</strong>
+                              <span>Transacción validada correctamente. Ya puedes emitir la factura.</span>
+                            </div>
+                          </div>
+                        }
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                          <button type="button" class="btn-stripe" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
+                            {{ busy() ? 'Iniciando Stripe...' : '💳 Pagar en Línea (Stripe Checkout)' }}
+                          </button>
+                          <button type="button" class="btn-show-qr" style="background: #3b82f6; border-color: #2563eb; color: #fff;" (click)="confirmarPagoTarjetaDirecto(pago, 'pos')">
+                            ⚡ Autorizar POS / Voucher
+                          </button>
+                          <button type="button" class="btn-show-qr" style="background: #6366f1; border-color: #4f46e5; color: #fff;" (click)="confirmarPagoTarjetaDirecto(pago, 'simulado')">
+                            🧪 Simular Tarjeta Aprobada (Test)
+                          </button>
+                        </div>
                       </div>
                     }
 

@@ -44,7 +44,15 @@ public class ControladorMisPermisos {
                 : "ADMINISTRADOR";
 
         List<String> roles = List.of(rolNombre);
-        Set<String> permisos = servicioAutorizacion.permisosEfectivos(principal.usuarioId());
+        Set<String> permisos;
+        try {
+            permisos = servicioAutorizacion.permisosEfectivos(principal.usuarioId());
+            if (permisos == null || permisos.isEmpty()) {
+                permisos = resolverPermisos(rolNombre);
+            }
+        } catch (Exception ex) {
+            permisos = resolverPermisos(rolNombre);
+        }
 
         return new MisPermisosDto(
                 principal.usuarioId(),

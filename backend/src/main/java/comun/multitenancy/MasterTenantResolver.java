@@ -38,8 +38,7 @@ public class MasterTenantResolver {
                       SELECT 1 FROM suscripcion s
                       WHERE s.empresa_id = e.id
                         AND UPPER(s.estado) = 'ACTIVA'
-                        AND s.fecha_inicio <= CURRENT_TIMESTAMP
-                        AND s.fecha_fin > CURRENT_TIMESTAMP
+                        AND (s.fecha_fin IS NULL OR s.fecha_fin > CURRENT_TIMESTAMP)
                   )
                 """,
                 (resultSet, rowNumber) -> new TenantDescriptor(
@@ -106,8 +105,9 @@ public class MasterTenantResolver {
                 if (count != null && count > 0) {
                     return tenant;
                 }
-            } catch (Exception ignored) {
-                // Si una BD no responde temporalmente, continuar con los demás tenants
+            } catch (Exception ex) {
+                org.slf4j.LoggerFactory.getLogger(MasterTenantResolver.class)
+                        .warn("No se pudo verificar tenant {}: {}", tenant.codigoEmpresa(), ex.getMessage());
             }
         }
 

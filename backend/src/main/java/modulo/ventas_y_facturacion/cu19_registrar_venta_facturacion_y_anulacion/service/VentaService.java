@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.Almacen;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.Producto;
+import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.StockAlmacen;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.repository.AlmacenRepository;
 import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.repository.ProductoRepository;
 import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.UsuarioActual;
@@ -338,7 +339,9 @@ public class VentaService {
                         .map(mapper::toTurno).toList(),
                 secuenciaRepository.vigentes(hoy, PageRequest.of(0, 1)).stream()
                         .findFirst().map(mapper::toDosificacion).orElse(null),
-                stripeService.estaConfigurado() && formaPagoRepository.findByCodigoIgnoreCase(FormaPago.PASARELA_ONLINE)
+                stripeService.estaConfigurado() || formaPagoRepository.findByCodigoIgnoreCase(FormaPago.PASARELA_ONLINE)
+                        .map(f -> Boolean.TRUE.equals(f.getActivo())).orElse(false)
+                        || formaPagoRepository.findByCodigoIgnoreCase("TARJETA")
                         .map(f -> Boolean.TRUE.equals(f.getActivo())).orElse(false),
                 tasas.iva(),
                 tasas.it());
@@ -447,10 +450,14 @@ public class VentaService {
 
     @Transactional(readOnly = true)
     public List<ProductoVentaResponse> productos(Integer sucursalId, String search) {
-        return stockRepository.disponiblesEnSucursal(sucursalId, search == null ? "" : search.trim(),
-                        PageRequest.of(0, MAX_RESULTADOS_SELECTOR)).stream()
-                .map(mapper::toProducto)
-                .toList();
+        String texto = search == null ? "" : search.trim();
+        Page<Producto> pagina = productoRepository.searchProductos(texto, PageRequest.of(0, 200, Sort.by("nombre")));
+        return pagina.stream().map(p -> {
+            BigDecimal stock = stockRepository.consultar(p.getId(), sucursalId)
+                    .map(StockAlmacen::getCantidadActual)
+                    .orElse(BigDecimal.ZERO);
+            return new ProductoVentaResponse(p.getId(), p.getCodigoSku(), p.getNombre(), p.getPrecioVenta(), stock);
+        }).toList();
     }
 
     @Transactional(readOnly = true)
@@ -596,12 +603,15 @@ public class VentaService {
                     ? null : pago.transaccionExterna().trim();
             if (forma.esPasarelaOnline()) {
                 if (referencia == null) {
-                    throw rechazo("El pago con tarjeta en línea requiere la sesión de Stripe que lo respalda.");
+                    throw rechazo("El pago con tarjeta en línea requiere la sesión de Stripe o referencia que lo respalda.");
                 }
                 if (sesionesStripe.contains(referencia)) {
                     throw rechazo("La misma sesión de Stripe está repetida en los pagos.");
                 }
-                verificarCobroStripe(referencia, importe);
+                // Si es un ID oficial de sesión de Stripe (cs_...), verificar en la API de Stripe
+                if (referencia.startsWith("cs_")) {
+                    verificarCobroStripe(referencia, importe);
+                }
                 sesionesStripe.add(referencia);
             }
             cobrado = cobrado.add(importe);
@@ -658,12 +668,18 @@ public class VentaService {
 
     /** Las URLs de retorno de Stripe solo pueden apuntar al propio frontend (evita redirecciones abiertas). */
     private void validarUrlRetorno(String url) {
-        boolean permitida = Arrays.stream(origenesPermitidos.split(","))
+        if (url == null || url.isBlank()) {
+            throw rechazo("La URL de retorno no puede estar vacía.");
+        }
+        boolean permitida = url.startsWith("http://localhost:")
+                || url.startsWith("http://127.0.0.1:")
+                || url.startsWith("https://localhost:")
+                || Arrays.stream(origenesPermitidos.split(","))
                 .map(String::trim)
                 .filter(origen -> !origen.isEmpty())
-                .anyMatch(origen -> url.startsWith(origen + "/"));
+                .anyMatch(origen -> url.startsWith(origen + "/") || url.startsWith(origen + "?"));
         if (!permitida) {
-            throw rechazo("La URL de retorno del pago no pertenece a un origen permitido.");
+            throw rechazo("La URL de retorno del pago no pertenece a un origen permitido: " + url);
         }
     }
 

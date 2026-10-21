@@ -1,10 +1,25 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { CompanyService } from '../../core/services/company.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { CompanyModalComponent } from '../../components/company-modal/company-modal.component';
+import { environment } from '../../../environments/environment';
+
+export interface MonedaCatalogoLanding {
+  codigo: string;
+  nombre: string;
+  simbolo: string;
+}
+
+export interface PaisCatalogoLanding {
+  codigoIso2: string;
+  codigoIso3: string;
+  nombre: string;
+  monedas: MonedaCatalogoLanding[];
+}
 
 @Component({
   selector: 'app-landing',
@@ -13,11 +28,15 @@ import { CompanyModalComponent } from '../../components/company-modal/company-mo
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss'
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
   readonly companyService = inject(CompanyService);
   readonly themeService = inject(ThemeService);
-
+  private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+
+  // Global catalogs
+  readonly paises = signal<PaisCatalogoLanding[]>([]);
+  readonly catalogosLoading = signal<boolean>(true);
 
   // Modal state
   isCreateModalOpen = signal(false);
@@ -202,6 +221,22 @@ export class LandingComponent {
 
   onLoginClick(): void {
     this.router.navigate(['/login']);
+  }
+
+  ngOnInit(): void {
+    this.cargarCatalogos();
+  }
+
+  private cargarCatalogos(): void {
+    this.http.get<PaisCatalogoLanding[]>(`${environment.apiUrl}/public/catalogos/paises`).subscribe({
+      next: (data) => {
+        this.paises.set(data);
+        this.catalogosLoading.set(false);
+      },
+      error: () => {
+        this.catalogosLoading.set(false);
+      }
+    });
   }
 
   scrollToSection(id: string): void {

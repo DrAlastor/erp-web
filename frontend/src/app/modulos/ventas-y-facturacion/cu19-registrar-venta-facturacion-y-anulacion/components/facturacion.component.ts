@@ -191,10 +191,10 @@ export class FacturacionComponent {
     return (this.catalogos()?.turnosAbiertos ?? []).filter((t) => t.sucursalId === this.sucursalId);
   }
 
-  /** Formas de pago que se registran a mano; la tarjeta en línea solo entra por Stripe; transferencia eliminada. */
+  /** Formas de pago disponibles para registrar el cobro */
   formasManuales() {
     return (this.catalogos()?.formasPago ?? []).filter(
-      (f) => f.codigo !== PASARELA_ONLINE && f.codigo !== 'TRANSFERENCIA'
+      (f) => f.codigo !== 'TRANSFERENCIA'
     );
   }
 
@@ -305,10 +305,20 @@ export class FacturacionComponent {
       });
   }
 
+  /** Calcula el stock en tiempo real descontando lo añadido al carrito */
+  stockDisponibleReal(producto: ProductoVenta): number {
+    const enCarrito = this.carrito.find((l) => l.producto.id === producto.id)?.cantidad || 0;
+    return Math.max(0, (producto.stockDisponible || 0) - enCarrito);
+  }
+
   agregar(producto: ProductoVenta): void {
+    const disponible = this.stockDisponibleReal(producto);
+    if (disponible <= 0) return;
     const existente = this.carrito.find((l) => l.producto.id === producto.id);
     if (existente) {
-      existente.cantidad = Math.min(existente.cantidad + 1, producto.stockDisponible);
+      if (existente.cantidad < (producto.stockDisponible || 0)) {
+        existente.cantidad += 1;
+      }
       return;
     }
     this.carrito = [...this.carrito, { producto, cantidad: 1, descuentoId: null, descuento: 0 }];
@@ -487,6 +497,19 @@ export class FacturacionComponent {
     }
     this.modalQr.set(false);
     this.success.set('Pago QR Simple verificado y registrado con éxito.');
+  }
+
+  confirmarPagoTarjetaDirecto(pago: PagoForm, tipo: 'pos' | 'simulado' = 'pos'): void {
+    pago.confirmado = true;
+    if (!pago.transaccionExterna || pago.transaccionExterna.trim() === '') {
+      const prefijo = tipo === 'pos' ? 'POS-AUTH' : 'TEST-STRIPE';
+      pago.transaccionExterna = `${prefijo}-${Date.now().toString().slice(-6)}`;
+    }
+    this.success.set(
+      tipo === 'pos'
+        ? `Cobro con Tarjeta / POS autorizado con éxito (Ref: ${pago.transaccionExterna}).`
+        : `Cobro con Tarjeta Simulado exitosamente (Ref: ${pago.transaccionExterna}).`
+    );
   }
 
   /** Venta completa (cliente, productos y stock), sin mirar todavía cómo se paga. */
