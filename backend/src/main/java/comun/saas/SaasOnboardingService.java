@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -253,11 +254,26 @@ public class SaasOnboardingService {
     }
 
     private void ensureCompanyIsUnique(String nit, String email) {
+        String safeNit = nit.trim();
+        String safeEmail = email.trim().toLowerCase(Locale.ROOT);
+
+        // 1. Limpiar intentos previos que quedaron en ERROR_APROVISIONAMIENTO
+        List<Integer> failedCompanyIds = master.queryForList(
+                "SELECT id FROM empresa WHERE (UPPER(COALESCE(nit,''))=UPPER(?) OR LOWER(email)=LOWER(?)) AND estado='ERROR_APROVISIONAMIENTO'",
+                Integer.class, safeNit, safeEmail);
+        for (Integer fId : failedCompanyIds) {
+            master.update("DELETE FROM pago WHERE suscripcion_id IN (SELECT id FROM suscripcion WHERE empresa_id=?)", fId);
+            master.update("DELETE FROM tenant_database WHERE empresa_id=?", fId);
+            master.update("DELETE FROM suscripcion WHERE empresa_id=?", fId);
+            master.update("DELETE FROM empresa WHERE id=?", fId);
+        }
+
+        // 2. Validar que no exista una empresa activa o pendiente
         Integer count = master.queryForObject(
-                "SELECT COUNT(*) FROM empresa WHERE UPPER(COALESCE(nit,''))=UPPER(?) OR LOWER(email)=LOWER(?)",
-                Integer.class, nit.trim(), email);
+                "SELECT COUNT(*) FROM empresa WHERE (UPPER(COALESCE(nit,''))=UPPER(?) OR LOWER(email)=LOWER(?)) AND estado<>'ERROR_APROVISIONAMIENTO'",
+                Integer.class, safeNit, safeEmail);
         if (count != null && count > 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La empresa, NIT o correo ya está registrado");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La empresa, NIT o correo ya está registrado con una cuenta activa");
         }
     }
 

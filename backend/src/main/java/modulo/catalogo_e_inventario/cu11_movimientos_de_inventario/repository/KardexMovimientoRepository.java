@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface KardexMovimientoRepository extends JpaRepository<KardexMovimiento, Long> {
 
-    @Query("SELECT k FROM KardexMovimiento k " +
+    @Query(value = "SELECT k FROM KardexMovimiento k " +
            "JOIN FETCH k.producto p " +
            "JOIN FETCH k.almacen a " +
            "WHERE (:productoId IS NULL OR p.id = :productoId) AND " +
@@ -22,7 +22,13 @@ public interface KardexMovimientoRepository extends JpaRepository<KardexMovimien
            "(:tipoMovimiento IS NULL OR :tipoMovimiento = '' OR k.tipoMovimiento = :tipoMovimiento) AND " +
            "(CAST(:fechaInicio AS timestamp) IS NULL OR k.fecha >= :fechaInicio) AND " +
            "(CAST(:fechaFin AS timestamp) IS NULL OR k.fecha <= :fechaFin) " +
-           "ORDER BY k.fecha DESC, k.id DESC")
+           "ORDER BY k.fecha DESC, k.id DESC",
+           countQuery = "SELECT count(k) FROM KardexMovimiento k " +
+           "WHERE (:productoId IS NULL OR k.producto.id = :productoId) AND " +
+           "(:almacenId IS NULL OR k.almacen.id = :almacenId) AND " +
+           "(:tipoMovimiento IS NULL OR :tipoMovimiento = '' OR k.tipoMovimiento = :tipoMovimiento) AND " +
+           "(CAST(:fechaInicio AS timestamp) IS NULL OR k.fecha >= :fechaInicio) AND " +
+           "(CAST(:fechaFin AS timestamp) IS NULL OR k.fecha <= :fechaFin)")
     Page<KardexMovimiento> buscarMovimientos(
             @Param("productoId") Long productoId,
             @Param("almacenId") Integer almacenId,

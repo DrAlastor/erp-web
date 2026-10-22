@@ -617,13 +617,26 @@
         </div>
       </div>
 
-      <!-- Pricing Cards Grid -->
-      <div class="pricing-cards-grid">
-        @for (plan of planes; track plan.codigo) {
-          <div
-            class="pricing-card"
-            [class.card-featured]="plan.destacado"
-          >
+      <!-- Pricing Cards Carousel Controls & Container -->
+      <div class="pricing-carousel-container">
+        <button
+          type="button"
+          class="pricing-scroll-btn btn-prev"
+          (click)="scrollPlanes('left')"
+          aria-label="Ver planes anteriores"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        <div class="pricing-cards-scrollable" #planesScroll>
+          <div class="pricing-cards-grid">
+            @for (plan of planes; track plan.codigo) {
+              <div
+                class="pricing-card"
+                [class.card-featured]="plan.destacado"
+              >
             @if (plan.destacado) {
               <div class="featured-badge">Más Elegido</div>
             }
@@ -711,6 +724,19 @@
             </button>
           </div>
         }
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="pricing-scroll-btn btn-next"
+          (click)="scrollPlanes('right')"
+          aria-label="Ver planes siguientes"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
 
       <!-- Trust Bar (SaaS Guarantees) -->

@@ -91,7 +91,7 @@
               <select name="turno" [(ngModel)]="turnoCajaId">
                 <option [ngValue]="null">Sin turno específico</option>
                 @for (t of turnosDeSucursal(); track t.id) {
-                  <option [ngValue]="t.id">Turno #{{ t.id }} &bull; Abierto {{ t.fechaApertura | date: 'dd/MM HH:mm' }}</option>
+                  <option [ngValue]="t.id">{{ t.nombre || ('Turno #' + t.id + ' • Abierto ' + (t.fechaApertura | date: 'dd/MM HH:mm')) }}</option>
                 }
               </select>
             </label>
@@ -108,6 +108,32 @@
                 <input name="diasCredito" type="number" min="1" max="365" [(ngModel)]="diasCredito" />
               </label>
             }
+          </div>
+
+          <div class="cotizaciones-box" style="margin-top: 16px; padding: 14px 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <label style="font-weight: 600; color: #1e40af; display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.88rem;">
+                <span>📋 Cargar Cotización Pendiente (Opcional):</span>
+              </label>
+              @if (cotizacionSeleccionadaId) {
+                <span style="background: rgba(16, 185, 129, 0.15); color: #065f46; border: 1px solid #10b981; padding: 3px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">
+                  ✓ Cotización Vinculada (Validación Comercial y Despacho automáticos)
+                </span>
+              }
+            </div>
+            <select class="selector-cotizaciones" [ngModel]="cotizacionSeleccionadaId" (ngModelChange)="seleccionarCotizacion($event)">
+              <option [ngValue]="null">
+                {{ (cat.cotizacionesPendientes && cat.cotizacionesPendientes.length > 0) ? '-- Venta Directa en Mostrador / Sin Cotización --' : '-- Sin cotizaciones pendientes por aprobar --' }}
+              </option>
+              @for (cot of cat.cotizacionesPendientes; track cot.id) {
+                <option [ngValue]="cot.id">
+                  {{ cot.numeroCotizacion || cot.numero }} &bull; {{ cot.clienteRazonSocial }} (NIT: {{ cot.clienteNitCi }}) &bull; Bs {{ cot.total | number: '1.2-2' }} &bull; {{ (cot.lineas?.length || cot.detalles?.length || 0) }} ítem(s)
+                </option>
+              }
+            </select>
+            <p style="font-size: 0.78rem; color: #64748b; margin: 6px 0 0 0;">
+              Al seleccionar una cotización se cargan automáticamente el cliente y todos los productos presupuestados. Al emitir la factura se aprobará la validación comercial y se generará el despacho de venta.
+            </p>
           </div>
         </section>
 
@@ -128,7 +154,7 @@
             </div>
           </div>
 
-          @if (cliente; as c) {
+          @if (cliente(); as c) {
             <div class="selected cliente-selected">
               <div class="cliente-info">
                 <div class="cliente-badge-row">
@@ -139,7 +165,7 @@
                 <strong>{{ c.razonSocial }}</strong>
                 <span class="mono-sub">NIT / CI: <b>{{ c.nitCi }}</b></span>
               </div>
-              <button type="button" class="btn-cambiar" (click)="cliente = null">Cambiar cliente</button>
+              <button type="button" class="btn-cambiar" (click)="cliente.set(null)">Cambiar cliente</button>
             </div>
           } @else {
             <form class="search client-search-form" (ngSubmit)="buscarClientes()">
@@ -178,26 +204,43 @@
           </form>
 
           @if (productos().length) {
-            <div class="productos-grid">
-              @for (p of productos(); track p.id) {
-                <div class="producto-item-card" [class.no-stock]="stockDisponibleReal(p) <= 0">
-                  <div class="prod-header">
-                    <strong class="prod-name">{{ p.nombre }}</strong>
-                    <span class="prod-code">{{ p.codigo }}</span>
-                  </div>
-                  <div class="prod-footer">
-                    <div class="prod-pricing">
-                      <span class="prod-price">Bs {{ p.precioVenta | number: '1.2-2' }}</span>
-                      <span class="prod-stock" [class.low-stock]="stockDisponibleReal(p) > 0 && stockDisponibleReal(p) < 5" [class.out-of-stock]="stockDisponibleReal(p) <= 0">
-                        {{ stockDisponibleReal(p) > 0 ? ('Stock: ' + (stockDisponibleReal(p) | number: '1.0-2')) : 'Sin stock' }}
-                      </span>
-                    </div>
-                    <button type="button" class="btn-add-cart" [disabled]="stockDisponibleReal(p) <= 0" (click)="agregar(p)">
-                      {{ stockDisponibleReal(p) > 0 ? '+ Agregar' : 'Agotado' }}
-                    </button>
-                  </div>
-                </div>
-              }
+            <div class="table-scroll" style="margin-top: 14px; max-height: 380px; overflow-y: auto;">
+              <table class="erp-table prod-list-table">
+                <thead>
+                  <tr>
+                    <th style="width: 130px;">Código / SKU</th>
+                    <th>Nombre del Producto</th>
+                    <th class="num" style="width: 140px;">Precio Unitario</th>
+                    <th class="num" style="width: 170px;">Stock en Sucursal</th>
+                    <th style="width: 110px; text-align: center;">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of productos(); track p.id) {
+                    <tr [class.row-no-stock]="stockDisponibleReal(p) <= 0">
+                      <td><span class="mono">{{ p.codigo }}</span></td>
+                      <td>
+                        <strong>{{ p.nombre }}</strong>
+                      </td>
+                      <td class="num">Bs {{ p.precioVenta | number: '1.2-2' }}</td>
+                      <td class="num">
+                        @if (stockDisponibleReal(p) > 0) {
+                          <span class="stock-badge" [class.low-stock]="stockDisponibleReal(p) < 5">
+                            {{ stockDisponibleReal(p) | number: '1.0-2' }} u. disponibles
+                          </span>
+                        } @else {
+                          <span class="stock-badge out-of-stock">Agotado / Sin stock</span>
+                        }
+                      </td>
+                      <td style="text-align: center;">
+                        <button type="button" class="btn-add-item-list" [disabled]="stockDisponibleReal(p) <= 0" (click)="agregar(p)">
+                          {{ stockDisponibleReal(p) > 0 ? '+ Agregar' : 'Agotado' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
           } @else {
             <p class="hint">No hay artículos registrados para esta búsqueda en esta sucursal.</p>
@@ -325,7 +368,7 @@
                           <div class="stripe-badge"><span>TARJETA / STRIPE PAYMENTS</span></div>
                           <strong>Cobro con Tarjeta Débito / Crédito</strong>
                           <p class="hint">
-                            Monto a cobrar: <b>Bs {{ (pago.importe || totalVenta()) | number: '1.2-2' }}</b>. Puedes procesarlo mediante Stripe Checkout Online, por POS de mostrador o simularlo para pruebas.
+                            Monto a cobrar: <b>Bs {{ (pago.importe || totalVenta()) | number: '1.2-2' }}</b>. Primero se realiza el pago a través de Stripe Checkout. Al concretarse, se genera automáticamente el número de referencia y se habilita el botón para emitir la factura.
                           </p>
                         </div>
 
@@ -333,23 +376,20 @@
                           <div class="card-confirmed-banner" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
                             <span style="color: #10b981; font-size: 1.2rem; font-weight: bold;">✓</span>
                             <div style="font-size: 0.85rem; color: #d1fae5;">
-                              <strong style="color: #10b981; display: block;">Tarjeta Autorizada (Ref: {{ pago.transaccionExterna }})</strong>
-                              <span>Transacción validada correctamente. Ya puedes emitir la factura.</span>
+                              <strong style="color: #10b981; display: block;">Pago con Tarjeta Completado y Aprobado</strong>
+                              <span>N° de Referencia: <b>{{ pago.transaccionExterna }}</b>. Transacción verificada en Stripe. Ya puedes emitir la factura.</span>
                             </div>
                           </div>
+                        } @else {
+                          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                            <button type="button" class="btn-stripe" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
+                              {{ busy() ? 'Iniciando Stripe Checkout...' : '💳 Pagar en Línea (Stripe Checkout)' }}
+                            </button>
+                            <span class="qr-tip-pending" style="align-self: center; font-size: 0.82rem; color: #f59e0b;">
+                              ⚠️ Primero realiza el pago en la pasarela. Se generará la referencia y se habilitará la emisión.
+                            </span>
+                          </div>
                         }
-
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                          <button type="button" class="btn-stripe" [disabled]="!puedeCobrarConTarjeta()" (click)="cobrarConTarjeta()">
-                            {{ busy() ? 'Iniciando Stripe...' : '💳 Pagar en Línea (Stripe Checkout)' }}
-                          </button>
-                          <button type="button" class="btn-show-qr" style="background: #3b82f6; border-color: #2563eb; color: #fff;" (click)="confirmarPagoTarjetaDirecto(pago, 'pos')">
-                            ⚡ Autorizar POS / Voucher
-                          </button>
-                          <button type="button" class="btn-show-qr" style="background: #6366f1; border-color: #4f46e5; color: #fff;" (click)="confirmarPagoTarjetaDirecto(pago, 'simulado')">
-                            🧪 Simular Tarjeta Aprobada (Test)
-                          </button>
-                        </div>
                       </div>
                     }
 

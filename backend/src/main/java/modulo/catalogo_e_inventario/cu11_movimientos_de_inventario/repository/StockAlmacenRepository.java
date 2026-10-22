@@ -22,14 +22,20 @@ public interface StockAlmacenRepository extends JpaRepository<StockAlmacen, Long
 
     Page<StockAlmacen> findByAlmacenId(Integer almacenId, Pageable pageable);
 
-    @Query("SELECT s FROM StockAlmacen s " +
+    @Query(value = "SELECT s FROM StockAlmacen s " +
            "JOIN FETCH s.producto p " +
            "JOIN FETCH s.almacen a " +
            "WHERE (:almacenId IS NULL OR a.id = :almacenId) AND " +
            "(:productoId IS NULL OR p.id = :productoId) AND " +
            "(:search IS NULL OR :search = '' OR " +
            " LOWER(p.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           " LOWER(p.codigoSku) LIKE LOWER(CONCAT('%', :search, '%')))")
+           " LOWER(p.codigoSku) LIKE LOWER(CONCAT('%', :search, '%')))",
+           countQuery = "SELECT count(s) FROM StockAlmacen s " +
+           "WHERE (:almacenId IS NULL OR s.almacen.id = :almacenId) AND " +
+           "(:productoId IS NULL OR s.producto.id = :productoId) AND " +
+           "(:search IS NULL OR :search = '' OR " +
+           " LOWER(s.producto.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           " LOWER(s.producto.codigoSku) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<StockAlmacen> buscarStock(
             @Param("almacenId") Integer almacenId,
             @Param("productoId") Long productoId,
@@ -44,8 +50,8 @@ public interface StockAlmacenRepository extends JpaRepository<StockAlmacen, Long
            "JOIN FETCH s.producto p " +
            "JOIN FETCH s.almacen a " +
            "WHERE (:almacenId IS NULL OR a.id = :almacenId) AND " +
-           "s.cantidadActual <= s.stockMinimo " +
-           "ORDER BY (s.stockMinimo - s.cantidadActual) DESC")
+           "s.cantidadActual <= COALESCE(s.stockMinimo, p.stockMinimo, 2.0) " +
+           "ORDER BY (COALESCE(s.stockMinimo, p.stockMinimo, 2.0) - s.cantidadActual) DESC")
     List<StockAlmacen> findAlertasStockMinimo(@Param("almacenId") Integer almacenId);
 
     @org.springframework.data.jpa.repository.Modifying

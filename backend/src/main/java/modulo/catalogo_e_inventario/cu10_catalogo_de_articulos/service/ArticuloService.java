@@ -35,15 +35,34 @@ public class ArticuloService {
     private final ArticuloMapper mapper;
     private final TenantEntitlementsService entitlements;
     private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public List<ArticuloResponse> listarTodos() {
-        return articulos.findAllWithCategoria().stream().map(mapper::toResponse).toList();
+        List<Articulo> list = articulos.findAllWithCategoria();
+        poblarStockReal(list);
+        return list.stream().map(mapper::toResponse).toList();
     }
 
     public List<ArticuloResponse> listarPorCategoria(Integer categoriaId) {
-        return articulos.findByCategoriaIdWithCategoria(categoriaId).stream()
-                .map(mapper::toResponse)
-                .toList();
+        List<Articulo> list = articulos.findByCategoriaIdWithCategoria(categoriaId);
+        poblarStockReal(list);
+        return list.stream().map(mapper::toResponse).toList();
+    }
+
+    private void poblarStockReal(List<Articulo> list) {
+        for (Articulo a : list) {
+            try {
+                Integer stockReal = jdbcTemplate.queryForObject(
+                        "SELECT COALESCE(SUM(stock_disponible), 0)::integer FROM inventario_sucursal WHERE producto_id = ?",
+                        Integer.class,
+                        a.getId()
+                );
+                a.setStock(stockReal != null ? stockReal : 0);
+            } catch (Exception e) {
+                // Si la tabla no está disponible, conserva 0
+                a.setStock(0);
+            }
+        }
     }
 
     public ArticuloResponse buscarPorId(Long id) {

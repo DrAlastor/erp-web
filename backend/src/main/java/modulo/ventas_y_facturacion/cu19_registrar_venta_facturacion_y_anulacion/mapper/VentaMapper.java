@@ -100,7 +100,7 @@ public class VentaMapper {
 
     public CatalogosVentaResponse.Turno toTurno(TurnoCaja turno) {
         return new CatalogosVentaResponse.Turno(
-                turno.getId(), turno.getSucursalId(), turno.getCajeroId(), turno.getFechaApertura());
+                turno.getId(), turno.getSucursalId(), turno.getCajeroId(), turno.getFechaApertura(), turno.getNombre());
     }
 
     public CatalogosVentaResponse.Dosificacion toDosificacion(SecuenciaFacturacion secuencia) {

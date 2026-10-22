@@ -102,20 +102,36 @@ public class InventarioVentaService {
             );
         } catch (Exception ignored) {}
 
-        BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo()
-                : (producto.getStockMinimo() != null ? producto.getStockMinimo() : BigDecimal.ZERO);
-        if (min.compareTo(BigDecimal.ZERO) > 0 && nuevoSaldo.compareTo(min) <= 0) {
+        BigDecimal min = stock.getStockMinimo() != null ? stock.getStockMinimo() : BigDecimal.ZERO;
+        BigDecimal prodMin = (producto.getStockMinimo() != null) ? producto.getStockMinimo() : BigDecimal.ZERO;
+        BigDecimal umbralMinimo = min.compareTo(BigDecimal.ZERO) > 0 ? min : prodMin;
+
+        if (umbralMinimo.compareTo(BigDecimal.ZERO) > 0 && nuevoSaldo.compareTo(umbralMinimo) <= 0) {
+            String titulo = "Alerta de Stock Mínimo";
+            String mensaje = String.format("El producto '%s' (%s) en la sucursal '%s' ha alcanzado o bajado de su stock mínimo de reposición (%s u). Saldo actual disponible: %s u.",
+                    producto.getNombre(), producto.getCodigoSku(), sucursal.getNombre(),
+                    umbralMinimo.stripTrailingZeros().toPlainString(), nuevoSaldo.stripTrailingZeros().toPlainString());
             try {
                 jdbcTemplate.update(
                         "INSERT INTO NOTIFICACIONES (USUARIO_ID, TITULO, MENSAJE, TIPO, FECHA_CREACION, LEIDO) VALUES (?, ?, ?, ?, ?, ?)",
                         usuarioId != null ? usuarioId : 1L,
-                        "Alerta de Stock Mínimo",
-                        String.format("El producto '%s' (%s) en la sucursal '%s' ha alcanzado o bajado de su stock mínimo de reposición (%s u). Saldo actual disponible: %s u.",
-                                producto.getNombre(), producto.getCodigoSku(), sucursal.getNombre(), min.stripTrailingZeros().toPlainString(), nuevoSaldo.stripTrailingZeros().toPlainString()),
+                        titulo,
+                        mensaje,
                         "ALERTA",
                         ahora,
                         false
                 );
+                if (usuarioId != null && usuarioId != 1L) {
+                    jdbcTemplate.update(
+                            "INSERT INTO NOTIFICACIONES (USUARIO_ID, TITULO, MENSAJE, TIPO, FECHA_CREACION, LEIDO) VALUES (?, ?, ?, ?, ?, ?)",
+                            1L,
+                            titulo,
+                            mensaje,
+                            "ALERTA",
+                            ahora,
+                            false
+                    );
+                }
             } catch (Exception ignored) {
                 // Previene interrumpir la transacción principal si la tabla no estuviera disponible
             }

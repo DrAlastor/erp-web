@@ -43,7 +43,14 @@ public class TurnoCaja {
     @Column(nullable = false, length = 20)
     private String estado;
 
+    @Column(length = 255)
+    private String observaciones;
+
     public boolean estaAbierto() {
         return ESTADO_ABIERTO.equalsIgnoreCase(estado);
+    }
+
+    public String getNombre() {
+        return (observaciones != null && !observaciones.isBlank()) ? observaciones : "Turno #" + id;
     }
 }

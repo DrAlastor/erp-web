@@ -109,7 +109,6 @@ INSERT INTO ROL_FUNCION (ROL_ID, FUNCION_ID, DESCRIPCION) VALUES
 (1,36,'Edicion'),
 (1,37,'Edicion'),
 (1,38,'Edicion'),
-(1,39,'Edicion'),
 -- ROL 2: VENDEDOR
 (2,9,'Lectura'),
 (2,11,'Lectura'),

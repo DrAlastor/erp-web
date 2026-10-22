@@ -19,6 +19,7 @@ export interface VentaRequest {
   sucursalId: number;
   clienteId: number;
   turnoCajaId?: number | null;
+  cotizacionId?: number | null;
   tipoVenta: TipoVenta;
   tipoComprobante: TipoComprobante;
   diasCredito?: number | null;
@@ -106,11 +107,37 @@ export interface VentaPage {
   totalPages: number;
 }
 
+export interface CotizacionLinea {
+  productoId?: number;
+  articuloId?: number;
+  codigo?: string;
+  sku?: string;
+  nombre?: string;
+  articuloNombre?: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento?: number;
+  subtotal: number;
+}
+
+export interface CotizacionResumen {
+  id: number;
+  numeroCotizacion?: string;
+  numero?: string;
+  clienteId: number;
+  clienteRazonSocial: string;
+  clienteNitCi: string;
+  total: number;
+  fecha: string;
+  lineas?: CotizacionLinea[];
+  detalles?: CotizacionLinea[];
+}
+
 export interface CatalogosVenta {
   sucursales: { id: number; nombre: string }[];
   formasPago: { id: number; codigo: string; nombre: string }[];
   descuentos: { id: number; nombre: string; tipo: string; valor: number }[];
-  turnosAbiertos: { id: number; sucursalId: number; cajeroId: number; fechaApertura: string }[];
+  turnosAbiertos: { id: number; sucursalId: number; cajeroId: number; fechaApertura: string; nombre?: string }[];
   dosificacion: {
     numeroAutorizacion: string;
     siguienteNumero: number;
@@ -122,6 +149,7 @@ export interface CatalogosVenta {
   /** Tasas de la tabla impuestos, en porcentaje (13 = 13 %). */
   tasaIva: number;
   tasaIt: number;
+  cotizacionesPendientes?: CotizacionResumen[];
 }
 
 export interface Dosificacion {

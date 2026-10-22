@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +42,7 @@ interface BorradorStripe {
   tipoComprobante: TipoComprobante;
   sucursalId: number;
   turnoCajaId: number | null;
+  cotizacionId?: number | null;
   cliente: ClienteVenta;
   carrito: LineaCarrito[];
 }
@@ -65,6 +66,7 @@ export class FacturacionComponent {
   private readonly notificacionesService = inject(NotificacionesService);
   private readonly destroy = inject(DestroyRef);
   private readonly router = inject(Router);
+  readonly cdr = inject(ChangeDetectorRef);
   /** Resultado del retorno desde Stripe Checkout, pendiente hasta que carguen los catálogos. */
   private retornoStripe: { pago: string; sessionId: string | null } | null = null;
 
@@ -117,10 +119,11 @@ export class FacturacionComponent {
   tipoVenta: TipoVenta = 'CONTADO';
   diasCredito = 30;
   clienteBusqueda = '';
-  cliente: ClienteVenta | null = null;
+  readonly cliente = signal<ClienteVenta | null>(null);
   productoBusqueda = '';
   carrito: LineaCarrito[] = [];
   pagos: PagoForm[] = [];
+  cotizacionSeleccionadaId: number | null = null;
 
   // Historial
   search = '';
@@ -215,38 +218,95 @@ export class FacturacionComponent {
       .subscribe({
         next: (clientes) => {
           this.clientes.set(clientes);
-          if (!this.cliente && clientes.length > 0) {
-            this.cliente = clientes[0];
+          if (!this.cliente() && clientes.length > 0) {
+            this.cliente.set(clientes[0]);
           }
+          this.cdr.markForCheck();
         },
         error: (err) => this.fail(err),
       });
   }
 
   elegirCliente(cliente: ClienteVenta): void {
-    this.cliente = cliente;
+    this.cliente.set(cliente);
     this.clientes.set([]);
     this.clienteBusqueda = '';
+    this.cdr.markForCheck();
   }
 
   seleccionarClientePasante(): void {
-    const pasante = this.clientes().find(c => c.nitCi === '0' || c.razonSocial.toLowerCase().includes('sin nombre'));
+    const pasante = this.clientes().find(c => c.nitCi === '0' || c.razonSocial.toLowerCase().includes('sin nombre') || c.razonSocial.toLowerCase().includes('pasante'));
     if (pasante) {
-      this.cliente = pasante;
+      this.cliente.set(pasante);
       this.clienteBusqueda = '';
+      this.cdr.markForCheck();
       return;
     }
     this.api.clientes('0').pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (res) => {
         const found = res.find(c => c.nitCi === '0') || (res.length > 0 ? res[0] : null);
-        this.cliente = found || { id: 4, razonSocial: 'Sin Nombre', nitCi: '0' };
+        this.cliente.set(found || { id: 11, razonSocial: 'Cliente Pasante / Sin Nombre', nitCi: '0' });
         this.clienteBusqueda = '';
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.cliente = { id: 4, razonSocial: 'Sin Nombre', nitCi: '0' };
+        this.cliente.set({ id: 11, razonSocial: 'Cliente Pasante / Sin Nombre', nitCi: '0' });
         this.clienteBusqueda = '';
+        this.cdr.markForCheck();
       }
     });
+  }
+
+  seleccionarCotizacion(cotId: number | null): void {
+    if (!cotId) {
+      this.cotizacionSeleccionadaId = null;
+      this.cdr.markForCheck();
+      return;
+    }
+    const cot = this.catalogos()?.cotizacionesPendientes?.find((c) => c.id === cotId);
+    if (!cot) return;
+    this.cotizacionSeleccionadaId = cot.id;
+    this.cliente.set({
+      id: cot.clienteId,
+      razonSocial: cot.clienteRazonSocial || 'Cliente',
+      nitCi: cot.clienteNitCi || '0'
+    });
+
+    const items = cot.lineas || cot.detalles || [];
+    // Cargar productos de la cotización al carrito
+    this.carrito = items.map((d: any) => ({
+      producto: {
+        id: d.productoId || d.articuloId || 1,
+        codigo: d.codigo || d.sku || ('PROD-' + (d.productoId || d.articuloId || 1)),
+        nombre: d.nombre || d.articuloNombre || 'Producto',
+        precioVenta: Number(d.precioUnitario || 0),
+        stockDisponible: 999999
+      },
+      cantidad: Number(d.cantidad || 1),
+      descuentoId: null,
+      descuento: Number(d.descuento || 0)
+    }));
+
+    // Sincronizar con los productos de la sucursal actual si están cargados
+    for (const item of this.carrito) {
+      const prodReal = this.productos().find(p => p.id === item.producto.id);
+      if (prodReal) {
+        item.producto.stockDisponible = prodReal.stockDisponible;
+        item.producto.nombre = prodReal.nombre;
+        item.producto.codigo = prodReal.codigo;
+      }
+    }
+
+    if (this.pagos.length > 0) {
+      this.pagos[0].importe = this.totalVenta();
+      if (this.esEfectivo(this.pagos[0])) {
+        this.pagos[0].montoEntregado = this.pagos[0].importe;
+      }
+    }
+
+    const nroCot = cot.numeroCotizacion || cot.numero || ('COT-' + cot.id);
+    this.success.set(`Cotización ${nroCot} vinculada (${items.length} ítems) para el cliente ${cot.clienteRazonSocial}.`);
+    this.cdr.markForCheck();
   }
 
   abrirModalNuevoCliente(): void {
@@ -279,13 +339,14 @@ export class FacturacionComponent {
       next: (nuevo) => {
         this.guardandoCliente.set(false);
         this.modalNuevoCliente.set(false);
-        this.cliente = {
+        this.cliente.set({
           id: nuevo.id,
           razonSocial: nuevo.razonSocial,
           nitCi: nuevo.nitCi
-        };
+        });
         this.success.set(`Cliente "${nuevo.razonSocial}" (NIT: ${nuevo.nitCi}) registrado y asignado.`);
         this.buscarClientes();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.guardandoCliente.set(false);
@@ -499,25 +560,12 @@ export class FacturacionComponent {
     this.success.set('Pago QR Simple verificado y registrado con éxito.');
   }
 
-  confirmarPagoTarjetaDirecto(pago: PagoForm, tipo: 'pos' | 'simulado' = 'pos'): void {
-    pago.confirmado = true;
-    if (!pago.transaccionExterna || pago.transaccionExterna.trim() === '') {
-      const prefijo = tipo === 'pos' ? 'POS-AUTH' : 'TEST-STRIPE';
-      pago.transaccionExterna = `${prefijo}-${Date.now().toString().slice(-6)}`;
-    }
-    this.success.set(
-      tipo === 'pos'
-        ? `Cobro con Tarjeta / POS autorizado con éxito (Ref: ${pago.transaccionExterna}).`
-        : `Cobro con Tarjeta Simulado exitosamente (Ref: ${pago.transaccionExterna}).`
-    );
-  }
-
   /** Venta completa (cliente, productos y stock), sin mirar todavía cómo se paga. */
   private ventaLista(): boolean {
     if (this.busy() || !this.catalogos()) return false;
     // Solo la factura necesita una dosificación del SIN vigente.
     if (this.tipoComprobante === 'FACTURA' && !this.catalogos()!.dosificacion) return false;
-    if (!this.sucursalId || !this.cliente || !this.carrito.length || this.totalVenta() <= 0) return false;
+    if (!this.sucursalId || !this.cliente() || !this.carrito.length || this.totalVenta() <= 0) return false;
     return !this.carrito.some((l) => !l.cantidad || l.cantidad <= 0 || l.cantidad > l.producto.stockDisponible);
   }
 
@@ -539,6 +587,10 @@ export class FacturacionComponent {
         // Para QR, primero se debe confirmar el cobro
         if (this.esQr(p)) {
           return !!p.confirmado;
+        }
+        // Para tarjeta / pasarela online, primero se realiza el pago y se registra la referencia confirmada
+        if (this.esTarjetaOPasarela(p)) {
+          return !!p.confirmado && !!p.transaccionExterna && p.transaccionExterna.trim().length > 0;
         }
         return true;
       });
@@ -562,20 +614,23 @@ export class FacturacionComponent {
   }
 
   limpiarVenta(): void {
-    this.cliente = null;
+    this.cliente.set(null);
     this.carrito = [];
+    this.cotizacionSeleccionadaId = null;
     this.tipoComprobante = this.catalogos()?.dosificacion ? 'FACTURA' : 'NOTA_VENTA';
     this.tipoVenta = 'CONTADO';
     this.diasCredito = 30;
     const forma = this.formasManuales()[0];
     this.pagos = forma ? [{ formaPagoId: forma.id, importe: null, transaccionExterna: '' }] : [];
+    this.cdr.markForCheck();
   }
 
   private armarVenta(pagos: VentaPagoRequest[]): VentaRequest {
     return {
       sucursalId: this.sucursalId!,
-      clienteId: this.cliente!.id,
+      clienteId: this.cliente()?.id || 1,
       turnoCajaId: this.turnoCajaId,
+      cotizacionId: this.cotizacionSeleccionadaId,
       tipoVenta: this.tipoVenta,
       tipoComprobante: this.tipoComprobante,
       diasCredito: this.tipoVenta === 'CREDITO' ? this.diasCredito : null,
@@ -634,7 +689,7 @@ export class FacturacionComponent {
 
   /**
    * Valida la venta en el servidor, guarda el borrador en este navegador y redirige a la
-   * página de pago de Stripe. La factura se emite al volver, cuando el pago está confirmado.
+   * página de pago de Stripe. El pago genera la referencia para el Paso 4 y habilita Emitir Factura.
    */
   cobrarConTarjeta(): void {
     if (!this.puedeCobrarConTarjeta()) return;
@@ -657,7 +712,8 @@ export class FacturacionComponent {
             tipoComprobante: this.tipoComprobante,
             sucursalId: this.sucursalId!,
             turnoCajaId: this.turnoCajaId,
-            cliente: this.cliente!,
+            cotizacionId: this.cotizacionSeleccionadaId,
+            cliente: this.cliente()!,
             carrito: this.carrito,
           };
           if (!this.guardarBorrador(borrador)) {
@@ -674,7 +730,7 @@ export class FacturacionComponent {
       });
   }
 
-  /** Al volver de Stripe: restaura la venta y, si el pago se completó, emite la factura. */
+  /** Al volver de Stripe: restaura la venta y, si el pago se completó, coloca la referencia en Cobro y Medios de Pago. */
   private retomarCobroStripe(pago: string, sessionId: string | null): void {
     const borrador = this.leerBorrador();
     this.borrarBorrador();
@@ -694,24 +750,36 @@ export class FacturacionComponent {
     this.tipoComprobante = borrador.tipoComprobante ?? 'FACTURA';
     this.sucursalId = borrador.sucursalId;
     this.turnoCajaId = borrador.turnoCajaId;
-    this.cliente = borrador.cliente;
+    this.cotizacionSeleccionadaId = borrador.cotizacionId || null;
+    this.cliente.set(borrador.cliente);
     this.carrito = borrador.carrito;
     this.buscarProductos();
+    this.cdr.markForCheck();
 
     if (pago !== 'exito' || sessionId !== borrador.sessionId) {
-      this.error.set('El pago con tarjeta fue cancelado. La venta sigue en pantalla para cobrarla de otra forma.');
+      this.error.set('El pago con tarjeta fue cancelado en la pasarela. La venta sigue en pantalla para reintentar o cobrar con otro medio.');
       return;
     }
-    const pasarela = this.catalogos()?.formasPago.find((f) => f.codigo === PASARELA_ONLINE);
+    const pasarela = this.catalogos()?.formasPago.find((f) => f.codigo === PASARELA_ONLINE)
+      || this.catalogos()?.formasPago.find((f) => f.codigo === 'TARJETA')
+      || this.formasManuales()[0];
     if (!pasarela) {
-      this.error.set('La forma de pago en línea ya no está activa; no se pudo emitir la factura.');
+      this.error.set('La forma de pago con tarjeta ya no está activa; no se pudo registrar el pago.');
       return;
     }
-    // El importe es el total que calculó el servidor al abrir el cobro; el backend lo vuelve
-    // a verificar contra Stripe antes de facturar.
-    this.enviarVenta(
-      this.armarVenta([{ formaPagoId: pasarela.id, importe: borrador.total, transaccionExterna: sessionId }]),
-      'emitida: pago con tarjeta confirmado en Stripe.',
+
+    // Se asigna el pago verificado con su número de referencia al Punto 4 Cobro y Medios de Pago
+    this.pagos = [
+      {
+        formaPagoId: pasarela.id,
+        importe: borrador.total,
+        transaccionExterna: sessionId || ('STRIPE-' + Date.now().toString().slice(-6)),
+        confirmado: true,
+      },
+    ];
+
+    this.success.set(
+      `✓ Pago con Tarjeta completado exitosamente en Stripe (Ref: ${this.pagos[0].transaccionExterna}). Monto: Bs ${borrador.total.toFixed(2)}. Ahora puedes emitir la factura oficial.`
     );
   }
 

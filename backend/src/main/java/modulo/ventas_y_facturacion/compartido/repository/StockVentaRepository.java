@@ -40,4 +40,15 @@ public interface StockVentaRepository extends JpaRepository<StockAlmacen, Long> 
             @Param("sucursalId") Integer sucursalId,
             @Param("search") String search,
             Pageable pageable);
+
+    /** Todos los productos asociados a la sucursal (con o sin stock), para listado exclusivo por sucursal. */
+    @Query("SELECT s FROM StockAlmacen s JOIN FETCH s.producto p " +
+           "WHERE s.almacen.id = :sucursalId AND p.activo = true AND " +
+           "(:search = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           " OR LOWER(p.codigoSku) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY p.nombre ASC")
+    List<StockAlmacen> productosEnSucursal(
+            @Param("sucursalId") Integer sucursalId,
+            @Param("search") String search,
+            Pageable pageable);
 }

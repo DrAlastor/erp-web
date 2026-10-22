@@ -23,7 +23,6 @@ import java.util.List;
 public record VentaRequest(
         @NotNull(message = "La sucursal es obligatoria")
         Integer sucursalId,
-        @NotNull(message = "El cliente es obligatorio")
         Long clienteId,
         Long turnoCajaId,
         @NotBlank(message = "El tipo de venta es obligatorio")
@@ -35,6 +34,7 @@ public record VentaRequest(
         @Min(value = 1, message = "Los días de crédito deben ser al menos 1")
         @Max(value = 365, message = "Los días de crédito no pueden superar 365")
         Integer diasCredito,
+        Integer cotizacionId,
         @NotEmpty(message = "La venta debe tener al menos un producto")
         @Size(max = 100, message = "La venta no puede superar 100 líneas")
         List<@Valid Linea> detalles,

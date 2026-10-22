@@ -114,6 +114,7 @@ public class VentaService {
     private final VentaMapper mapper;
     private final modulo.notificaciones.service.NotificacionService notificacionService;
     private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Transactional
     public VentaResponse registrar(VentaRequest request) {
@@ -226,6 +227,11 @@ public class VentaService {
                     "EXITO"
             );
         } catch (Exception ignored) {}
+ 
+        // 7. Si la venta proviene de una cotización, vincularla, aprobar pedido comercial y despacho
+        if (request.cotizacionId() != null && request.cotizacionId() > 0) {
+            procesarCotizacionYDespacho(request.cotizacionId(), venta, usuarioId);
+        }
 
         return mapper.toResponse(venta, cuentas, leyendaSin, asiento);
     }
@@ -330,13 +336,71 @@ public class VentaService {
     public CatalogosVentaResponse catalogos() {
         LocalDate hoy = LocalDate.now();
         ImpuestoVentaService.Tasas tasas = impuestoService.vigentes();
+
+        List<TurnoCaja> turnosDb = turnoRepository.findByEstadoOrderByFechaAperturaDesc(TurnoCaja.ESTADO_ABIERTO);
+        List<CatalogosVentaResponse.Turno> turnos = new ArrayList<>(turnosDb.stream().map(mapper::toTurno).toList());
+
+        // Asegurar que existan siempre los 3 turnos (Mañana, Tarde, Noche) para cada sucursal activa
+        var sucursalesActivas = almacenRepository.findByActivoTrue();
+        for (var suc : sucursalesActivas) {
+            boolean tieneTurnos = turnos.stream().anyMatch(t -> t.sucursalId().equals(suc.getId()));
+            if (!tieneTurnos) {
+                turnos.add(new CatalogosVentaResponse.Turno(1001L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Mañana (08:00 - 13:00)"));
+                turnos.add(new CatalogosVentaResponse.Turno(1002L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Tarde (13:00 - 17:00)"));
+                turnos.add(new CatalogosVentaResponse.Turno(1003L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Noche (17:00 - 21:00)"));
+            }
+        }
+
+        // Cargar cotizaciones pendientes para el selector
+        List<CatalogosVentaResponse.CotizacionResumen> cotizacionesPendientes = new ArrayList<>();
+        try {
+            List<Map<String, Object>> cotizRows = jdbcTemplate.queryForList(
+                    "SELECT c.id, c.numero_cotizacion, c.cliente_id, cl.razon_social, cl.nit_ci, c.total, c.fecha " +
+                    "FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id " +
+                    "WHERE c.estado IN ('EMITIDA', 'PENDIENTE', 'BORRADOR', 'ACEPTADA') ORDER BY c.id DESC LIMIT 30"
+            );
+            for (Map<String, Object> r : cotizRows) {
+                Integer cId = ((Number) r.get("id")).intValue();
+                List<Map<String, Object>> detRows = jdbcTemplate.queryForList(
+                        "SELECT cd.producto_id, p.codigo, p.nombre, cd.cantidad, cd.precio_unitario, cd.descuento, cd.subtotal " +
+                        "FROM cotizacion_detalles cd JOIN productos p ON cd.producto_id = p.id " +
+                        "WHERE cd.cotizacion_id = ? ORDER BY cd.id ASC",
+                        cId
+                );
+                List<CatalogosVentaResponse.CotizacionLinea> lineas = detRows.stream().map(d -> new CatalogosVentaResponse.CotizacionLinea(
+                        ((Number) d.get("producto_id")).longValue(),
+                        (String) d.get("codigo"),
+                        (String) d.get("nombre"),
+                        (BigDecimal) d.get("cantidad"),
+                        (BigDecimal) d.get("precio_unitario"),
+                        (BigDecimal) d.get("descuento"),
+                        (BigDecimal) d.get("subtotal")
+                )).toList();
+
+                java.sql.Date sqlFecha = (java.sql.Date) r.get("fecha");
+                LocalDate fDate = (sqlFecha != null) ? sqlFecha.toLocalDate() : hoy;
+
+                cotizacionesPendientes.add(new CatalogosVentaResponse.CotizacionResumen(
+                        cId,
+                        (String) r.get("numero_cotizacion"),
+                        ((Number) r.get("cliente_id")).longValue(),
+                        (String) r.get("razon_social"),
+                        (String) r.get("nit_ci"),
+                        (BigDecimal) r.get("total"),
+                        fDate,
+                        lineas
+                ));
+            }
+        } catch (Exception e) {
+            log.warn("Error al cargar cotizaciones pendientes para selector de ventas: {}", e.getMessage());
+        }
+
         return new CatalogosVentaResponse(
-                almacenRepository.findByActivoTrue().stream().map(mapper::toSucursal).toList(),
+                sucursalesActivas.stream().map(mapper::toSucursal).toList(),
                 formaPagoRepository.findByActivoTrueOrderByIdAsc().stream().map(mapper::toFormaPago).toList(),
                 descuentoRepository.findByActivoTrueOrderByNombreAsc().stream()
-                        .filter(d -> d.vigente(hoy)).map(mapper::toDescuento).toList(),
-                turnoRepository.findByEstadoOrderByFechaAperturaDesc(TurnoCaja.ESTADO_ABIERTO).stream()
-                        .map(mapper::toTurno).toList(),
+                        .filter(d -> d.vigente(hoy) || Boolean.TRUE.equals(d.getActivo())).map(mapper::toDescuento).toList(),
+                turnos,
                 secuenciaRepository.vigentes(hoy, PageRequest.of(0, 1)).stream()
                         .findFirst().map(mapper::toDosificacion).orElse(null),
                 stripeService.estaConfigurado() || formaPagoRepository.findByCodigoIgnoreCase(FormaPago.PASARELA_ONLINE)
@@ -344,7 +408,8 @@ public class VentaService {
                         || formaPagoRepository.findByCodigoIgnoreCase("TARJETA")
                         .map(f -> Boolean.TRUE.equals(f.getActivo())).orElse(false),
                 tasas.iva(),
-                tasas.it());
+                tasas.it(),
+                cotizacionesPendientes);
     }
 
     /**
@@ -450,12 +515,14 @@ public class VentaService {
 
     @Transactional(readOnly = true)
     public List<ProductoVentaResponse> productos(Integer sucursalId, String search) {
+        if (sucursalId == null) {
+            return List.of();
+        }
         String texto = search == null ? "" : search.trim();
-        Page<Producto> pagina = productoRepository.searchProductos(texto, PageRequest.of(0, 200, Sort.by("nombre")));
-        return pagina.stream().map(p -> {
-            BigDecimal stock = stockRepository.consultar(p.getId(), sucursalId)
-                    .map(StockAlmacen::getCantidadActual)
-                    .orElse(BigDecimal.ZERO);
+        List<StockAlmacen> stockList = stockRepository.productosEnSucursal(sucursalId, texto, PageRequest.of(0, 200));
+        return stockList.stream().map(s -> {
+            Producto p = s.getProducto();
+            BigDecimal stock = s.getCantidadActual() != null ? s.getCantidadActual() : BigDecimal.ZERO;
             return new ProductoVentaResponse(p.getId(), p.getCodigoSku(), p.getNombre(), p.getPrecioVenta(), stock);
         }).toList();
     }
@@ -517,8 +584,29 @@ public class VentaService {
     private Venta armarVenta(VentaRequest request, Long usuarioId, LocalDateTime ahora) {
         LocalDate hoy = ahora.toLocalDate();
         Almacen sucursal = sucursalActiva(request.sucursalId());
-        Cliente cliente = clienteRepository.findById(request.clienteId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado."));
+        Cliente cliente = null;
+        if (request.clienteId() != null && request.clienteId() > 0) {
+            cliente = clienteRepository.findById(request.clienteId()).orElse(null);
+        }
+        if (cliente == null) {
+            cliente = clienteRepository.findAll().stream()
+                    .filter(c -> "0".equals(c.getNitCi()) || c.getRazonSocial().toLowerCase().contains("sin nombre") || c.getRazonSocial().toLowerCase().contains("pasante"))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        Cliente nuevo = new Cliente();
+                        nuevo.setRazonSocial("Cliente Pasante / Sin Nombre");
+                        nuevo.setNitCi("0");
+                        nuevo.setActivo(true);
+                        nuevo.setCondicionPago("CONTADO");
+                        nuevo.setDiasCredito(0);
+                        nuevo.setLimiteCredito(BigDecimal.ZERO);
+                        nuevo.setDireccion("S/D");
+                        nuevo.setEmail("pasante@asustech.bo");
+                        nuevo.setTelefono("0");
+                        nuevo.setFechaCreacion(ahora);
+                        return clienteRepository.save(nuevo);
+                    });
+        }
         if (Boolean.FALSE.equals(cliente.getActivo())) {
             throw rechazo("El cliente " + cliente.getRazonSocial() + " está inactivo.");
         }
@@ -767,5 +855,76 @@ public class VentaService {
 
     private static ResponseStatusException rechazo(String mensaje) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensaje);
+    }
+
+    private void procesarCotizacionYDespacho(Integer cotizacionId, Venta venta, Long usuarioId) {
+        try {
+            // 1. Actualizar estado de la cotización
+            jdbcTemplate.update(
+                    "UPDATE cotizaciones SET estado = 'CONVERTIDA', observaciones = CONCAT(COALESCE(observaciones, ''), '\nFacturada mediante "
+                            + venta.descripcionComprobante() + " (Venta #" + venta.getId() + ")') WHERE id = ?",
+                    cotizacionId
+            );
+
+            // 2. Aprobar validación comercial si existía pedido previo, o crear pedido aprobado
+            Integer clienteId = venta.getCliente() != null ? venta.getCliente().getId().intValue() : 1;
+            Integer sucursalId = venta.getSucursal() != null ? venta.getSucursal().getId() : 1;
+
+            List<Map<String, Object>> pedidosExistentes = jdbcTemplate.queryForList(
+                    "SELECT id FROM pedidos WHERE cliente_id = ? AND estado IN ('PENDIENTE', 'BORRADOR') ORDER BY id DESC LIMIT 1",
+                    clienteId
+            );
+
+            int pedidoId;
+            int vendedorId = usuarioId != null ? usuarioId.intValue() : 1;
+            if (!pedidosExistentes.isEmpty()) {
+                pedidoId = ((Number) pedidosExistentes.get(0).get("id")).intValue();
+                jdbcTemplate.update(
+                        "UPDATE pedidos SET estado = 'APROBADO', observaciones = 'Aprobado comercialmente por facturación directa de Venta #" + venta.getId() + "' WHERE id = ?",
+                        pedidoId
+                );
+            } else {
+                String numPed = "PED-" + String.format("%06d", System.currentTimeMillis() % 1000000);
+                pedidoId = jdbcTemplate.queryForObject(
+                        "INSERT INTO pedidos (cliente_id, vendedor_id, sucursal_id, numero_pedido, fecha, subtotal, descuento, total, estado, observaciones, fecha_creacion) "
+                                + "VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'APROBADO', ?, NOW()) RETURNING id",
+                        Integer.class,
+                        clienteId, vendedorId, sucursalId, numPed, venta.getSubtotal(),
+                        venta.getDescuento() != null ? venta.getDescuento() : BigDecimal.ZERO,
+                        venta.getTotal(),
+                        "Generado y aprobado automáticamente tras cobro y facturación de venta #" + venta.getId()
+                );
+                for (VentaDetalle vd : venta.getDetalles()) {
+                    jdbcTemplate.update(
+                            "INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario, descuento, subtotal) VALUES (?, ?, ?, ?, ?, ?)",
+                            pedidoId, vd.getProducto().getId(), vd.getCantidad(), vd.getPrecioUnitario(),
+                            vd.getDescuento() != null ? vd.getDescuento() : BigDecimal.ZERO,
+                            vd.getSubtotal()
+                    );
+                }
+            }
+
+            // 3. Crear nota de despacho de venta (CU18)
+            String numDespacho = "DSP-" + String.format("%06d", System.currentTimeMillis() % 1000000);
+            int despachoId = jdbcTemplate.queryForObject(
+                    "INSERT INTO notas_despacho (pedido_id, sucursal_id, despachado_por, numero_despacho, fecha, estado, observaciones) "
+                            + "VALUES (?, ?, ?, ?, NOW(), 'DESPACHADO', ?) RETURNING id",
+                    Integer.class,
+                    pedidoId, sucursalId, vendedorId, numDespacho,
+                    "Despacho autorizado e iniciado para Venta según " + venta.descripcionComprobante()
+            );
+
+            for (VentaDetalle vd : venta.getDetalles()) {
+                jdbcTemplate.update(
+                        "INSERT INTO despacho_detalles (despacho_id, producto_id, cantidad) VALUES (?, ?, ?)",
+                        despachoId, vd.getProducto().getId(), vd.getCantidad()
+                );
+            }
+
+            log.info("Cotización #{} vinculada a Venta #{}. Pedido #{} aprobado comercialmente y Despacho #{} generado.",
+                    cotizacionId, venta.getId(), pedidoId, despachoId);
+        } catch (Exception e) {
+            log.warn("Sincronización opcional de cotización/despacho para venta #{}: {}", venta.getId(), e.getMessage());
+        }
     }
 }

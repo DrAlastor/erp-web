@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,6 +29,8 @@ export interface PaisCatalogoLanding {
   styleUrl: './landing.component.scss'
 })
 export class LandingComponent implements OnInit {
+  @ViewChild('planesScroll') planesScrollRef?: ElementRef<HTMLDivElement>;
+
   readonly companyService = inject(CompanyService);
   readonly themeService = inject(ThemeService);
   private readonly http = inject(HttpClient);
@@ -167,6 +169,16 @@ export class LandingComponent implements OnInit {
 
   setPeriodo(ciclo: 'mensual' | 'anual'): void {
     this.billingCycle.set(ciclo);
+  }
+
+  scrollPlanes(direction: 'left' | 'right'): void {
+    const el = this.planesScrollRef?.nativeElement;
+    if (!el) return;
+    const scrollAmount = 360;
+    el.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
   }
 
   seleccionarPlan(codigo: string): void {

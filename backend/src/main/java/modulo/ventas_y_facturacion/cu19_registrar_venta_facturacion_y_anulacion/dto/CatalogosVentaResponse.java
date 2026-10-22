@@ -15,7 +15,8 @@ public record CatalogosVentaResponse(
         boolean cobroEnLinea,
         /** Tasas vigentes de la tabla impuestos, en porcentaje (13.00 = 13 %). */
         BigDecimal tasaIva,
-        BigDecimal tasaIt) {
+        BigDecimal tasaIt,
+        List<CotizacionResumen> cotizacionesPendientes) {
 
     public record Sucursal(Integer id, String nombre) {
     }
@@ -26,11 +27,32 @@ public record CatalogosVentaResponse(
     public record Descuento(Long id, String nombre, String tipo, BigDecimal valor) {
     }
 
-    public record Turno(Long id, Integer sucursalId, Long cajeroId, LocalDateTime fechaApertura) {
+    public record Turno(Long id, Integer sucursalId, Long cajeroId, LocalDateTime fechaApertura, String nombre) {
     }
 
     /** Dosificación vigente; {@code null} si no hay ninguna y no se puede facturar. */
     public record Dosificacion(String numeroAutorizacion, Integer siguienteNumero, Integer numeroFinal,
                                LocalDate fechaLimite) {
+    }
+
+    public record CotizacionResumen(
+            Integer id,
+            String numeroCotizacion,
+            Long clienteId,
+            String clienteRazonSocial,
+            String clienteNitCi,
+            BigDecimal total,
+            LocalDate fecha,
+            List<CotizacionLinea> lineas) {
+    }
+
+    public record CotizacionLinea(
+            Long productoId,
+            String codigo,
+            String nombre,
+            BigDecimal cantidad,
+            BigDecimal precioUnitario,
+            BigDecimal descuento,
+            BigDecimal subtotal) {
     }
 }

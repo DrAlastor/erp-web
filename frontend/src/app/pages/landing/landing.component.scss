@@ -2269,27 +2269,97 @@
   border-radius: 999px;
 }
 
-.pricing-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.25rem;
-  margin-top: 3rem;
+.pricing-carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 2.5rem;
   margin-bottom: 3rem;
+  width: 100%;
+}
 
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(3, 1fr);
+.pricing-cards-scrollable {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 1.5rem 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 113, 227, 0.4) transparent;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 113, 227, 0.35);
+    border-radius: 999px;
+    &:hover {
+      background: #0071e3;
+    }
+  }
+}
+
+.pricing-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1d1d1f;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    background: #0071e3;
+    color: #ffffff;
+    border-color: #0071e3;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 113, 227, 0.35);
   }
 
-  @media (max-width: 990px) {
-    grid-template-columns: repeat(2, 1fr);
+  &.btn-prev {
+    left: -20px;
   }
 
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
+  &.btn-next {
+    right: -20px;
   }
+
+  :root.dark & {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f3f4f6;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+      background: #0071e3;
+      color: #ffffff;
+    }
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.pricing-cards-grid {
+  display: flex;
+  gap: 1.75rem;
+  width: max-content;
+  padding: 0.5rem 0.25rem;
 }
 
 .pricing-card {
@@ -2297,9 +2367,11 @@
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 24px;
-  padding: 2.25rem 2rem;
+  padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
+  width: 320px;
+  min-width: 320px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease-out, border-color 180ms ease-out;
 
