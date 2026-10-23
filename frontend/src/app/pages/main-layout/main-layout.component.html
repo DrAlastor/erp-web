@@ -1,10 +1,17 @@
-<div class="workspace" (keydown.escape)="sidebarOpen.set(false)">
+<div class="workspace" [class.sidebar-collapsed]="sidebarCollapsed()" (keydown.escape)="sidebarOpen.set(false)">
   @if (sidebarOpen()) {
   <button class="scrim" aria-label="Cerrar menú" (click)="sidebarOpen.set(false)"></button>
   }
-  <aside id="module-sidebar" class="sidebar" [class.open]="sidebarOpen()" aria-label="Panel de control">
-    <a class="brand" routerLink="/app" (click)="sidebarOpen.set(false)"><img class="brand-mark" [src]="apariencia.logoUrl() ?? 'erp-logo.png'"
-        alt="" width="38" height="38"> Nexo<span class="accent">ERP</span></a>
+  <aside id="module-sidebar" class="sidebar" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()" aria-label="Panel de control">
+    <div class="brand-row">
+      <a class="brand" routerLink="/app" (click)="sidebarOpen.set(false)"><img class="brand-mark" [src]="apariencia.logoUrl() ?? 'erp-logo.png'"
+          alt="" width="38" height="38"> Nexo<span class="accent">ERP</span></a>
+      <button type="button" class="btn-sidebar-pin" (click)="toggleSidebarCollapsed()"
+        [title]="sidebarCollapsed() ? 'Fijar panel lateral' : 'Contraer y ocultar panel lateral (Ctrl+B)'"
+        aria-label="Contraer panel lateral">
+        ⇠
+      </button>
+    </div>
     <p class="eyebrow">PANEL DE CONTROL</p>
     <nav aria-label="Módulos y funciones">
       <a class="dashboard-link" routerLink="/app" [class.selected]="!hasSelection()"
@@ -44,9 +51,20 @@
   <div class="main-column">
     <header class="topbar">
       <div class="header-title">
+        <button type="button" class="desktop-sidebar-toggle" [class.active]="!sidebarCollapsed()"
+          [title]="sidebarCollapsed() ? 'Mostrar panel lateral (Fijar - Ctrl+B)' : 'Ocultar panel lateral (Ctrl+B)'"
+          (click)="toggleSidebarCollapsed()" aria-label="Alternar panel lateral">
+          <span class="toggle-icon">{{ sidebarCollapsed() ? '☰' : '⇠' }}</span>
+        </button>
         <button class="mobile-toggle" aria-label="Abrir menú de módulos" aria-controls="module-sidebar"
           [attr.aria-expanded]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())">
-          ☰</button><span>Espacio de trabajo</span>
+          ☰</button>
+        <span>Espacio de trabajo</span>
+        @if (sidebarCollapsed()) {
+          <button type="button" class="badge-fijar" (click)="toggleSidebarCollapsed()" title="Haz clic para volver a fijar el panel lateral">
+            📌 Fijar panel
+          </button>
+        }
       </div>
 
       <div class="header-actions">

@@ -34,12 +34,49 @@
   padding: 24px 16px;
   transition: transform 240ms var(--ease-out);
 
+  &.collapsed {
+    transform: translateX(-100%);
+  }
+
   @media (max-width: 900px) {
     transform: translateX(-100%);
     &.open {
       transform: translateX(0);
       box-shadow: var(--shadow-floating);
     }
+  }
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 4px;
+}
+
+.btn-sidebar-pin {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a1a1aa;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 140ms ease;
+  margin-bottom: 24px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -193,10 +230,15 @@
 
 .main-column {
   margin-left: 280px;
+  transition: margin-left 240ms var(--ease-out);
 
   @media (max-width: 900px) {
     margin-left: 0;
   }
+}
+
+.workspace.sidebar-collapsed .main-column {
+  margin-left: 0;
 }
 
 /* Topbar Optimizada 60fps (Sin backdrop-filter blur) */
@@ -239,6 +281,7 @@
 }
 
 .theme-button,
+.desktop-sidebar-toggle,
 .mobile-toggle {
   border: 1px solid var(--bg-card-border);
   background: var(--neutral-subtle);
@@ -251,10 +294,46 @@
   align-items: center;
   justify-content: center;
   font-size: 17px;
-  transition: transform 120ms var(--ease-spring), background-color 140ms ease;
+  transition: transform 120ms var(--ease-spring), background-color 140ms ease, border-color 140ms ease;
+
+  &:hover {
+    background: var(--primary-light, #eff6ff);
+    color: var(--primary, #2563eb);
+    border-color: var(--primary, #2563eb);
+  }
 
   &:active {
     transform: scale(0.96);
+  }
+}
+
+.desktop-sidebar-toggle {
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.badge-fijar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary, #2563eb);
+  background: var(--primary-light, #eff6ff);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 140ms ease;
+
+  &:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 900px) {
+    display: none;
   }
 }
 

@@ -1,6 +1,6 @@
 import { RolesComponent } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/components/roles.component';
 import { PermisosService } from '../../modulos/seguridad-y-auditoria/cu03-gestionar-roles-y-permisos/services/permisos.service';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../modulos/seguridad-y-auditoria/cu01-gestionar-acceso-al-sistema/services/auth.service';
@@ -107,7 +107,24 @@ export class MainLayoutComponent {
   );
 
   readonly sidebarOpen = signal(false);
+  readonly sidebarCollapsed = signal(typeof localStorage !== 'undefined' && localStorage.getItem('erp_sidebar_collapsed') === 'true');
   readonly expanded = signal(new Set<string>());
+
+  toggleSidebarCollapsed(): void {
+    const next = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(next);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('erp_sidebar_collapsed', String(next));
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      this.toggleSidebarCollapsed();
+    }
+  }
   private readonly route = inject(ActivatedRoute);
   private readonly pathParams = toSignal(this.route.paramMap);
   private readonly queryParams = toSignal(this.route.queryParamMap);

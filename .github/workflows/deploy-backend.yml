@@ -43,6 +43,7 @@ jobs:
         env:
           AWS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_KEY_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python3 - << 'EOF'
           import json
@@ -104,7 +105,10 @@ jobs:
               "JWT_SECRET": "0793e09c40e6e55bb4c3a9dca66c9798d8ce07e5ed145be87799397c231eabbd",
               "AWS_CLOUDWATCH_ENABLED": "true",
               "AWS_REGION": "us-east-1",
-              "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora"
+              "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora",
+              "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", ""),
+              "GEMINI_MODEL": "gemini-flash-latest",
+              "GEMINI_TIMEOUT_MS": "20000"
           }
 
           aws_key = os.environ.get("AWS_KEY_ID", "")
