@@ -124,24 +124,28 @@ class InterpreteLocalVozTest {
     }
 
     @Test
-    void respuestaDeN8nAceptaListaYDescartaValoresFueraDelCatalogo() throws Exception {
+    void argumentosDeLaIaSoloAceptanValoresDelCatalogo() throws Exception {
         ObjectMapper json = new ObjectMapper();
 
         var valida = json.readTree("""
-                [{"metrica":"ventas","agrupacion":"SUCURSAL","fechaInicio":"2026-09-01",
-                  "fechaFin":"2026-09-30T23:59:59","sucursalId":1,"limite":5}]""");
-        ConsultaReporteVoz consulta = OrquestadorN8nCliente.convertir(valida).orElseThrow();
+                {"metrica":"ventas","agrupacion":"SUCURSAL","fechaInicio":"2026-09-01",
+                 "fechaFin":"2026-09-30T23:59:59","sucursalId":1.0,"limite":500}""");
+        ConsultaReporteVoz consulta = ConsultaVozJson.convertir(valida).orElseThrow();
         assertThat(consulta.getMetrica()).isEqualTo(MetricaVoz.VENTAS);
         assertThat(consulta.getAgrupacion()).isEqualTo(AgrupacionVoz.SUCURSAL);
         assertThat(consulta.getFechaFin()).isEqualTo(LocalDate.of(2026, 9, 30));
         assertThat(consulta.getSucursalId()).isEqualTo(1L);
+        assertThat(consulta.getLimite()).isEqualTo(100);
 
         var inyeccion = json.readTree("""
                 {"metrica":"VENTAS; DROP TABLE ventas","sucursalId":"1 OR 1=1"}""");
-        assertThat(OrquestadorN8nCliente.convertir(inyeccion)).isEmpty();
+        assertThat(ConsultaVozJson.convertir(inyeccion)).isEmpty();
 
         var sucursalComoTexto = json.readTree("""
-                {"metrica":"STOCK","sucursalId":"1 OR 1=1"}""");
-        assertThat(OrquestadorN8nCliente.convertir(sucursalComoTexto).orElseThrow().getSucursalId()).isNull();
+                {"metrica":"STOCK","sucursalId":"1 OR 1=1","agrupacion":"x","fechaInicio":"ayer"}""");
+        ConsultaReporteVoz stock = ConsultaVozJson.convertir(sucursalComoTexto).orElseThrow();
+        assertThat(stock.getSucursalId()).isNull();
+        assertThat(stock.getAgrupacion()).isNull();
+        assertThat(stock.getFechaInicio()).isNull();
     }
 }

@@ -1,12 +1,18 @@
 package modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.catalogo.AgrupacionVoz;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.catalogo.MetricaVoz;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.catalogo.TipoDato;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.catalogo.Visualizacion;
+import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.AsistenteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ColumnaReporte;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ConsultaReporteVoz;
+import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ConversarRequest;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.OpcionesReporteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ReporteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.repository.ReporteVozRepository;
@@ -29,14 +35,20 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
- * CU39 - Reportes por comando de voz. Recibe la frase ya transcrita, la hace interpretar por
- * N8N (o por el intérprete local si N8N no está disponible), valida la consulta resultante
- * contra el catálogo y la ejecuta en modo lectura.
+ * CU39 - Reportes por comando de voz. Recibe la frase ya transcrita y la responde con el
+ * asistente Gemini (o con el intérprete local si Gemini no está disponible). Toda consulta se
+ * valida contra el catálogo y se ejecuta en modo lectura.
  *
  * <p>No tiene tabla propia: el registro de auditoría de cada comando (HU39 / bitácora) se
  * escribe en el log de la aplicación con el usuario, la frase, la consulta y las filas.
@@ -64,7 +76,8 @@ public class ReporteVozService {
 
     private final ReporteVozRepository repository;
     private final InterpreteLocalVoz interpreteLocal;
-    private final OrquestadorN8nCliente n8n;
+    private final AsistenteGeminiCliente gemini;
+    private final ObjectMapper json;
 
     @Transactional(readOnly = true)
     public OpcionesReporteVozResponse opciones() {
@@ -80,31 +93,63 @@ public class ReporteVozService {
                 referencias(repository.sucursalesActivas()),
                 referencias(repository.productosActivos(PRODUCTOS_CONTEXTO)),
                 EJEMPLOS,
-                n8n.habilitado());
+                gemini.habilitado());
     }
 
-    /** HU39.2 + HU39.3: interpreta la frase y devuelve el reporte listo para mostrar. */
-    @Transactional(readOnly = true)
-    public ReporteVozResponse interpretar(String texto) {
-        String frase = texto.trim();
+    /**
+     * HU39.2 + HU39.3: responde un mensaje del usuario. Con Gemini configurado conversa y
+     * consulta los datos mediante function calling; si no está configurado o falla, el
+     * intérprete local convierte la frase en un reporte.
+     *
+     * <p>Sin transacción a propósito: no se retiene una conexión de la base mientras se
+     * espera a Gemini; cada consulta usa la suya.
+     */
+    public AsistenteVozResponse conversar(ConversarRequest request) {
+        String mensaje = request.mensaje().trim();
         LocalDate hoy = LocalDate.now();
         List<Entidad> sucursales = repository.sucursalesActivas();
         List<Entidad> productos = repository.productosActivos(PRODUCTOS_CONTEXTO);
         List<String> advertencias = new ArrayList<>();
 
-        String origen = "N8N";
-        ConsultaReporteVoz consulta = n8n.interpretar(frase, sucursales, productos, hoy).orElse(null);
-        if (consulta == null) {
-            origen = "LOCAL";
-            if (n8n.habilitado()) {
-                advertencias.add("El orquestador N8N no respondió; la frase se interpretó con el intérprete local.");
+        if (gemini.habilitado()) {
+            AtomicReference<ReporteVozResponse> ultimo = new AtomicReference<>();
+            AtomicInteger consultas = new AtomicInteger();
+            Function<JsonNode, JsonNode> herramienta = args -> {
+                consultas.incrementAndGet();
+                ConsultaReporteVoz consulta = ConsultaVozJson.convertir(args).orElse(null);
+                if (consulta == null) {
+                    return error("La métrica no es válida. Usa una de: "
+                            + Arrays.stream(MetricaVoz.values()).map(Enum::name).toList() + ".");
+                }
+                try {
+                    ReporteVozResponse r = generar(mensaje, "GEMINI", consulta, new ArrayList<>());
+                    ultimo.set(r);
+                    return resumenParaIa(r);
+                } catch (ResponseStatusException e) {
+                    return error(e.getReason());
+                }
+            };
+            try {
+                String texto = gemini.conversar(instrucciones(hoy, sucursales, productos, request.consultaAnterior()),
+                        request.historial(), mensaje, herramienta);
+                if (!texto.isBlank()) {
+                    auditarConversacion("GEMINI", mensaje, consultas.get());
+                    return new AsistenteVozResponse(texto, ultimo.get(), "GEMINI", advertencias);
+                }
+                advertencias.add("El asistente IA no devolvió texto; se usó el intérprete local.");
+            } catch (AsistenteGeminiCliente.GeminiNoDisponibleException e) {
+                advertencias.add(e.getMessage() + " Se usó el intérprete local.");
             }
-            consulta = interpreteLocal.interpretar(frase, sucursales, productos, hoy)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                            "No se entendió qué reporte deseas. Prueba con frases como: \""
-                                    + EJEMPLOS.get(0) + "\" o \"" + EJEMPLOS.get(2) + "\"."));
         }
-        return generar(frase, origen, consulta, advertencias);
+
+        ConsultaReporteVoz consulta = interpreteLocal.interpretar(mensaje, sucursales, productos, hoy).orElse(null);
+        auditarConversacion("LOCAL", mensaje, consulta == null ? 0 : 1);
+        if (consulta == null) {
+            return new AsistenteVozResponse("No entendí qué reporte necesitas. Prueba, por ejemplo, con \""
+                    + EJEMPLOS.get(0) + "\" o \"" + EJEMPLOS.get(2) + "\".", null, "LOCAL", advertencias);
+        }
+        ReporteVozResponse r = generar(mensaje, "LOCAL", consulta, new ArrayList<>());
+        return new AsistenteVozResponse(respuestaLocal(r), r, "LOCAL", advertencias);
     }
 
     /** Ejecuta una consulta estructurada: la usa la pantalla al refinar el reporte. */
@@ -300,6 +345,113 @@ public class ReporteVozService {
         if (fin == null) return "desde el " + inicio.format(FORMATO_FECHA);
         if (inicio.equals(fin)) return "el " + inicio.format(FORMATO_FECHA);
         return "del " + inicio.format(FORMATO_FECHA) + " al " + fin.format(FORMATO_FECHA);
+    }
+
+    /** Instrucciones del asistente: rol, reglas de respuesta hablada y catálogos del tenant. */
+    private String instrucciones(LocalDate hoy, List<Entidad> sucursales, List<Entidad> productos,
+                                 ConsultaReporteVoz consultaAnterior) {
+        StringBuilder sb = new StringBuilder("""
+                Eres el asistente de reportes por voz de un ERP comercial boliviano. Respondes en español.
+                Tu respuesta se lee en voz alta: usa de 1 a 3 oraciones breves, sin markdown, tablas, listas ni emojis.
+                Para cualquier cifra usa la herramienta consultar_reporte; nunca inventes datos ni cifras.
+                El reporte que consultes se muestra en pantalla como gráfico o tabla, así que resume lo más importante \
+                (total, el mayor, la tendencia) en lugar de leer todas las filas.
+                Montos en bolivianos con el formato "33.850,50 bolivianos".
+                Interpreta términos informales: "lo que vendimos" = VENTAS; "el mes pasado" = el mes calendario anterior \
+                completo; "esta semana" = desde el lunes hasta hoy; "este año" = desde el 1 de enero hasta hoy.
+                Si no se menciona una fecha, consulta todo el historial y dilo.
+                Si la pregunta es ambigua, elige la interpretación más razonable, dila y ofrece cambiarla; \
+                pregunta solo si es imposible responder.
+                Si la herramienta devuelve un error, explícalo en palabras simples y sugiere cómo reformular.
+                Solo hablas de los reportes del ERP; ante otros temas, explica amablemente qué puedes hacer.
+                """);
+        sb.append("Hoy es ").append(hoy).append(" (AAAA-MM-DD).\n");
+        sb.append("Sucursales (id: nombre, ciudad):\n");
+        sucursales.forEach(s -> sb.append("- ").append(s.id()).append(": ").append(s.nombre())
+                .append(s.alias() == null ? "" : ", " + s.alias()).append('\n'));
+        sb.append("Productos (id: nombre, código):\n");
+        productos.forEach(p -> sb.append("- ").append(p.id()).append(": ").append(p.nombre())
+                .append(p.alias() == null ? "" : ", " + p.alias()).append('\n'));
+        if (consultaAnterior != null && consultaAnterior.getMetrica() != null) {
+            try {
+                sb.append("Último reporte mostrado al usuario (base para preguntas de seguimiento como ")
+                        .append("\"¿y en La Paz?\"): ").append(json.writeValueAsString(consultaAnterior)).append('\n');
+            } catch (JsonProcessingException ignorada) {
+                // Sin contexto del reporte anterior la conversación sigue funcionando.
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Lo que Gemini recibe de la herramienta: datos con etiquetas legibles y como máximo 25 filas. */
+    private JsonNode resumenParaIa(ReporteVozResponse r) {
+        ObjectNode n = json.createObjectNode();
+        n.put("titulo", r.getTitulo());
+        n.put("interpretacion", r.getInterpretacion());
+        n.put("visualizacionEnPantalla", r.getVisualizacion().name());
+        n.put("totalFilas", r.getFilas().size());
+        List<Map<String, Object>> filas = new ArrayList<>();
+        for (Map<String, Object> fila : r.getFilas().subList(0, Math.min(25, r.getFilas().size()))) {
+            Map<String, Object> legible = new LinkedHashMap<>();
+            r.getColumnas().forEach(c -> legible.put(c.etiqueta(), fila.get(c.clave())));
+            filas.add(legible);
+        }
+        n.set("filas", json.valueToTree(filas));
+        Map<String, Object> totales = new LinkedHashMap<>();
+        r.getColumnas().forEach(c -> {
+            if (r.getTotales().containsKey(c.clave())) totales.put(c.etiqueta(), r.getTotales().get(c.clave()));
+        });
+        n.set("totales", json.valueToTree(totales));
+        n.set("advertencias", json.valueToTree(r.getAdvertencias()));
+        return n;
+    }
+
+    private JsonNode error(String mensaje) {
+        return json.createObjectNode().put("error", mensaje == null ? "La consulta no es válida." : mensaje);
+    }
+
+    /** Respuesta hablada del intérprete local, armada con los datos del reporte. */
+    static String respuestaLocal(ReporteVozResponse r) {
+        if (r.getFilas().isEmpty()) {
+            return "No encontré datos para " + r.getInterpretacion().toLowerCase(Locale.ROOT) + ".";
+        }
+        List<ColumnaReporte> medidas = r.getColumnas().stream()
+                .filter(c -> c.tipo() == TipoDato.NUMERO || c.tipo() == TipoDato.MONEDA).toList();
+        Map<String, Object> primera = r.getFilas().get(0);
+        if (r.getConsulta().getAgrupacion() == AgrupacionVoz.NINGUNA) {
+            List<String> partes = medidas.stream()
+                    .map(m -> m.etiqueta().toLowerCase(Locale.ROOT) + " " + hablado(primera.get(m.clave()), m.tipo()))
+                    .toList();
+            return r.getTitulo() + ": " + String.join(", ", partes) + ".";
+        }
+        ColumnaReporte grupo = r.getColumnas().get(0);
+        ColumnaReporte medida = medidas.get(0);
+        String inicio = r.getFilas().size() == 1 ? "Encontré un resultado de " : "Encontré " + r.getFilas().size() + " resultados de ";
+        String detalle = r.getConsulta().getAgrupacion().temporal()
+                ? "Empieza el " + hablado(primera.get(grupo.clave()), grupo.tipo())
+                : "El primero es " + hablado(primera.get(grupo.clave()), grupo.tipo());
+        return inicio + r.getTitulo().toLowerCase(Locale.ROOT) + ". " + detalle + " con "
+                + medida.etiqueta().toLowerCase(Locale.ROOT) + " de " + hablado(primera.get(medida.clave()), medida.tipo()) + ".";
+    }
+
+    private static String hablado(Object valor, TipoDato tipo) {
+        if (valor == null) return "sin dato";
+        if (valor instanceof LocalDate d) return d.format(FORMATO_FECHA);
+        if (valor instanceof Number n && (tipo == TipoDato.MONEDA || tipo == TipoDato.NUMERO)) {
+            DecimalFormatSymbols simbolos = new DecimalFormatSymbols(Locale.ROOT);
+            simbolos.setGroupingSeparator('.');
+            simbolos.setDecimalSeparator(',');
+            String numero = new DecimalFormat(tipo == TipoDato.MONEDA ? "#,##0.00" : "#,##0.##", simbolos)
+                    .format(new BigDecimal(n.toString()));
+            return tipo == TipoDato.MONEDA ? numero + " bolivianos" : numero;
+        }
+        return valor.toString();
+    }
+
+    private void auditarConversacion(String origen, String mensaje, int consultas) {
+        String usuario = UsuarioActual.buscar().map(UsuarioPrincipal::email).orElse("anonimo");
+        auditoria.info("ASISTENTE_VOZ usuario={} origen={} mensaje=\"{}\" consultas={}",
+                usuario, origen, sinSaltos(mensaje), consultas);
     }
 
     private void auditar(ReporteVozResponse r) {

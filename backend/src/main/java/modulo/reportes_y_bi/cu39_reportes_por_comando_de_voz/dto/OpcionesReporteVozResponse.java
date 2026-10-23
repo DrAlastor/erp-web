@@ -8,7 +8,7 @@ public record OpcionesReporteVozResponse(
         List<Referencia> sucursales,
         List<Referencia> productos,
         List<String> ejemplos,
-        boolean n8nHabilitado) {
+        boolean iaHabilitada) {
 
     public record MetricaOpcion(
             String codigo,

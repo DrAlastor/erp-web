@@ -2,7 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { ConsultaReporteVoz, OpcionesReporteVoz, ReporteVoz } from '../models/reporte-voz.model';
+import {
+  AsistenteRespuesta,
+  ConsultaReporteVoz,
+  OpcionesReporteVoz,
+  ReporteVoz,
+  TurnoConversacion
+} from '../models/reporte-voz.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReporteVozService {
@@ -14,9 +20,13 @@ export class ReporteVozService {
     return this.http.get<OpcionesReporteVoz>(`${this.baseUrl}/opciones`);
   }
 
-  /** Envía la frase transcrita para que N8N la interprete y devuelve el reporte. */
-  interpretar(texto: string): Observable<ReporteVoz> {
-    return this.http.post<ReporteVoz>(`${this.baseUrl}/interpretar`, { texto });
+  /** Envía el mensaje al asistente con el historial y el último reporte, para el seguimiento. */
+  conversar(
+    mensaje: string,
+    historial: TurnoConversacion[],
+    consultaAnterior: ConsultaReporteVoz | null
+  ): Observable<AsistenteRespuesta> {
+    return this.http.post<AsistenteRespuesta>(`${this.baseUrl}/conversar`, { mensaje, historial, consultaAnterior });
   }
 
   /** Ejecuta una consulta ya estructurada (refinar el reporte). */
