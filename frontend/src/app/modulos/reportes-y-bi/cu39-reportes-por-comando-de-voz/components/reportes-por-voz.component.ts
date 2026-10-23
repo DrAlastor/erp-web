@@ -8,15 +8,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { ReporteVozService } from '../services/reporte-voz.service';
 import { ReconocimientoVozService } from '../services/reconocimiento-voz.service';
+import { SintesisVozService } from '../services/sintesis-voz.service';
 import {
   AgrupacionVoz,
   ColumnaReporte,
   ConsultaReporteVoz,
+  MensajeChat,
   MetricaOpcion,
   MetricaVoz,
   OpcionesReporteVoz,
   ReporteVoz,
-  TipoDato
+  TipoDato,
+  TurnoConversacion
 } from '../models/reporte-voz.model';
 
 interface Barra {
@@ -37,12 +40,14 @@ const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'O
 const ANCHO = 640;
 const ALTO = 240;
 const MARGEN = { izq: 16, der: 16, sup: 20, inf: 32 };
+/** Mensajes previos que se reenvían como contexto (el backend acepta hasta 20). */
+const HISTORIAL_MAXIMO = 12;
 
 @Component({
   selector: 'app-reportes-por-voz',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [ReconocimientoVozService],
+  providers: [ReconocimientoVozService, SintesisVozService],
   templateUrl: './reportes-por-voz.component.html',
   styleUrl: './reportes-por-voz.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,9 +57,12 @@ export class ReportesPorVozComponent implements OnInit {
   private readonly destroy = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
   readonly voz = inject(ReconocimientoVozService);
+  readonly sintesis = inject(SintesisVozService);
 
   readonly opciones = signal<OpcionesReporteVoz | null>(null);
   readonly reporte = signal<ReporteVoz | null>(null);
+  readonly mensajes = signal<MensajeChat[]>([]);
+  readonly leerEnVoz = signal(true);
   readonly loading = signal(false);
   readonly exportando = signal(false);
   readonly error = signal('');
@@ -157,6 +165,8 @@ export class ReportesPorVozComponent implements OnInit {
     if (this.voz.grabando()) {
       this.voz.detener();
     } else {
+      // Que el micrófono no capte la voz del asistente.
+      this.sintesis.detener();
       this.error.set('');
       this.voz.iniciar();
     }
@@ -167,7 +177,10 @@ export class ReportesPorVozComponent implements OnInit {
     this.generar();
   }
 
-  /** HU39.2: envía el texto confirmado al backend, que lo hace interpretar por N8N. */
+  /**
+   * HU39.2: envía el mensaje confirmado al asistente junto con la conversación previa y el
+   * último reporte, para que entienda preguntas de seguimiento ("¿y en La Paz?").
+   */
   generar(): void {
     const frase = this.texto().trim();
     if (!frase) {
@@ -175,7 +188,49 @@ export class ReportesPorVozComponent implements OnInit {
       return;
     }
     if (this.voz.grabando()) this.voz.detener();
-    this.cargar(this.api.interpretar(frase));
+    this.sintesis.detener();
+    const historial: TurnoConversacion[] = this.mensajes()
+      .slice(-HISTORIAL_MAXIMO)
+      .map(m => ({ rol: m.rol, texto: m.texto }));
+    this.mensajes.update(ms => [...ms, { rol: 'usuario', texto: frase }]);
+    this.texto.set('');
+    this.loading.set(true);
+    this.error.set('');
+    this.api.conversar(frase, historial, this.reporte()?.consulta ?? null)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (r) => {
+          this.mensajes.update(ms => [...ms, {
+            rol: 'asistente', texto: r.respuesta, origen: r.origen,
+            advertencias: r.advertencias, conReporte: !!r.reporte
+          }]);
+          if (r.reporte) this.mostrarReporte(r.reporte);
+          if (this.leerEnVoz()) this.sintesis.hablar(r.respuesta);
+          this.loading.set(false);
+        },
+        error: (e) => {
+          this.loading.set(false);
+          this.manejarError(e);
+        }
+      });
+  }
+
+  /** Empieza de cero: olvida la conversación y el reporte en pantalla. */
+  nuevaConversacion(): void {
+    this.sintesis.detener();
+    this.mensajes.set([]);
+    this.reporte.set(null);
+    this.refinando.set(false);
+    this.error.set('');
+  }
+
+  alternarLectura(): void {
+    this.leerEnVoz.update(v => !v);
+    if (!this.leerEnVoz()) this.sintesis.detener();
+  }
+
+  repetir(texto: string): void {
+    this.sintesis.hablar(texto);
   }
 
   abrirRefinar(): void {
@@ -241,7 +296,7 @@ export class ReportesPorVozComponent implements OnInit {
   }
 
   origenEtiqueta(origen: ReporteVoz['origen']): string {
-    return origen === 'N8N' ? 'Interpretado por N8N' : origen === 'LOCAL' ? 'Intérprete local' : 'Refinado manualmente';
+    return origen === 'GEMINI' ? 'Asistente IA (Gemini)' : origen === 'LOCAL' ? 'Intérprete local' : 'Refinado manualmente';
   }
 
   celda(fila: Record<string, string | number | null>, col: ColumnaReporte): string {
@@ -300,14 +355,18 @@ export class ReportesPorVozComponent implements OnInit {
     };
   }
 
+  private mostrarReporte(r: ReporteVoz): void {
+    this.reporte.set(r);
+    this.medida.set(this.medidas()[0]?.clave ?? '');
+    this.vista.set(r.visualizacion === 'TABLA' ? 'tabla' : 'grafico');
+  }
+
   private cargar(peticion: Observable<ReporteVoz>, cerrarRefinar = false): void {
     this.loading.set(true);
     this.error.set('');
     peticion.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (r) => {
-        this.reporte.set(r);
-        this.medida.set(this.medidas()[0]?.clave ?? '');
-        this.vista.set(r.visualizacion === 'TABLA' ? 'tabla' : 'grafico');
+        this.mostrarReporte(r);
         if (cerrarRefinar) this.refinando.set(false);
         this.loading.set(false);
       },

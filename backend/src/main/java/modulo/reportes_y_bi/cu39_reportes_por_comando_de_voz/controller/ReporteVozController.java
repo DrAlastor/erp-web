@@ -2,8 +2,9 @@ package modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.AsistenteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ConsultaReporteVoz;
-import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.InterpretarComandoRequest;
+import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ConversarRequest;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.OpcionesReporteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.dto.ReporteVozResponse;
 import modulo.reportes_y_bi.cu39_reportes_por_comando_de_voz.service.ReporteVozService;
@@ -23,7 +24,8 @@ import java.nio.charset.StandardCharsets;
 /**
  * CU39 - Reportes por comando de voz. Todos los endpoints son de lectura y piden el permiso
  * REPORTES_CONSULTAR (Administrador y Vendedor). La transcripción de voz a texto la hace el
- * cliente (Web o Móvil); aquí llega la frase ya confirmada por el usuario.
+ * cliente (Web o Móvil); aquí llega la frase ya confirmada por el usuario, y la respuesta
+ * vuelve como texto para que el cliente la lea en voz alta.
  */
 @RestController
 @RequestMapping("/api/reportes/voz")
@@ -39,10 +41,10 @@ public class ReporteVozController {
         return ResponseEntity.ok(service.opciones());
     }
 
-    /** Interpreta la frase dictada (vía N8N) y devuelve el reporte generado. */
-    @PostMapping("/interpretar")
-    public ResponseEntity<ReporteVozResponse> interpretar(@Valid @RequestBody InterpretarComandoRequest request) {
-        return ResponseEntity.ok(service.interpretar(request.getTexto()));
+    /** Responde el mensaje dictado con el asistente (Gemini o intérprete local) y su reporte. */
+    @PostMapping("/conversar")
+    public ResponseEntity<AsistenteVozResponse> conversar(@Valid @RequestBody ConversarRequest request) {
+        return ResponseEntity.ok(service.conversar(request));
     }
 
     /** Ejecuta una consulta estructurada; la usa la pantalla al refinar el reporte. */

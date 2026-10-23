@@ -1,35 +1,37 @@
 CU39 - Reportes por Comando de Voz
 MÓDULO 7 — Reportes & BI
 
-Descripcion: El usuario dicta una consulta ("ventas de la sucursal Central del mes pasado"),
-el cliente la transcribe (Speech-to-Text), el backend la hace interpretar por N8N y devuelve
-el reporte listo para graficar o mostrar en tabla.
+Descripcion: El usuario conversa por voz con un asistente de reportes ("¿cuanto vendimos el
+mes pasado en la Central?", "¿y en La Paz?"). El cliente transcribe la voz (Speech-to-Text),
+el backend responde con el asistente Gemini y devuelve un texto para leer en voz alta mas el
+reporte listo para graficar o mostrar en tabla.
 
 Endpoints (permiso REPORTES_CONSULTAR: Administrador y Vendedor)
-  GET  /api/reportes/voz/opciones     Metricas, agrupaciones, sucursales y frases de ejemplo.
-  POST /api/reportes/voz/interpretar  { "texto": "..." } -> interpreta y ejecuta.
-  POST /api/reportes/voz/ejecutar     ConsultaReporteVoz -> ejecuta (refinar el reporte).
-  POST /api/reportes/voz/exportar     ConsultaReporteVoz -> CSV para Excel.
+  GET  /api/reportes/voz/opciones   Metricas, agrupaciones, sucursales, ejemplos e iaHabilitada.
+  POST /api/reportes/voz/conversar  { mensaje, historial: [{rol, texto}], consultaAnterior }
+                                    -> { respuesta, reporte, origen: GEMINI|LOCAL, advertencias }
+  POST /api/reportes/voz/ejecutar   ConsultaReporteVoz -> reporte (refinar desde la pantalla).
+  POST /api/reportes/voz/exportar   ConsultaReporteVoz -> CSV para Excel.
 
-Flujo
-  1. El frontend transcribe la voz y el usuario confirma o corrige el texto.
-  2. ReporteVozService envia el texto al webhook de N8N (n8n.reportes-voz.webhook-url) con el
-     contexto: fechaReferencia, sucursales, productos y catalogo de metricas.
-  3. N8N responde una ConsultaReporteVoz en JSON:
-       { "metrica": "VENTAS", "agrupacion": "SUCURSAL", "fechaInicio": "2026-09-01",
-         "fechaFin": "2026-09-30", "sucursalId": 1, "productoId": null,
-         "soloCriticos": null, "limite": 10 }
-     Si N8N no esta configurado, falla o no entiende la frase, se usa InterpreteLocalVoz.
-  4. La consulta se valida contra el catalogo (MetricaVoz / AgrupacionVoz) y se ejecuta con
-     SQL fijo y parametros (ReporteVozRepository): nada del texto dictado llega al SQL.
-  5. La respuesta sugiere la visualizacion: KPI (total), LINEAS (por dia/mes),
-     BARRAS (hasta 15 categorias) o TABLA.
+Flujo con Gemini (function calling)
+  1. ReporteVozService arma las instrucciones (fecha de hoy, sucursales, productos y el ultimo
+     reporte mostrado) y envia la conversacion a Gemini (AsistenteGeminiCliente).
+  2. Gemini no ve la base ni escribe SQL: cuando necesita cifras pide la herramienta
+     consultar_reporte con una consulta estructurada (metrica, agrupacion, fechas, sucursal...).
+  3. ConsultaVozJson descarta todo valor fuera del catalogo; la consulta se valida y se ejecuta
+     con SQL fijo y parametros (ReporteVozRepository).
+  4. Gemini recibe un resumen de los datos y redacta una respuesta breve para leer en voz alta.
+  Si GEMINI_API_KEY esta vacia, se alcanza el limite gratuito o Gemini falla, responde el
+  InterpreteLocalVoz (reglas de palabras clave) y la respuesta lo indica.
+
+Configuracion (variables de entorno)
+  GEMINI_API_KEY      API key de Google AI Studio. Nunca en el repositorio.
+  GEMINI_MODEL        Por defecto gemini-flash-latest (alias que Google mantiene en el Flash vigente).
+  GEMINI_TIMEOUT_MS   Por defecto 20000.
 
 Metricas: VENTAS, PRODUCTOS_VENDIDOS, STOCK, MOVIMIENTOS_KARDEX, CUENTAS_POR_COBRAR, COMPRAS.
 
 Tablas: solo lectura de ventas, venta_detalles, productos, categorias, inventario_sucursal,
 kardex_movimientos, cuentas_por_cobrar, compras, proveedores, clientes, sucursal, ciudad,
-usuario y empleados. El CU no crea tablas: la auditoria de cada comando se escribe en el log
-de la aplicacion (logger AUDITORIA.CU39) con usuario, frase, consulta y filas devueltas.
-
-Flujo N8N de referencia: docs/n8n/cu39-reportes-por-voz.workflow.json
+usuario y empleados. El CU no crea tablas: la auditoria (logger AUDITORIA.CU39) registra cada
+mensaje (ASISTENTE_VOZ) y cada reporte ejecutado (REPORTE_VOZ) con usuario, frase y consulta.

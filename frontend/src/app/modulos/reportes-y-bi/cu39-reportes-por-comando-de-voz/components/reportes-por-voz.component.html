@@ -2,14 +2,56 @@
   <div class="header-section">
     <div>
       <h2>Reportes por comando de voz</h2>
-      <p>Dicta tu consulta en lenguaje natural y obtén el reporte al instante, sin navegar por filtros.</p>
+      <p>Pregúntale al asistente en voz alta: te responde, lee la respuesta y te muestra el reporte.</p>
     </div>
-    @if (opciones(); as o) {
-      <span class="badge" [class.badge-ok]="o.n8nHabilitado">
-        {{ o.n8nHabilitado ? 'Orquestación N8N activa' : 'Intérprete local' }}
-      </span>
-    }
+    <div class="header-acciones">
+      @if (opciones(); as o) {
+        <span class="badge" [class.badge-ok]="o.iaHabilitada">
+          {{ o.iaHabilitada ? 'Asistente IA activo' : 'Intérprete local' }}
+        </span>
+      }
+      @if (sintesis.soportado()) {
+        <button type="button" class="btn secondary pequeno" [attr.aria-pressed]="leerEnVoz()" (click)="alternarLectura()">
+          {{ leerEnVoz() ? '🔊 Voz activada' : '🔇 Voz desactivada' }}
+        </button>
+      }
+      @if (mensajes().length > 0) {
+        <button type="button" class="btn secondary pequeno" (click)="nuevaConversacion()" [disabled]="loading()">
+          Nueva conversación
+        </button>
+      }
+    </div>
   </div>
+
+  <!-- ============ CONVERSACIÓN ============ -->
+  @if (mensajes().length > 0) {
+    <section class="chat" aria-label="Conversación con el asistente" aria-live="polite">
+      @for (m of mensajes(); track $index) {
+        <div class="burbuja" [class.usuario]="m.rol === 'usuario'" [class.asistente]="m.rol === 'asistente'">
+          <p>{{ m.texto }}</p>
+          @if (m.rol === 'asistente') {
+            <div class="burbuja-meta">
+              @if (m.origen) {
+                <span>{{ m.origen === 'GEMINI' ? 'Asistente IA' : 'Intérprete local' }}</span>
+              }
+              @if (m.conReporte) {
+                <span>· reporte abajo</span>
+              }
+              @if (sintesis.soportado()) {
+                <button type="button" class="link-btn" (click)="repetir(m.texto)" aria-label="Escuchar de nuevo">🔊 Escuchar</button>
+              }
+            </div>
+            @for (adv of m.advertencias ?? []; track adv) {
+              <small class="burbuja-aviso">{{ adv }}</small>
+            }
+          }
+        </div>
+      }
+      @if (loading()) {
+        <div class="burbuja asistente pensando"><p>Pensando…</p></div>
+      }
+    </section>
+  }
 
   <!-- ============ CAPTURA DE VOZ (HU39.1) ============ -->
   <section class="captura" aria-label="Consulta por voz">
@@ -42,19 +84,20 @@
     </div>
 
     <form class="confirmacion" (ngSubmit)="generar()">
-      <label for="texto-voz">Texto transcrito (revísalo o corrígelo antes de continuar)</label>
+      <label for="texto-voz">Texto transcrito (revísalo o corrígelo antes de enviarlo)</label>
       <textarea
         id="texto-voz"
         name="texto"
         rows="2"
         maxlength="500"
-        placeholder="Ej.: Muéstrame las ventas de la sucursal Central del mes pasado"
+        [placeholder]="mensajes().length ? 'Ej.: ¿y en La Paz?' : 'Ej.: ¿Cuánto vendimos el mes pasado en la sucursal Central?'"
         [ngModel]="texto()"
         (ngModelChange)="texto.set($event)"
+        (keydown.enter)="$event.preventDefault(); generar()"
         [readonly]="voz.grabando()"></textarea>
       <div class="acciones">
         <button class="btn primary" type="submit" [disabled]="loading() || voz.grabando() || !texto().trim()">
-          {{ loading() ? 'Generando…' : 'Generar reporte' }}
+          {{ loading() ? 'Pensando…' : 'Enviar' }}
         </button>
         @if (texto()) {
           <button class="btn secondary" type="button" (click)="texto.set('')" [disabled]="voz.grabando()">Limpiar</button>
@@ -62,7 +105,7 @@
       </div>
     </form>
 
-    @if (opciones()?.ejemplos?.length) {
+    @if (opciones()?.ejemplos?.length && mensajes().length === 0) {
       <div class="ejemplos">
         <span>Prueba con:</span>
         @for (ej of opciones()!.ejemplos; track ej) {
@@ -86,9 +129,7 @@
   }
 
   <!-- ============ RESULTADO (HU39.3) ============ -->
-  @if (loading() && !reporte()) {
-    <div class="estado-vacio">Interpretando la consulta…</div>
-  } @else if (reporte(); as r) {
+  @if (reporte(); as r) {
     <section class="panel-reporte" [class.cargando]="loading()" aria-label="Reporte generado">
       <header class="reporte-header">
         <div>
@@ -275,9 +316,9 @@
         <div class="estado-vacio">No hay datos para esta consulta.</div>
       }
     </section>
-  } @else {
+  } @else if (mensajes().length === 0) {
     <div class="estado-vacio">
-      Aún no generaste ningún reporte. Dicta una consulta o elige uno de los ejemplos.
+      Aún no hiciste ninguna consulta. Presiona el micrófono y pregunta, o elige uno de los ejemplos.
     </div>
   }
 </div>

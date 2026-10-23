@@ -34,7 +34,7 @@ export interface ColumnaReporte {
 
 export interface ReporteVoz {
   textoOriginal: string | null;
-  origen: 'N8N' | 'LOCAL' | 'MANUAL';
+  origen: 'GEMINI' | 'LOCAL' | 'MANUAL';
   consulta: ConsultaReporteVoz;
   titulo: string;
   interpretacion: string;
@@ -70,5 +70,25 @@ export interface OpcionesReporteVoz {
   sucursales: Referencia[];
   productos: Referencia[];
   ejemplos: string[];
-  n8nHabilitado: boolean;
+  iaHabilitada: boolean;
+}
+
+/** Turno de la conversación que se reenvía al backend para preguntas de seguimiento. */
+export interface TurnoConversacion {
+  rol: 'usuario' | 'asistente';
+  texto: string;
+}
+
+/** Mensaje mostrado en el chat. */
+export interface MensajeChat extends TurnoConversacion {
+  origen?: AsistenteRespuesta['origen'];
+  advertencias?: string[];
+  conReporte?: boolean;
+}
+
+export interface AsistenteRespuesta {
+  respuesta: string;
+  reporte: ReporteVoz | null;
+  origen: 'GEMINI' | 'LOCAL';
+  advertencias: string[];
 }
