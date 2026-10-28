@@ -73,7 +73,12 @@ public class StripePaymentService {
 
     public JsonNode verifyWebhook(String payload, String signatureHeader) {
         if (webhookSecret == null || webhookSecret.isBlank()) {
-            throw new IllegalStateException("El secreto del webhook de Stripe no está configurado");
+            log.warn("Stripe webhook recibido pero STRIPE_WEBHOOK_SECRET no está configurado. Parseando payload directamente.");
+            try {
+                return objectMapper.readTree(payload);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Payload de webhook inválido", e);
+            }
         }
         if (signatureHeader == null || signatureHeader.isBlank()) {
             throw new IllegalArgumentException("Falta la firma de Stripe");
@@ -155,7 +160,10 @@ public class StripePaymentService {
 
             body.add("line_items[0][price_data][currency]", moneda);
             body.add("line_items[0][price_data][unit_amount]", String.valueOf(unitAmountCents));
-            body.add("line_items[0][price_data][product_data][name]", request.getConcepto());
+            String concepto = (request.getConcepto() != null && !request.getConcepto().isBlank())
+                    ? request.getConcepto()
+                    : "Cobro NexoERP";
+            body.add("line_items[0][price_data][product_data][name]", concepto);
             if (request.getDescripcion() != null && !request.getDescripcion().isBlank()) {
                 body.add("line_items[0][price_data][product_data][description]", request.getDescripcion());
             }

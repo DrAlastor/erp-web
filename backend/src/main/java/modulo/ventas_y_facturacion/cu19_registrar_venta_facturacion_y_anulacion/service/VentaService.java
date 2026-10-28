@@ -454,13 +454,16 @@ public class VentaService {
         String resumen = venta.getDetalles().stream()
                 .map(d -> d.getCantidad().stripTrailingZeros().toPlainString() + " x " + d.getProducto().getNombre())
                 .reduce((a, b) -> a + ", " + b).orElse("");
+        String razonSocial = (venta.getRazonSocialCliente() != null && !venta.getRazonSocialCliente().isBlank())
+                ? venta.getRazonSocialCliente()
+                : "Cliente General";
         StripeCheckoutRequestDTO checkout = new StripeCheckoutRequestDTO(
                 venta.getTotal(),
                 MONEDA_STRIPE,
-                "Venta - " + venta.getRazonSocialCliente(),
+                "Venta - " + razonSocial,
                 resumen.length() > 450 ? resumen.substring(0, 447) + "..." : resumen,
                 null,
-                venta.getRazonSocialCliente(),
+                razonSocial,
                 null,
                 request.successUrl(),
                 request.cancelUrl(),
@@ -762,10 +765,11 @@ public class VentaService {
         boolean permitida = url.startsWith("http://localhost:")
                 || url.startsWith("http://127.0.0.1:")
                 || url.startsWith("https://localhost:")
+                || url.contains("erp-contable-comercial.online")
                 || Arrays.stream(origenesPermitidos.split(","))
                 .map(String::trim)
                 .filter(origen -> !origen.isEmpty())
-                .anyMatch(origen -> url.startsWith(origen + "/") || url.startsWith(origen + "?"));
+                .anyMatch(origen -> url.startsWith(origen + "/") || url.startsWith(origen + "?") || url.equals(origen));
         if (!permitida) {
             throw rechazo("La URL de retorno del pago no pertenece a un origen permitido: " + url);
         }

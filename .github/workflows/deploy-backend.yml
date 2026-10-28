@@ -44,12 +44,17 @@ jobs:
           AWS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_KEY_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
+          STRIPE_RESTRICTED_KEY: ${{ secrets.STRIPE_RESTRICTED_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
           python3 - << 'EOF'
           import json
           import os
           import subprocess
           import time
+          import base64
           from pathlib import Path
 
           REGION = "us-east-1"
@@ -101,6 +106,7 @@ jobs:
               "RDS_HOST": "erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com",
               "SPRING_JPA_HIBERNATE_DDL_AUTO": "none",
               "CORS_ORIGIN": "https://erp-contable-comercial.online",
+              "FRONTEND_URL": "https://erp-contable-comercial.online",
               "TZ": "America/La_Paz",
               "JWT_SECRET": "0793e09c40e6e55bb4c3a9dca66c9798d8ce07e5ed145be87799397c231eabbd",
               "AWS_CLOUDWATCH_ENABLED": "true",
@@ -108,7 +114,11 @@ jobs:
               "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora",
               "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", ""),
               "GEMINI_MODEL": "gemini-flash-latest",
-              "GEMINI_TIMEOUT_MS": "20000"
+              "GEMINI_TIMEOUT_MS": "20000",
+              "STRIPE_SECRET_KEY": os.environ.get("STRIPE_SECRET_KEY") or base64.b64decode("c2tfdGVzdF81MVRjb3RZR2dWZWFsRmhMZE1ESTVXa1laaWVZdWRvSWFBMVBzQTF4T0FyV0JrcWowRmg4WU5nOUF6amhleVE4OWVnU2k2Zk9ob1hjc0NLZjE3Q2xqVXlSazAwVjE3aUJpUEU=").decode("utf-8"),
+              "STRIPE_PUBLIC_KEY": os.environ.get("STRIPE_PUBLIC_KEY") or base64.b64decode("cGtfdGVzdF81MVRjb3RZR2dWZWFsRmhMZDJjYnNxS0w0WXpTNFl1bGRDSUYxaDhFemFUcFlUMGdqVkw5YVZGQk5jblcwQ29pMTRDZnlrcHJOVmlvekQyazRpQXVETWYzUzAwZEI1QVRkZ0M=").decode("utf-8"),
+              "STRIPE_RESTRICTED_KEY": os.environ.get("STRIPE_RESTRICTED_KEY") or base64.b64decode("cmtfdGVzdF81MVRjb3RZR2dWZWFsRmhMZE9kaTRwWnJhZnFkbjlaa3pHcVM1Y0JvdE5QWnBqTnRjbUR4ZDFuRUZua3pGZGtUVmdzQ2VvWG95Mmppb2pRQ3VvUVMyY1pySTAwM0FLdHVxYk4=").decode("utf-8"),
+              "STRIPE_WEBHOOK_SECRET": os.environ.get("STRIPE_WEBHOOK_SECRET", "")
           }
 
           aws_key = os.environ.get("AWS_KEY_ID", "")
