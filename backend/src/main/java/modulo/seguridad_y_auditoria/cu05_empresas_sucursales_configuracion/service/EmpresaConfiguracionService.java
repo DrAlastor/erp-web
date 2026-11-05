@@ -3,7 +3,7 @@ package modulo.seguridad_y_auditoria.cu05_empresas_sucursales_configuracion.serv
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
-import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
+import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.service.BitacoraTenantAuditoriaService;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Sucursal;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.repository.EmpleadoRepository;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.repository.SucursalRepository;
@@ -49,7 +49,7 @@ public class EmpresaConfiguracionService {
     private final CiudadRepository ciudadRepository;
     private final ParametroSistemaRepository parametroRepository;
     private final EmpleadoRepository empleadoRepository;
-    private final BitacoraLogRepository bitacoraLogRepository;
+    private final BitacoraTenantAuditoriaService bitacoraTenantAuditoriaService;
 
     // ---------------------------------------------------------------- Empresa
 
@@ -306,7 +306,7 @@ public class EmpresaConfiguracionService {
     private void bitacora(String accion, String actor, String entidad, Long entidadId, String ip) {
         try {
             String responsable = (actor != null && !actor.isBlank()) ? actor : "sistema";
-            bitacoraLogRepository.save(new BitacoraLog(accion, responsable, entidad, entidadId, ip));
+            bitacoraTenantAuditoriaService.registrar(accion, responsable, entidad, entidadId, ip);
         } catch (Exception e) {
             log.warn("No se pudo persistir registro en bitacora_logs: {}", e.getMessage());
         }

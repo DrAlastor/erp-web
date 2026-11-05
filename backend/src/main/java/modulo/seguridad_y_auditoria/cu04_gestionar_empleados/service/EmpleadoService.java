@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import modulo.seguridad_y_auditoria.compartido.entity.Usuario;
 import modulo.seguridad_y_auditoria.compartido.repository.UsuarioRepository;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
-import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
+import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.service.BitacoraTenantAuditoriaService;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.dto.*;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Empleado;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Sucursal;
@@ -27,7 +27,7 @@ public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
     private final SucursalRepository sucursalRepository;
     private final UsuarioRepository usuarioRepository;
-    private final BitacoraLogRepository bitacoraLogRepository;
+    private final BitacoraTenantAuditoriaService bitacoraTenantAuditoriaService;
 
     /**
      * Lista empleados con filtros opcionales de sucursal, cargo, estado activo y búsqueda.
@@ -314,7 +314,7 @@ public class EmpleadoService {
     private void registrarBitacora(String accion, String actor, Long empleadoId, String ip, String detalle) {
         try {
             String responsable = (actor != null && !actor.isBlank()) ? actor : "admin@asustech.bo";
-            bitacoraLogRepository.save(new BitacoraLog(accion, responsable, "empleados", empleadoId, ip));
+            bitacoraTenantAuditoriaService.registrar(accion, responsable, "empleados", empleadoId, ip);
         } catch (Exception e) {
             log.warn("No se pudo persistir registro en bitacora_logs: {}", e.getMessage());
         }

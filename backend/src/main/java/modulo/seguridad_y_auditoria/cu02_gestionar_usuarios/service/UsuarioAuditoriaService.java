@@ -7,6 +7,7 @@ import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraL
 
 import modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -23,8 +24,8 @@ public class UsuarioAuditoriaService {
     private final BitacoraLogRepository bitacoraLogRepository;
     private final BitacoraAuditoriaService bitacoraAuditoriaService;
 
-    /** Registra la acción dentro de la transacción de quien la llama. */
-    @Transactional
+    /** Registra la acción en una transacción aislada para que nunca afecte la operación principal. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrar(String accion, String actor, Long usuarioId, String ip) {
         try {
             bitacoraLogRepository.save(new BitacoraLog(accion, actor, usuarioId, ip));

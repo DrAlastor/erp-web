@@ -8,7 +8,7 @@ import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.dto.UnidadMed
 import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.entity.UnidadMedida;
 import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.repository.UnidadMedidaRepository;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
-import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
+import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.service.BitacoraTenantAuditoriaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.UUID;
 public class UnidadMedidaService {
 
     private final UnidadMedidaRepository unidadMedidaRepository;
-    private final BitacoraLogRepository bitacoraLogRepository;
+    private final BitacoraTenantAuditoriaService bitacoraTenantAuditoriaService;
     private final JdbcTemplate jdbc;
 
     @Transactional(readOnly = true)
@@ -251,7 +251,7 @@ public class UnidadMedidaService {
 
     private void registrarBitacora(String accion, String actor, Long id, String ip, String detalle) {
         try {
-            bitacoraLogRepository.save(new BitacoraLog(accion, actor, "unidades_medida", id, ip));
+            bitacoraTenantAuditoriaService.registrar(accion, actor, "unidades_medida", id, ip);
         } catch (Exception e) {
             log.warn("No se pudo registrar bitacora para unidad de medida: {}", e.getMessage());
         }

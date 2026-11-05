@@ -29,22 +29,22 @@ public class BitacoraLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String accion;
 
     @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
-    @Column(name = "usuario_responsable", nullable = false, length = 50)
+    @Column(name = "usuario_responsable", nullable = false, length = 150)
     private String usuarioResponsable;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String entidad;
 
     @Column(name = "entidad_id", nullable = false)
     private Long entidadId;
 
-    @Column(name = "ip_origen", length = 45)
+    @Column(name = "ip_origen", length = 100)
     private String ipOrigen;
 
     public BitacoraLog(String accion, String actor, Long usuarioId, String ip) {
@@ -52,11 +52,17 @@ public class BitacoraLog {
     }
 
     public BitacoraLog(String accion, String actor, String entidad, Long entidadId, String ip) {
-        this.accion = accion;
-        this.usuarioResponsable = actor;
-        this.entidad = entidad != null ? entidad : "empleados";
-        this.entidadId = entidadId;
-        this.ipOrigen = ip;
+        this.accion = recortar(accion, 100, "ACCION");
+        this.usuarioResponsable = recortar(actor, 150, "sistema");
+        this.entidad = recortar(entidad != null ? entidad : "empleados", 100, "general");
+        this.entidadId = entidadId != null ? entidadId : 0L;
+        this.ipOrigen = recortar(ip, 100, "127.0.0.1");
         this.fechaHora = LocalDateTime.now();
+    }
+
+    private static String recortar(String val, int max, String defecto) {
+        if (val == null || val.isBlank()) return defecto;
+        String trim = val.trim();
+        return trim.length() > max ? trim.substring(0, max) : trim;
     }
 }

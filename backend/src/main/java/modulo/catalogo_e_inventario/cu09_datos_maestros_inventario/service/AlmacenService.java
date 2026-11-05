@@ -4,7 +4,7 @@ import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.dto.Actualiza
 import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.dto.AlmacenDTO;
 import modulo.catalogo_e_inventario.cu09_datos_maestros_inventario.dto.CrearAlmacenRequest;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
-import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
+import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.service.BitacoraTenantAuditoriaService;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Sucursal;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.repository.SucursalRepository;
 import org.slf4j.Logger;
@@ -33,18 +33,18 @@ public class AlmacenService {
     private static final Logger log = LoggerFactory.getLogger(AlmacenService.class);
 
     private final SucursalRepository sucursalRepository;
-    private final BitacoraLogRepository bitacoraLogRepository;
+    private final BitacoraTenantAuditoriaService bitacoraTenantAuditoriaService;
     private final JdbcTemplate jdbc;
     private final TenantEntitlementsService entitlements;
 
     @Autowired
     public AlmacenService(
             SucursalRepository sucursalRepository,
-            BitacoraLogRepository bitacoraLogRepository,
+            BitacoraTenantAuditoriaService bitacoraTenantAuditoriaService,
             JdbcTemplate jdbc,
             TenantEntitlementsService entitlements) {
         this.sucursalRepository = sucursalRepository;
-        this.bitacoraLogRepository = bitacoraLogRepository;
+        this.bitacoraTenantAuditoriaService = bitacoraTenantAuditoriaService;
         this.jdbc = jdbc;
         this.entitlements = entitlements;
     }
@@ -300,7 +300,7 @@ public class AlmacenService {
 
     private void registrarBitacora(String accion, String actor, Long id, String ip, String detalle) {
         try {
-            bitacoraLogRepository.save(new BitacoraLog(accion, actor, "sucursales", id, ip));
+            bitacoraTenantAuditoriaService.registrar(accion, actor, "sucursales", id, ip);
         } catch (Exception e) {
             log.warn("No se pudo registrar bitacora para sucursal: {}", e.getMessage());
         }
