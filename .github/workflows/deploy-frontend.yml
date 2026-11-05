@@ -42,8 +42,9 @@ jobs:
 
       - name: 6. Sincronizar Archivos con Bucket S3
         run: |
-          aws s3 sync dist/frontend/browser s3://erp-contable-comercial --delete
+          aws s3 sync dist/frontend/browser s3://erp-contable-comercial-frontend --delete
 
       - name: 7. Invalidar Caché de CloudFront para Refresco Inmediato
         run: |
-          aws cloudfront create-invalidation --distribution-id E391I4EET1AU1X --paths "/*"
+          aws cloudfront create-invalidation --distribution-id EQDMNRVVJ0UB2 --paths "/*"
+

@@ -23,7 +23,9 @@ FROM eclipse-temurin:21-jre-alpine AS runner
 WORKDIR /app
 
 # Crear usuario y grupo de sistema sin privilegios (Seguridad AWS/Docker)
-RUN addgroup -S erpgroup && adduser -S erpuser -G erpgroup
+RUN addgroup -S erpgroup && adduser -S erpuser -G erpgroup \
+    && mkdir -p /app/backups \
+    && chown -R erpuser:erpgroup /app
 USER erpuser
 
 # Copiar el artefacto generado desde la etapa de compilación

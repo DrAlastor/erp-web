@@ -61,7 +61,7 @@ jobs:
           CLUSTER = "erp-cluster"
           SERVICE = "erp-backend-service"
           TASK_FAMILY = "erp-backend-task"
-          DISTRIBUTION_ID = "E391I4EET1AU1X"
+          DISTRIBUTION_ID = "EQDMNRVVJ0UB2"
           SUFIJO_DNS = ".compute-1.amazonaws.com"
           IMAGE_URI = os.environ["IMAGE_URI"]
 
@@ -105,8 +105,9 @@ jobs:
               "PROVISIONING_DB_PASSWORD": "Adminaws123!",
               "RDS_HOST": "erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com",
               "SPRING_JPA_HIBERNATE_DDL_AUTO": "none",
-              "CORS_ORIGIN": "https://erp-contable-comercial.online",
-              "FRONTEND_URL": "https://erp-contable-comercial.online",
+              "CORS_ORIGIN": "https://www.erp-contable-comercial.online,https://erp-contable-comercial.online,http://localhost:4200",
+              "CORS_ALLOWED_ORIGIN": "https://www.erp-contable-comercial.online,https://erp-contable-comercial.online,http://localhost:4200",
+              "FRONTEND_URL": "https://www.erp-contable-comercial.online",
               "TZ": "America/La_Paz",
               "JWT_SECRET": "0793e09c40e6e55bb4c3a9dca66c9798d8ce07e5ed145be87799397c231eabbd",
               "AWS_CLOUDWATCH_ENABLED": "true",
@@ -270,3 +271,4 @@ jobs:
           run_aws("cloudfront", "create-invalidation", "--distribution-id", DISTRIBUTION_ID, "--paths", "/api/*")
           print("[+] Despliegue completado con éxito.")
           EOF
+
