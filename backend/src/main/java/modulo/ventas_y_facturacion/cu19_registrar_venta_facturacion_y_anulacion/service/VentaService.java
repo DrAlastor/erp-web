@@ -115,6 +115,7 @@ public class VentaService {
     private final modulo.notificaciones.service.NotificacionService notificacionService;
     private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.CreditoClienteRepository creditoRepository;
 
     @Transactional
     public VentaResponse registrar(VentaRequest request) {
@@ -128,6 +129,7 @@ public class VentaService {
         Cliente cliente = venta.getCliente();
         String tipoVenta = venta.getTipoVenta();
         BigDecimal total = venta.getTotal();
+        exigirCredito(venta);
 
         // 2. Cobro al contado (incluido el pago con tarjeta verificado en Stripe) o cuenta por cobrar.
         List<String> sesionesStripe = registrarPagos(venta, request.pagos(), ahora);
@@ -669,6 +671,23 @@ public class VentaService {
         venta.setIva(Montos.porcentaje(total, tasas.iva()));
         venta.setIt(Montos.porcentaje(total, tasas.it()));
         return venta;
+    }
+
+    /** A crédito solo vende un cliente de crédito y dentro de su límite, igual que en la CU17. */
+    private void exigirCredito(Venta venta) {
+        if (!Venta.TIPO_CREDITO.equals(venta.getTipoVenta())) {
+            return;
+        }
+        Cliente cliente = venta.getCliente();
+        if (!"CREDITO".equalsIgnoreCase(cliente.getCondicionPago())) {
+            throw rechazo("El cliente " + cliente.getRazonSocial() + " compra al contado: no se le puede vender a crédito.");
+        }
+        BigDecimal limite = cliente.getLimiteCredito() != null ? cliente.getLimiteCredito() : BigDecimal.ZERO;
+        BigDecimal deuda = creditoRepository.deudaDe(cliente.getId().intValue(), LocalDate.now()).saldoPendiente();
+        if (deuda.add(venta.getTotal()).compareTo(limite) > 0) {
+            throw rechazo(String.format("Crédito insuficiente: deuda pendiente Bs %s + venta Bs %s supera el límite de Bs %s.",
+                    deuda, venta.getTotal(), limite));
+        }
     }
 
     /** @return las sesiones de Stripe usadas como pago, ya verificadas contra la API de Stripe */
