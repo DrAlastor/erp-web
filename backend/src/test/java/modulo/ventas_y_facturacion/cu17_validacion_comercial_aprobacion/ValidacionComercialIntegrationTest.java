@@ -58,7 +58,11 @@ class ValidacionComercialIntegrationTest {
 
     /** El administrador de la base: tiene todos los permisos del módulo comercial e inventario. */
     private RequestPostProcessor admin() {
-        Usuario cuenta = usuarios.findByUsernameOrEmail("admin@erp.com").orElseThrow();
+        String correoAdmin = jdbc.queryForObject("""
+                SELECT u.email FROM usuario u JOIN rol r ON r.id = u.rol_id
+                WHERE r.nombre = 'ADMINISTRADOR' AND u.activo ORDER BY u.id LIMIT 1
+                """, String.class);
+        Usuario cuenta = usuarios.findByUsernameOrEmail(correoAdmin).orElseThrow();
         UsuarioPrincipal identidad = new UsuarioPrincipal(cuenta.getId(), cuenta.getEmpresaId(),
                 cuenta.getFullname(), cuenta.getEmail());
         // El token real del administrador trae la autoridad de su rol; el evaluador de permisos la lee.
