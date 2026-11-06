@@ -269,7 +269,8 @@ public class EmpresaConfiguracionService {
                 .or(() -> empresaRepository.findAll().stream().findFirst())
                 .orElseGet(() -> {
                     EmpresaPerfil nueva = new EmpresaPerfil();
-                    nueva.setId(UUID.randomUUID());
+                    // El id del token: los parámetros de la empresa referencian este mismo id.
+                    nueva.setId(empresaId != null ? empresaId : UUID.randomUUID());
                     nueva.setNombre("Mi Empresa");
                     nueva.setNit("SIN-NIT");
                     log.info("CU05: no habia empresa registrada, se creo la empresa inicial {}", nueva.getId());

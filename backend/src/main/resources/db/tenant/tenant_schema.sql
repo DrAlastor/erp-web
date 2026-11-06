@@ -1011,3 +1011,28 @@ CREATE TABLE IF NOT EXISTS devolucion_proveedor_detalles (
     costo_unitario         NUMERIC(12,2) NOT NULL,
     subtotal               NUMERIC(12,2) NOT NULL
 );
+
+-- CU05: perfil de la empresa y parámetros generales.
+CREATE TABLE IF NOT EXISTS empresa (
+    id                UUID PRIMARY KEY,
+    nombre            VARCHAR(160) NOT NULL,
+    nit               VARCHAR(20)  NOT NULL,
+    razon_social      VARCHAR(200),
+    direccion         VARCHAR(255),
+    telefono          VARCHAR(30),
+    email             VARCHAR(120),
+    moneda_principal  VARCHAR(10)  NOT NULL DEFAULT 'BOB',
+    moneda_secundaria VARCHAR(10),
+    logo_url          TEXT,
+    activo            BOOLEAN      NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS parametro_sistema (
+    id             SERIAL PRIMARY KEY,
+    empresa_id     UUID         NOT NULL REFERENCES empresa(id),
+    clave          VARCHAR(60)  NOT NULL,
+    valor          VARCHAR(255) NOT NULL,
+    descripcion    VARCHAR(255),
+    actualizado_en TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_parametro_empresa_clave UNIQUE (empresa_id, clave)
+);
