@@ -99,6 +99,15 @@
           }
         </div>
 
+        <!-- Código de empresa: solo hace falta si el correo existe en más de una empresa -->
+        <div class="field-group">
+          <label for="codigoEmpresa" class="field-label">Código de empresa (opcional)</label>
+          <div class="input-wrapper">
+            <input id="codigoEmpresa" type="text" formControlName="codigoEmpresa" maxlength="30"
+              autocomplete="organization" placeholder="Ej. ALFACO-5650DD" />
+          </div>
+        </div>
+
         <!-- Contraseña -->
         <div class="field-group">
           <label for="password" class="field-label">Contraseña</label>

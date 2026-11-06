@@ -30,6 +30,7 @@ export class LoginComponent {
 
   readonly form = this.fb.nonNullable.group({
     usernameOrEmail: ['', [Validators.required]],
+    codigoEmpresa: ['', [Validators.maxLength(30)]],
     password: ['', [Validators.required]],
     rememberMe: [false],
   });
@@ -57,11 +58,12 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.accountLocked.set(false);
 
-    const { usernameOrEmail, password, rememberMe } = this.form.getRawValue();
+    const { usernameOrEmail, password, rememberMe, codigoEmpresa } = this.form.getRawValue();
 
     this.authService
       .login({
         usernameOrEmail: usernameOrEmail.trim(),
+        ...(codigoEmpresa.trim() ? { codigoEmpresa: codigoEmpresa.trim().toUpperCase() } : {}),
         password,
       }, rememberMe)
       .subscribe({
