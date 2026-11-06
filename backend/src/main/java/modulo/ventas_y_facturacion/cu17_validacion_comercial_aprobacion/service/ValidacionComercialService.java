@@ -196,11 +196,20 @@ public class ValidacionComercialService {
         DatosCliente datos = creditoRepository.buscarCliente(pedido.getClienteId()).orElse(null);
         DeudaCliente deuda = creditoRepository.deudaDe(pedido.getClienteId(), LocalDate.now());
 
+        // pedido.subtotal ya viene neto de los descuentos de línea: para medir el descuento real
+        // contra el tope hay que sumarlos al global y volver al importe bruto.
+        BigDecimal descuentoLineas = detalles.stream()
+                .map(PedidoAValidarDetalle::getDescuento)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         List<Regla> reglas = ReglasValidacionComercial.evaluar(
                 datos == null ? null : new Cliente(datos.razonSocial(), datos.condicionPago(),
                         datos.limiteCredito(), datos.activo()),
                 new Deuda(deuda.saldoPendiente(), deuda.saldoVencido(), deuda.cuotasVencidas()),
-                pedido.getSubtotal(), pedido.getDescuento(), pedido.getTotal(), lineasRegla);
+                pedido.getSubtotal().add(descuentoLineas),
+                pedido.getDescuento().add(descuentoLineas),
+                pedido.getTotal(), lineasRegla);
         return new Evaluacion(detalles, datos, deuda, lineasRespuesta, reglas);
     }
 
