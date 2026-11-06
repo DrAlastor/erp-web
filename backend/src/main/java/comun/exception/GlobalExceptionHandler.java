@@ -93,6 +93,16 @@ public class GlobalExceptionHandler {
                 null);
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> notFoundRoute(Exception ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "NOT_FOUND", "Recurso no encontrado", request, null);
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> methodNotAllowed(Exception ex, HttpServletRequest request) {
+        return build(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "Metodo no permitido", request, null);
+    }
+
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ErrorResponse> generic(Throwable ex, HttpServletRequest request) {
         String msg = ex.getClass().getSimpleName() + ": " + ex.getMessage();
