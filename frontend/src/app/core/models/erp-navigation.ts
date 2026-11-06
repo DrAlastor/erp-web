@@ -50,7 +50,7 @@ export const ERP_MODULES: ErpModule[] = [
       { id: 'validacion-comercial', slug: 'validacion-comercial', name: 'Validación Comercial', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] },
       { id: 'gestionar-despacho-de-venta', slug: 'gestionar-despacho-de-venta', name: 'Gestionar Despacho de Venta', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'ALMACENERO', 'VENDEDOR'] },
       { id: 'facturacion', slug: 'facturacion', name: 'Registrar Venta, Facturación y Anulación', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] },
-      { id: 'devoluciones-y-notas-de-credito', slug: 'devoluciones-y-notas-de-credito', name: 'Gestionar Devoluciones y Notas de Crédito', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR', 'ALMACENERO'] }
+      { id: 'devoluciones-y-notas-de-credito', slug: 'devoluciones-y-notas-de-credito', name: 'Gestionar Devoluciones y Notas de Crédito', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'VENDEDOR'] }
     ]
   },
   {
