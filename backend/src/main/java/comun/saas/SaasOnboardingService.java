@@ -34,6 +34,7 @@ public class SaasOnboardingService {
     private final StripePaymentService stripe;
     private final String rdsInstance;
     private final String rdsHost;
+    private final int rdsPort;
     private final String tenantSecretArn;
     private final String schemaVersion;
     private final String frontendUrl;
@@ -45,6 +46,7 @@ public class SaasOnboardingService {
             StripePaymentService stripe,
             @Value("${provisioning.rds-instance}") String rdsInstance,
             @Value("${provisioning.rds-host}") String rdsHost,
+            @Value("${provisioning.rds-port:5432}") int rdsPort,
             @Value("${provisioning.tenant-secret-arn:}") String tenantSecretArn,
             @Value("${provisioning.schema-version}") String schemaVersion,
             @Value("${app.frontend-url}") String frontendUrl) {
@@ -54,6 +56,7 @@ public class SaasOnboardingService {
         this.stripe = stripe;
         this.rdsInstance = rdsInstance;
         this.rdsHost = rdsHost;
+        this.rdsPort = rdsPort;
         this.tenantSecretArn = tenantSecretArn;
         this.schemaVersion = schemaVersion;
         this.frontendUrl = frontendUrl.replaceAll("/+$", "");
@@ -100,8 +103,8 @@ public class SaasOnboardingService {
                 INSERT INTO tenant_database
                 (empresa_id,nombre_database,rds_instance,host,port,secret_arn,estado,version_esquema,
                  ultima_migracion,fecha_creacion,fecha_modificacion)
-                VALUES (?,?,?,?,5432,?,'PROVISIONANDO',?,NULL,?,?)
-                """, companyId, databaseName, rdsInstance, rdsHost,
+                VALUES (?,?,?,?,?,?,'PROVISIONANDO',?,NULL,?,?)
+                """, companyId, databaseName, rdsInstance, rdsHost, rdsPort,
                 clean(tenantSecretArn, null), schemaVersion, now, now);
 
         try {
