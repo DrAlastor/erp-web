@@ -60,7 +60,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
         org.springframework.http.converter.HttpMessageNotReadableException.class,
         jakarta.validation.ConstraintViolationException.class,
-        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+        org.springframework.web.bind.MissingServletRequestParameterException.class
     })
     public ResponseEntity<ErrorResponse> badRequest(Exception ex, HttpServletRequest request) {
         return build(
