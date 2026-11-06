@@ -70,6 +70,10 @@ public class SaasOnboardingService {
         String email = request.adminEmail().trim().toLowerCase(Locale.ROOT);
 
         ensureCompanyIsUnique(request.nit(), email);
+        // Antes de crear nada: un plan de pago sin pasarela no puede completarse.
+        if (plan.requiresPayment() && !stripe.estaConfigurado()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Stripe no está configurado");
+        }
         int countryId = upsertCountry(country);
         int currencyId = upsertCurrency(currency);
         LocalDateTime now = LocalDateTime.now();
@@ -138,6 +142,7 @@ public class SaasOnboardingService {
             return response(request, companyCode, databaseName, planCode, "PENDIENTE_PAGO", checkout.getCheckoutUrl());
         } catch (RuntimeException failure) {
             markFailed(companyId, subscriptionId);
+            provisioning.dropDatabase(databaseName);
             throw failure;
         }
     }
