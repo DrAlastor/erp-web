@@ -60,7 +60,7 @@ describe('Gestion de pedidos de venta', () => {
     const form = fixture.componentInstance;
     form.save();
     http.expectNone(url);
-    expect(form.validacion()).toBe('Selecciona un cliente.');
+    expect(form.validacion()).toContain('Debes seleccionar un cliente');
     form.cliente.set({ id: 2, razonSocial: 'Cliente', nitCi: '1' });
     form.lineas.set([linea({ descuento: 10 })]);
     form.descuento.set(5);
@@ -76,7 +76,7 @@ describe('Gestion de pedidos de venta', () => {
     const base = { clienteId: 1, sucursalId: 1, descuento: 0 };
     expect(validarPedido(base, [])).toContain('al menos un producto');
     expect(validarPedido(base, [linea({ cantidad: 0 })])).toContain('mayor a 0');
-    expect(validarPedido(base, [linea(), linea()])).toContain('repetido');
+    expect(validarPedido(base, [linea(), linea()])).toContain('duplicado');
     expect(validarPedido(base, [linea({ descuento: 101 })])).toContain('supera el subtotal');
     expect(validarPedido({ ...base, descuento: 500 }, [linea()])).toContain('descuento global');
     expect(validarPedido(base, [linea()])).toBe('');
