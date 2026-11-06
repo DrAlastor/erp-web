@@ -16,7 +16,8 @@ public record CatalogosVentaResponse(
         /** Tasas vigentes de la tabla impuestos, en porcentaje (13.00 = 13 %). */
         BigDecimal tasaIva,
         BigDecimal tasaIt,
-        List<CotizacionResumen> cotizacionesPendientes) {
+        List<CotizacionResumen> cotizacionesPendientes,
+        List<PedidoPorFacturar> pedidosPorFacturar) {
 
     public record Sucursal(Integer id, String nombre) {
     }
@@ -33,6 +34,26 @@ public record CatalogosVentaResponse(
     /** Dosificación vigente; {@code null} si no hay ninguna y no se puede facturar. */
     public record Dosificacion(String numeroAutorizacion, Integer siguienteNumero, Integer numeroFinal,
                                LocalDate fechaLimite) {
+    }
+
+    /** Pedido con mercadería despachada que todavía no se facturó. */
+    public record PedidoPorFacturar(
+            Integer id,
+            String numeroPedido,
+            Long clienteId,
+            String clienteRazonSocial,
+            String clienteNitCi,
+            Integer sucursalId,
+            List<PedidoLinea> lineas) {
+    }
+
+    public record PedidoLinea(
+            Long productoId,
+            String codigo,
+            String nombre,
+            BigDecimal cantidad,
+            BigDecimal precioUnitario,
+            BigDecimal descuento) {
     }
 
     public record CotizacionResumen(

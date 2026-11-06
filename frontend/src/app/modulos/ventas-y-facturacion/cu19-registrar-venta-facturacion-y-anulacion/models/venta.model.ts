@@ -20,6 +20,7 @@ export interface VentaRequest {
   clienteId: number;
   turnoCajaId?: number | null;
   cotizacionId?: number | null;
+  pedidoId?: number | null;
   tipoVenta: TipoVenta;
   tipoComprobante: TipoComprobante;
   diasCredito?: number | null;
@@ -150,6 +151,25 @@ export interface CatalogosVenta {
   tasaIva: number;
   tasaIt: number;
   cotizacionesPendientes?: CotizacionResumen[];
+  pedidosPorFacturar?: PedidoPorFacturar[];
+}
+
+/** Pedido con mercadería despachada que todavía no se facturó. */
+export interface PedidoPorFacturar {
+  id: number;
+  numeroPedido: string;
+  clienteId: number;
+  clienteRazonSocial: string;
+  clienteNitCi: string;
+  sucursalId: number;
+  lineas: {
+    productoId: number;
+    codigo: string;
+    nombre: string;
+    cantidad: number;
+    precioUnitario: number;
+    descuento: number;
+  }[];
 }
 
 export interface Dosificacion {

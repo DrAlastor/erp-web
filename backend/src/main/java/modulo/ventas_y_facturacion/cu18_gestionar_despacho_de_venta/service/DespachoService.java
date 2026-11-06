@@ -272,6 +272,8 @@ public class DespachoService {
                     + pedido.getEstado() + ": sus despachos ya no se pueden anular.");
         }
 
+        exigirSinFacturar(pedido, nota);
+
         BigDecimal costoTotal = BigDecimal.ZERO;
         if (anterior == EstadoDespacho.DESPACHADO) {
             for (DespachoDetalle renglon : nota.getDetalles()) {
@@ -308,6 +310,19 @@ public class DespachoService {
         if (!EstadoPedido.DESPACHABLES.contains(pedido.getEstado())) {
             throw rechazo(HttpStatus.CONFLICT, "El pedido " + pedido.getNumeroPedido() + " está "
                     + pedido.getEstado() + ": sólo se despachan pedidos aprobados por la validación comercial.");
+        }
+    }
+
+    /** No se anula mercadería que ya está facturada: quedaría una factura sin salida de stock. */
+    private void exigirSinFacturar(Pedido pedido, NotaDespacho nota) {
+        Map<Long, BigDecimal> sigueFuera = sumar(pedido.getId(), SALIERON, nota.getId());
+        for (Object[] fila : notas.facturadoPorProducto(pedido.getId().longValue())) {
+            Long productoId = (Long) fila[0];
+            if (((BigDecimal) fila[1]).compareTo(sigueFuera.getOrDefault(productoId, BigDecimal.ZERO)) > 0
+                    && nota.getDetalles().stream().anyMatch(d -> d.getProducto().getId().equals(productoId))) {
+                throw rechazo(HttpStatus.CONFLICT, "El despacho " + nota.getNumeroDespacho()
+                        + " tiene mercadería ya facturada: anula primero la factura.");
+            }
         }
     }
 

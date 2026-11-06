@@ -121,6 +121,17 @@
                 </span>
               }
             </div>
+            @if (pedidosDeSucursal().length) {
+              <label class="selector-pedidos" style="display: block; margin-bottom: 10px;">
+                <strong>Facturar pedido despachado (no mueve stock)</strong>
+                <select class="selector-cotizaciones" name="pedidoPorFacturar" [ngModel]="pedidoSeleccionadoId" (ngModelChange)="seleccionarPedido($event)">
+                  <option [ngValue]="null">-- Sin pedido --</option>
+                  @for (ped of pedidosDeSucursal(); track ped.id) {
+                    <option [ngValue]="ped.id">{{ ped.numeroPedido }} &bull; {{ ped.clienteRazonSocial }} (NIT: {{ ped.clienteNitCi }})</option>
+                  }
+                </select>
+              </label>
+            }
             <select class="selector-cotizaciones" [ngModel]="cotizacionSeleccionadaId" (ngModelChange)="seleccionarCotizacion($event)">
               <option [ngValue]="null">
                 {{ (cat.cotizacionesPendientes && cat.cotizacionesPendientes.length > 0) ? '-- Venta Directa en Mostrador / Sin Cotización --' : '-- Sin cotizaciones pendientes por aprobar --' }}

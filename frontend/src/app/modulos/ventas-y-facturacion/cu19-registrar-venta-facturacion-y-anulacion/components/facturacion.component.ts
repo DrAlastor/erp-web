@@ -43,6 +43,7 @@ interface BorradorStripe {
   sucursalId: number;
   turnoCajaId: number | null;
   cotizacionId?: number | null;
+  pedidoId?: number | null;
   cliente: ClienteVenta;
   carrito: LineaCarrito[];
 }
@@ -124,6 +125,7 @@ export class FacturacionComponent {
   carrito: LineaCarrito[] = [];
   pagos: PagoForm[] = [];
   cotizacionSeleccionadaId: number | null = null;
+  pedidoSeleccionadoId: number | null = null;
 
   // Historial
   search = '';
@@ -257,7 +259,45 @@ export class FacturacionComponent {
     });
   }
 
+  pedidosDeSucursal() {
+    return (this.catalogos()?.pedidosPorFacturar ?? []).filter((p) => p.sucursalId === this.sucursalId);
+  }
+
+  /** Carga un pedido despachado: se factura con sus precios y sin volver a mover stock. */
+  seleccionarPedido(pedidoId: number | null): void {
+    const pedido = this.pedidosDeSucursal().find((p) => p.id === pedidoId);
+    this.pedidoSeleccionadoId = pedido?.id ?? null;
+    if (!pedido) {
+      this.carrito = [];
+      this.cdr.markForCheck();
+      return;
+    }
+    this.cotizacionSeleccionadaId = null;
+    this.cliente.set({ id: pedido.clienteId, razonSocial: pedido.clienteRazonSocial, nitCi: pedido.clienteNitCi });
+    this.carrito = pedido.lineas.map((l) => ({
+      producto: {
+        id: l.productoId,
+        codigo: l.codigo,
+        nombre: l.nombre,
+        precioVenta: Number(l.precioUnitario),
+        stockDisponible: Number(l.cantidad),
+      },
+      cantidad: Number(l.cantidad),
+      descuentoId: null,
+      descuento: Number(l.descuento),
+    })) as typeof this.carrito;
+    if (this.pagos.length > 0) {
+      this.pagos[0].importe = this.totalVenta();
+      if (this.esEfectivo(this.pagos[0])) {
+        this.pagos[0].montoEntregado = this.pagos[0].importe;
+      }
+    }
+    this.success.set(`Pedido ${pedido.numeroPedido} cargado: ya salió por despacho, esta venta no mueve stock.`);
+    this.cdr.markForCheck();
+  }
+
   seleccionarCotizacion(cotId: number | null): void {
+    this.pedidoSeleccionadoId = null;
     if (!cotId) {
       this.cotizacionSeleccionadaId = null;
       this.cdr.markForCheck();
@@ -617,6 +657,7 @@ export class FacturacionComponent {
     this.cliente.set(null);
     this.carrito = [];
     this.cotizacionSeleccionadaId = null;
+    this.pedidoSeleccionadoId = null;
     this.tipoComprobante = this.catalogos()?.dosificacion ? 'FACTURA' : 'NOTA_VENTA';
     this.tipoVenta = 'CONTADO';
     this.diasCredito = 30;
@@ -631,6 +672,7 @@ export class FacturacionComponent {
       clienteId: this.cliente()?.id || 1,
       turnoCajaId: this.turnoCajaId,
       cotizacionId: this.cotizacionSeleccionadaId,
+      pedidoId: this.pedidoSeleccionadoId,
       tipoVenta: this.tipoVenta,
       tipoComprobante: this.tipoComprobante,
       diasCredito: this.tipoVenta === 'CREDITO' ? this.diasCredito : null,
@@ -713,6 +755,7 @@ export class FacturacionComponent {
             sucursalId: this.sucursalId!,
             turnoCajaId: this.turnoCajaId,
             cotizacionId: this.cotizacionSeleccionadaId,
+            pedidoId: this.pedidoSeleccionadoId,
             cliente: this.cliente()!,
             carrito: this.carrito,
           };
@@ -751,6 +794,7 @@ export class FacturacionComponent {
     this.sucursalId = borrador.sucursalId;
     this.turnoCajaId = borrador.turnoCajaId;
     this.cotizacionSeleccionadaId = borrador.cotizacionId || null;
+    this.pedidoSeleccionadoId = borrador.pedidoId || null;
     this.cliente.set(borrador.cliente);
     this.carrito = borrador.carrito;
     this.buscarProductos();

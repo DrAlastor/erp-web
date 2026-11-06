@@ -54,4 +54,9 @@ public interface NotaDespachoRepository extends JpaRepository<NotaDespacho, Inte
     List<Object[]> sumarPorProducto(@Param("pedidoId") Integer pedidoId,
                                     @Param("estados") Collection<EstadoDespacho> estados,
                                     @Param("excluirId") Integer excluirId);
+
+    /** Cantidad por producto ya facturada del pedido en comprobantes vigentes. */
+    @Query("select d.producto.id, sum(d.cantidad) from VentaDetalle d "
+            + "where d.venta.pedidoId = :pedidoId and d.venta.estado = 'EMITIDA' group by d.producto.id")
+    List<Object[]> facturadoPorProducto(@Param("pedidoId") Long pedidoId);
 }

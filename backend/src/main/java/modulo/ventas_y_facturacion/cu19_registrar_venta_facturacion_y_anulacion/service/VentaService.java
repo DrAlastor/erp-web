@@ -11,6 +11,7 @@ import modulo.seguridad_y_auditoria.cu03_gestionar_roles_y_permisos.security.Usu
 import modulo.ventas_y_facturacion.compartido.entity.CuentaPorCobrar;
 import modulo.ventas_y_facturacion.compartido.entity.FormaPago;
 import modulo.ventas_y_facturacion.compartido.entity.PagoVenta;
+import modulo.ventas_y_facturacion.compartido.entity.Pedido;
 import modulo.ventas_y_facturacion.compartido.entity.TurnoCaja;
 import modulo.ventas_y_facturacion.compartido.entity.Venta;
 import modulo.ventas_y_facturacion.compartido.entity.VentaDetalle;
@@ -96,6 +97,7 @@ public class VentaService {
     private String origenesPermitidos;
 
     private final VentaRepository ventaRepository;
+    private final modulo.ventas_y_facturacion.compartido.repository.PedidoRepository pedidoRepository;
     private final PagoVentaRepository pagoVentaRepository;
     private final StripePaymentService stripeService;
     private final SecuenciaFacturacionRepository secuenciaRepository;
@@ -116,12 +118,26 @@ public class VentaService {
     private final modulo.seguridad_y_auditoria.cu07_gestionar_backups.service.BitacoraAuditoriaService bitacoraAuditoriaService;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     private final modulo.ventas_y_facturacion.cu17_validacion_comercial_aprobacion.repository.CreditoClienteRepository creditoRepository;
+    private final FacturacionPedidoService facturacionPedido;
+
+    /**
+     * Regla provisional, pendiente de confirmar con el Product Owner: anular una venta cuya
+     * mercadería ya salió por despacho no la devuelve al stock; si vuelve, entra por devolución
+     * (CU20). Para cambiarla basta poner la propiedad en true.
+     */
+    @Value("${ventas.anulacion.devolver-stock-despachado:false}")
+    private boolean devolverStockDespachadoAlAnular;
 
     @Transactional
     public VentaResponse registrar(VentaRequest request) {
         Long usuarioId = UsuarioActual.obtener().usuarioId();
         LocalDateTime ahora = LocalDateTime.now();
         LocalDate hoy = ahora.toLocalDate();
+
+        // Serializa dos facturas simultáneas del mismo pedido.
+        if (request.pedidoId() != null) {
+            pedidoRepository.bloquear(request.pedidoId());
+        }
 
         // 1. Encabezado y líneas: el precio sale del catálogo, nunca del cliente HTTP.
         Venta venta = armarVenta(request, usuarioId, ahora);
@@ -168,9 +184,14 @@ public class VentaService {
 
         // 4. Inventario y Kardex (ordenado por producto para bloquear siempre en el mismo orden).
         String referencia = "Venta según " + venta.descripcionComprobante();
-        for (VentaDetalle detalle : ordenadosPorProducto(venta.getDetalles())) {
-            inventarioService.registrarSalida(sucursal, detalle.getProducto(), detalle.getCantidad(),
-                    usuarioId, referencia, prefijoDocumento(venta) + venta.getNumeroFactura());
+        //    Con pedido la salida ya la hizo el despacho (CU18): la venta no mueve stock.
+        if (venta.getPedidoId() == null) {
+            for (VentaDetalle detalle : ordenadosPorProducto(venta.getDetalles())) {
+                inventarioService.registrarSalida(sucursal, detalle.getProducto(), detalle.getCantidad(),
+                        usuarioId, referencia, prefijoDocumento(venta) + venta.getNumeroFactura());
+            }
+        } else {
+            facturacionPedido.actualizarEstado(venta.getPedidoId());
         }
 
         // 5. Cuenta por cobrar si es a crédito.
@@ -262,9 +283,11 @@ public class VentaService {
         String referencia = "Anulación de " + comprobante;
         List<Partida> reversion = partidasVenta(venta).stream().map(Partida::invertida).toList();
 
-        for (VentaDetalle detalle : ordenadosPorProducto(venta.getDetalles())) {
-            inventarioService.registrarEntrada(venta.getSucursal(), detalle.getProducto(), detalle.getCantidad(),
-                    usuarioId, referencia, "ANU-" + prefijoDocumento(venta) + venta.getNumeroFactura());
+        if (devuelveStockAlAnular(venta)) {
+            for (VentaDetalle detalle : ordenadosPorProducto(venta.getDetalles())) {
+                inventarioService.registrarEntrada(venta.getSucursal(), detalle.getProducto(), detalle.getCantidad(),
+                        usuarioId, referencia, "ANU-" + prefijoDocumento(venta) + venta.getNumeroFactura());
+            }
         }
         for (CuentaPorCobrar cuenta : cuentas) {
             cuenta.setSaldo(BigDecimal.ZERO);
@@ -276,6 +299,10 @@ public class VentaService {
         venta.setMotivoAnulacion(motivo.trim());
         venta.setFechaAnulacion(LocalDateTime.now());
         venta.setAnuladoPor(usuarioId);
+        if (venta.getPedidoId() != null) {
+            ventaRepository.flush();
+            facturacionPedido.actualizarEstado(venta.getPedidoId());
+        }
 
         String asiento = contabilidadService.registrarAsiento(hoy, "ANULACION",
                 referencia + ". Motivo: " + motivo.trim(), usuarioId, reversion);
@@ -402,7 +429,8 @@ public class VentaService {
                         .map(f -> Boolean.TRUE.equals(f.getActivo())).orElse(false),
                 tasas.iva(),
                 tasas.it(),
-                cotizacionesPendientes);
+                cotizacionesPendientes,
+                facturacionPedido.porFacturar());
     }
 
     /**
@@ -428,7 +456,7 @@ public class VentaService {
 
         Long usuarioId = UsuarioActual.obtener().usuarioId();
         Venta venta = armarVenta(datos, usuarioId, LocalDateTime.now());
-        for (VentaDetalle detalle : venta.getDetalles()) {
+        for (VentaDetalle detalle : venta.getPedidoId() != null ? List.<VentaDetalle>of() : venta.getDetalles()) {
             BigDecimal disponible = stockRepository.consultar(detalle.getProducto().getId(), venta.getSucursal().getId())
                     .map(s -> s.getCantidadActual()).orElse(BigDecimal.ZERO);
             if (disponible.compareTo(detalle.getCantidad()) < 0) {
@@ -580,6 +608,7 @@ public class VentaService {
     private Venta armarVenta(VentaRequest request, Long usuarioId, LocalDateTime ahora) {
         LocalDate hoy = ahora.toLocalDate();
         Almacen sucursal = sucursalActiva(request.sucursalId());
+        Pedido pedido = request.pedidoId() != null ? facturacionPedido.validar(request) : null;
         Cliente cliente = null;
         if (request.clienteId() != null && request.clienteId() > 0) {
             cliente = clienteRepository.findById(request.clienteId()).orElse(null);
@@ -618,6 +647,7 @@ public class VentaService {
                 .tipoVenta(request.tipoVenta().trim().toUpperCase())
                 .tipoComprobante(request.comprobante())
                 .estado(Venta.ESTADO_EMITIDA)
+                .pedidoId(pedido != null ? pedido.getId().longValue() : null)
                 .build();
 
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -633,10 +663,13 @@ public class VentaService {
             if (!Boolean.TRUE.equals(producto.getActivo())) {
                 throw rechazo("El producto " + producto.getNombre() + " está inactivo.");
             }
-            BigDecimal precio = Montos.redondear(producto.getPrecioVenta());
+            BigDecimal precio = pedido != null
+                    ? facturacionPedido.precio(pedido, producto.getId()) : Montos.redondear(producto.getPrecioVenta());
             BigDecimal bruto = Montos.redondear(linea.cantidad().multiply(precio));
-            Descuento promocion = promocion(linea.descuentoId(), hoy);
-            BigDecimal descuento = calcularDescuento(promocion, linea.descuento(), bruto, producto);
+            Descuento promocion = pedido != null ? null : promocion(linea.descuentoId(), hoy);
+            BigDecimal descuento = pedido != null
+                    ? facturacionPedido.descuento(pedido, producto.getId(), linea.cantidad())
+                    : calcularDescuento(promocion, linea.descuento(), bruto, producto);
 
             venta.agregarDetalle(VentaDetalle.builder()
                     .producto(producto)
@@ -662,6 +695,10 @@ public class VentaService {
         venta.setIva(Montos.porcentaje(total, tasas.iva()));
         venta.setIt(Montos.porcentaje(total, tasas.it()));
         return venta;
+    }
+
+    private boolean devuelveStockAlAnular(Venta venta) {
+        return venta.getPedidoId() == null || devolverStockDespachadoAlAnular;
     }
 
     /** A crédito solo vende un cliente de crédito y dentro de su límite, igual que en la CU17. */
@@ -890,7 +927,7 @@ public class VentaService {
             String numPed = "PED-" + String.format("%06d", System.currentTimeMillis() % 1000000);
             int pedidoId = jdbcTemplate.queryForObject(
                     "INSERT INTO pedidos (cliente_id, vendedor_id, sucursal_id, numero_pedido, fecha, subtotal, descuento, total, estado, observaciones, fecha_creacion) "
-                            + "VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'APROBADO', ?, NOW()) RETURNING id",
+                            + "VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'COMPLETADO', ?, NOW()) RETURNING id",
                     Integer.class,
                     clienteId, vendedorId, sucursalId, numPed, venta.getSubtotal(),
                     venta.getDescuento() != null ? venta.getDescuento() : BigDecimal.ZERO,
@@ -922,6 +959,9 @@ public class VentaService {
                         despachoId, vd.getProducto().getId(), vd.getCantidad()
                 );
             }
+
+            // El pedido nace despachado y facturado: no debe ofrecerse otra vez para facturar.
+            venta.setPedidoId((long) pedidoId);
 
             log.info("Cotización #{} vinculada a Venta #{}. Pedido #{} aprobado comercialmente y Despacho #{} generado.",
                     cotizacionId, venta.getId(), pedidoId, despachoId);

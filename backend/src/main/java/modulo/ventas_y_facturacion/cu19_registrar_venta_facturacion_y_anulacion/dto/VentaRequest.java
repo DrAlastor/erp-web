@@ -35,6 +35,8 @@ public record VentaRequest(
         @Max(value = 365, message = "Los días de crédito no pueden superar 365")
         Integer diasCredito,
         Integer cotizacionId,
+        /** Pedido ya despachado que se factura: la venta no vuelve a mover stock. */
+        Integer pedidoId,
         @NotEmpty(message = "La venta debe tener al menos un producto")
         @Size(max = 100, message = "La venta no puede superar 100 líneas")
         List<@Valid Linea> detalles,
