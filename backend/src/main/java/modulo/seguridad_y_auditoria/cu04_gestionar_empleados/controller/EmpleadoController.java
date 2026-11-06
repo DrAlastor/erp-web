@@ -43,7 +43,7 @@ public class EmpleadoController {
      * Sucursales activas para poblar los selectores del formulario de registro y filtros.
      */
     @GetMapping("/sucursales")
-    @PreAuthorize("hasPermission('SEGURIDAD','CONSULTAR') or hasRole('ADMIN') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasPermission('SEGURIDAD','CONSULTAR') or hasPermission('INVENTARIO','CONSULTAR') or hasRole('ADMIN') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<List<SucursalItemDTO>> listarSucursales() {
         return ResponseEntity.ok(empleadoService.listarSucursalesActivas());
     }
