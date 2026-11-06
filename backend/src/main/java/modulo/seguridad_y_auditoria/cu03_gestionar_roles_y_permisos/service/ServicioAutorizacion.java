@@ -26,8 +26,8 @@ public class ServicioAutorizacion {
     private final ServicioRoles servicioRoles;
     private final JdbcTemplate jdbcTemplate;
 
-    /** Permisos efectivos cacheados por usuario. */
-    private final Map<Long, Set<String>> cachePorUsuario = new ConcurrentHashMap<>();
+    /** Permisos efectivos cacheados por empresa y usuario: los ids se repiten entre empresas. */
+    private final Map<String, Set<String>> cachePorUsuario = new ConcurrentHashMap<>();
 
     public ServicioAutorizacion(UsuarioRepository usuarioRepository,
                                 ServicioRoles servicioRoles,
@@ -45,7 +45,7 @@ public class ServicioAutorizacion {
         if (usuarioId == null) {
             return Set.of();
         }
-        return cachePorUsuario.computeIfAbsent(usuarioId, this::leerDeLaBase);
+        return cachePorUsuario.computeIfAbsent(claveCache(usuarioId), clave -> leerDeLaBase(usuarioId));
     }
 
     /** Indica si el usuario tiene un permiso concreto, por ejemplo {@code INVENTARIO_CONSULTAR}. */
@@ -72,7 +72,7 @@ public class ServicioAutorizacion {
     /** Descarta los permisos cacheados de un usuario. */
     public void invalidarCache(Long usuarioId) {
         if (usuarioId != null) {
-            cachePorUsuario.remove(usuarioId);
+            cachePorUsuario.remove(claveCache(usuarioId));
         }
     }
 
@@ -85,6 +85,12 @@ public class ServicioAutorizacion {
     /** Descarta toda la caché. */
     public void invalidarTodo() {
         cachePorUsuario.clear();
+    }
+
+    private String claveCache(Long usuarioId) {
+        return comun.multitenancy.TenantContext.current()
+                .map(comun.multitenancy.TenantDescriptor::codigoEmpresa)
+                .orElse("") + ":" + usuarioId;
     }
 
     private Set<String> leerDeLaBase(Long usuarioId) {

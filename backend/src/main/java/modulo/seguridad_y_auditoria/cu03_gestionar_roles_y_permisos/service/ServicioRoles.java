@@ -30,7 +30,7 @@ public class ServicioRoles {
             CatalogoPermisos.codigo(ModuloErp.SEGURIDAD, AccionErp.MODIFICAR));
 
     private final RolRepository rolRepository;
-    private final Map<Integer, Set<String>> matrizPermisosPorRol = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> matrizPermisosPorRol = new ConcurrentHashMap<>();
 
     public ServicioRoles(RolRepository rolRepository) {
         this.rolRepository = rolRepository;
@@ -75,7 +75,7 @@ public class ServicioRoles {
         validarQueLosPermisosExistan(codigos);
         validarQueElAdministradorConserveLaSeguridad(rol, codigos);
 
-        matrizPermisosPorRol.put(rol.getId(), new TreeSet<>(codigos));
+        matrizPermisosPorRol.put(claveMatriz(rol), new TreeSet<>(codigos));
 
         return new RolDto(
                 String.valueOf(rol.getId()),
@@ -84,7 +84,7 @@ public class ServicioRoles {
                 obtenerDescripcion(rol.getNombre()),
                 Boolean.TRUE.equals(rol.getActivo()),
                 true,
-                matrizPermisosPorRol.get(rol.getId()));
+                matrizPermisosPorRol.get(claveMatriz(rol)));
     }
 
     /** Activa o desactiva un rol. */
@@ -122,9 +122,16 @@ public class ServicioRoles {
         }
     }
 
+    /** Los ids de rol se repiten entre empresas: la clave lleva la empresa. */
+    private String claveMatriz(Rol rol) {
+        return comun.multitenancy.TenantContext.current()
+                .map(comun.multitenancy.TenantDescriptor::codigoEmpresa)
+                .orElse("") + ":" + rol.getId();
+    }
+
     public Set<String> obtenerPermisosEfectivos(Rol rol) {
-        if (matrizPermisosPorRol.containsKey(rol.getId())) {
-            return matrizPermisosPorRol.get(rol.getId());
+        if (matrizPermisosPorRol.containsKey(claveMatriz(rol))) {
+            return matrizPermisosPorRol.get(claveMatriz(rol));
         }
         Set<String> perms = new TreeSet<>();
         String n = rol.getNombre().toUpperCase();
@@ -151,7 +158,7 @@ public class ServicioRoles {
             ));
         }
         // Un rol que no se reconoce no recibe nada: sus permisos salen de rol_funcion o de la matriz.
-        matrizPermisosPorRol.put(rol.getId(), perms);
+        matrizPermisosPorRol.put(claveMatriz(rol), perms);
         return perms;
     }
 
