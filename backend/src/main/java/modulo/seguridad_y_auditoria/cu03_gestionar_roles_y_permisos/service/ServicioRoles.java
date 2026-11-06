@@ -137,14 +137,14 @@ public class ServicioRoles {
         String n = rol.getNombre().toUpperCase();
         if (n.contains("ADMIN") || n.contains("SUPER")) {
             perms.addAll(CatalogoPermisos.codigos());
-        } else if (n.contains("VENTA")) {
+        } else if (n.contains("VENTA") || n.contains("VENDEDOR")) {
             perms.addAll(List.of(
                     "COMERCIAL_CREAR", "COMERCIAL_CONSULTAR", "COMERCIAL_MODIFICAR",
                     "INVENTARIO_CONSULTAR",
                     "FACTURACION_CREAR", "FACTURACION_CONSULTAR",
                     "REPORTES_CONSULTAR"
             ));
-        } else if (n.contains("CAJA")) {
+        } else if (n.contains("CAJA") || n.contains("CAJERO")) {
             perms.addAll(List.of(
                     "COMERCIAL_CREAR", "COMERCIAL_CONSULTAR",
                     "INVENTARIO_CONSULTAR",
