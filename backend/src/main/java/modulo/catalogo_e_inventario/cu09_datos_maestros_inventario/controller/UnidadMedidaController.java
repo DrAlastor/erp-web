@@ -27,21 +27,21 @@ public class UnidadMedidaController {
     private final UnidadMedidaService unidadMedidaService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<List<UnidadMedidaDTO>> listar() {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(unidadMedidaService.listarUnidades(empresaId));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<UnidadMedidaDTO> obtenerPorId(@PathVariable Integer id) {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(unidadMedidaService.obtenerUnidad(id, empresaId));
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CREAR')")
     public ResponseEntity<UnidadMedidaDTO> crear(
             @Valid @RequestBody CrearUnidadMedidaRequest request,
             Principal actor,
@@ -55,7 +55,7 @@ public class UnidadMedidaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<UnidadMedidaDTO> actualizar(
             @PathVariable Integer id,
             @Valid @RequestBody ActualizarUnidadMedidaRequest request,
@@ -70,7 +70,7 @@ public class UnidadMedidaController {
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<UnidadMedidaDTO> cambiarEstado(
             @PathVariable Integer id,
             @Valid @RequestBody CambiarEstadoRequest request,
@@ -85,7 +85,7 @@ public class UnidadMedidaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','ELIMINAR')")
     public ResponseEntity<Void> eliminar(
             @PathVariable Integer id,
             Principal actor,

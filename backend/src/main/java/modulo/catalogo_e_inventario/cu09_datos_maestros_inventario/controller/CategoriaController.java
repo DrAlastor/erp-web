@@ -28,7 +28,7 @@ public class CategoriaController {
     private final CategoriaService categoriaService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<List<CategoriaDTO>> listar() {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(categoriaService.listarCategorias(empresaId));
@@ -38,21 +38,21 @@ public class CategoriaController {
      * Endpoint optimizado para entregar el árbol anidado JSON en una sola petición.
      */
     @GetMapping("/arbol")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<List<CategoriaNodoDTO>> obtenerArbol() {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(categoriaService.obtenerArbol(empresaId));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<CategoriaDTO> obtenerPorId(@PathVariable Integer id) {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(categoriaService.obtenerCategoria(id, empresaId));
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CREAR')")
     public ResponseEntity<CategoriaDTO> crear(
             @Valid @RequestBody CrearCategoriaRequest request,
             Principal actor,
@@ -66,7 +66,7 @@ public class CategoriaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<CategoriaDTO> actualizar(
             @PathVariable Integer id,
             @Valid @RequestBody ActualizarCategoriaRequest request,
@@ -81,7 +81,7 @@ public class CategoriaController {
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<CategoriaDTO> cambiarEstado(
             @PathVariable Integer id,
             @Valid @RequestBody CambiarEstadoRequest request,
@@ -96,7 +96,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','ELIMINAR')")
     public ResponseEntity<Void> eliminar(
             @PathVariable Integer id,
             Principal actor,

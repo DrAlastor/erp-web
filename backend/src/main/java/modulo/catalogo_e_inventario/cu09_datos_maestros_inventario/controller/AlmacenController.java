@@ -27,27 +27,27 @@ public class AlmacenController {
     private final AlmacenService almacenService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<List<AlmacenDTO>> listar() {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(almacenService.listarAlmacenes(empresaId));
     }
 
     @GetMapping("/ciudades")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<List<java.util.Map<String, Object>>> listarCiudades() {
         return ResponseEntity.ok(almacenService.listarCiudades());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CONSULTAR')")
     public ResponseEntity<AlmacenDTO> obtenerPorId(@PathVariable Integer id) {
         UUID empresaId = UsuarioActual.buscar().map(UsuarioPrincipal::empresaId).orElse(null);
         return ResponseEntity.ok(almacenService.obtenerAlmacen(id, empresaId));
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','CREAR')")
     public ResponseEntity<AlmacenDTO> crear(
             @Valid @RequestBody CrearAlmacenRequest request,
             Principal actor,
@@ -61,7 +61,7 @@ public class AlmacenController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<AlmacenDTO> actualizar(
             @PathVariable Integer id,
             @Valid @RequestBody ActualizarAlmacenRequest request,
@@ -76,7 +76,7 @@ public class AlmacenController {
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','MODIFICAR')")
     public ResponseEntity<AlmacenDTO> cambiarEstado(
             @PathVariable Integer id,
             @Valid @RequestBody CambiarEstadoRequest request,
@@ -91,7 +91,7 @@ public class AlmacenController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasPermission('INVENTARIO','ELIMINAR')")
     public ResponseEntity<Void> eliminar(
             @PathVariable Integer id,
             Principal actor,
