@@ -342,16 +342,7 @@ public class VentaService {
         List<TurnoCaja> turnosDb = turnoRepository.findByEstadoOrderByFechaAperturaDesc(TurnoCaja.ESTADO_ABIERTO);
         List<CatalogosVentaResponse.Turno> turnos = new ArrayList<>(turnosDb.stream().map(mapper::toTurno).toList());
 
-        // Asegurar que existan siempre los 3 turnos (Mañana, Tarde, Noche) para cada sucursal activa
         var sucursalesActivas = almacenRepository.findByActivoTrue();
-        for (var suc : sucursalesActivas) {
-            boolean tieneTurnos = turnos.stream().anyMatch(t -> t.sucursalId().equals(suc.getId()));
-            if (!tieneTurnos) {
-                turnos.add(new CatalogosVentaResponse.Turno(1001L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Mañana (08:00 - 13:00)"));
-                turnos.add(new CatalogosVentaResponse.Turno(1002L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Tarde (13:00 - 17:00)"));
-                turnos.add(new CatalogosVentaResponse.Turno(1003L + suc.getId() * 10L, suc.getId(), 1L, LocalDateTime.now(), "Turno Noche (17:00 - 21:00)"));
-            }
-        }
 
         // Cargar cotizaciones pendientes para el selector
         List<CatalogosVentaResponse.CotizacionResumen> cotizacionesPendientes = new ArrayList<>();
