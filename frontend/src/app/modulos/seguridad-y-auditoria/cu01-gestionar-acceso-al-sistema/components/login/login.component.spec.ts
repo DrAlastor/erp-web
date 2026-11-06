@@ -23,6 +23,7 @@ describe('CU-01 login screen', () => {
     const component = TestBed.createComponent(LoginComponent).componentInstance;
     component.form.setValue({
       usernameOrEmail: ' admin ',
+      codigoEmpresa: '',
       password: ' password ',
       rememberMe: true,
     });
