@@ -870,42 +870,30 @@ public class VentaService {
                     cotizacionId
             );
 
-            // 2. Aprobar validación comercial si existía pedido previo, o crear pedido aprobado
+            // 2. Registrar el pedido de esta venta, ya aprobado
             Integer clienteId = venta.getCliente() != null ? venta.getCliente().getId().intValue() : 1;
             Integer sucursalId = venta.getSucursal() != null ? venta.getSucursal().getId() : 1;
 
-            List<Map<String, Object>> pedidosExistentes = jdbcTemplate.queryForList(
-                    "SELECT id FROM pedidos WHERE cliente_id = ? AND estado IN ('PENDIENTE', 'BORRADOR') ORDER BY id DESC LIMIT 1",
-                    clienteId
-            );
-
-            int pedidoId;
+            // Siempre un pedido propio: buscar "el último pendiente del cliente" aprobaba y marcaba
+            // como despachado un pedido sin relación con esta venta, saltándose la CU17.
             int vendedorId = usuarioId != null ? usuarioId.intValue() : 1;
-            if (!pedidosExistentes.isEmpty()) {
-                pedidoId = ((Number) pedidosExistentes.get(0).get("id")).intValue();
+            String numPed = "PED-" + String.format("%06d", System.currentTimeMillis() % 1000000);
+            int pedidoId = jdbcTemplate.queryForObject(
+                    "INSERT INTO pedidos (cliente_id, vendedor_id, sucursal_id, numero_pedido, fecha, subtotal, descuento, total, estado, observaciones, fecha_creacion) "
+                            + "VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'APROBADO', ?, NOW()) RETURNING id",
+                    Integer.class,
+                    clienteId, vendedorId, sucursalId, numPed, venta.getSubtotal(),
+                    venta.getDescuento() != null ? venta.getDescuento() : BigDecimal.ZERO,
+                    venta.getTotal(),
+                    "Generado y aprobado automáticamente tras cobro y facturación de venta #" + venta.getId()
+            );
+            for (VentaDetalle vd : venta.getDetalles()) {
                 jdbcTemplate.update(
-                        "UPDATE pedidos SET estado = 'APROBADO', observaciones = 'Aprobado comercialmente por facturación directa de Venta #" + venta.getId() + "' WHERE id = ?",
-                        pedidoId
+                        "INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario, descuento, subtotal) VALUES (?, ?, ?, ?, ?, ?)",
+                        pedidoId, vd.getProducto().getId(), vd.getCantidad(), vd.getPrecioUnitario(),
+                        vd.getDescuento() != null ? vd.getDescuento() : BigDecimal.ZERO,
+                        vd.getSubtotal()
                 );
-            } else {
-                String numPed = "PED-" + String.format("%06d", System.currentTimeMillis() % 1000000);
-                pedidoId = jdbcTemplate.queryForObject(
-                        "INSERT INTO pedidos (cliente_id, vendedor_id, sucursal_id, numero_pedido, fecha, subtotal, descuento, total, estado, observaciones, fecha_creacion) "
-                                + "VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'APROBADO', ?, NOW()) RETURNING id",
-                        Integer.class,
-                        clienteId, vendedorId, sucursalId, numPed, venta.getSubtotal(),
-                        venta.getDescuento() != null ? venta.getDescuento() : BigDecimal.ZERO,
-                        venta.getTotal(),
-                        "Generado y aprobado automáticamente tras cobro y facturación de venta #" + venta.getId()
-                );
-                for (VentaDetalle vd : venta.getDetalles()) {
-                    jdbcTemplate.update(
-                            "INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario, descuento, subtotal) VALUES (?, ?, ?, ?, ?, ?)",
-                            pedidoId, vd.getProducto().getId(), vd.getCantidad(), vd.getPrecioUnitario(),
-                            vd.getDescuento() != null ? vd.getDescuento() : BigDecimal.ZERO,
-                            vd.getSubtotal()
-                    );
-                }
             }
 
             // 3. Crear nota de despacho de venta (CU18)
