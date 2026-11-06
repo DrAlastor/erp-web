@@ -142,11 +142,8 @@ public class ServicioAutorizacion {
             log.debug("Nota sobre consulta rol_funcion: {}", ex.getMessage());
         }
 
-        // 5. Garantía de acceso operativo esencial:
-        // Todo vendedor, cajero o almacenero necesita consultar catálogo y artículos
-        perms.add("INVENTARIO_CONSULTAR");
-        perms.add("COMERCIAL_CONSULTAR");
-
+        // 5. Garantía de acceso operativo esencial: vendedor, cajero y almacenero consultan
+        // catálogo y artículos. Va dentro de cada rama para que un rol sin funciones no la herede.
         if (rolNombre.contains("VENTA") || "VENTAS_ONLY".equalsIgnoreCase(rolPermiso)) {
             perms.addAll(List.of(
                     "VENTAS_ONLY", "VENTAS_CONSULTAR", "VENTAS_REGISTRAR",
