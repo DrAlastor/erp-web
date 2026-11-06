@@ -149,9 +149,8 @@ public class ServicioRoles {
                     "INVENTARIO_CREAR", "INVENTARIO_CONSULTAR", "INVENTARIO_MODIFICAR",
                     "REPORTES_CONSULTAR"
             ));
-        } else {
-            perms.addAll(List.of("COMERCIAL_CONSULTAR", "INVENTARIO_CONSULTAR"));
         }
+        // Un rol que no se reconoce no recibe nada: sus permisos salen de rol_funcion o de la matriz.
         matrizPermisosPorRol.put(rol.getId(), perms);
         return perms;
     }
