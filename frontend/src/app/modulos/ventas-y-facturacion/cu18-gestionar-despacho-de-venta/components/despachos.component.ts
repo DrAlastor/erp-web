@@ -11,7 +11,6 @@ import {
   ESTADOS_DESPACHO,
   EstadoDespacho,
   FaltanteStock,
-  PedidoPendienteAprobacion,
   PedidoPorDespachar,
   Sucursal,
 } from '../models/despacho.model';
@@ -44,7 +43,6 @@ export class DespachosComponent {
   readonly estados = ESTADOS_DESPACHO;
   readonly vista = signal<Vista>('pendientes');
   readonly pendientes = signal<PedidoPorDespachar[]>([]);
-  readonly porAprobar = signal<PedidoPendienteAprobacion[]>([]);
   readonly notas = signal<DespachoResumen[]>([]);
   readonly sucursales = signal<Sucursal[]>([]);
   readonly seleccionado = signal<Despacho | null>(null);
@@ -108,11 +106,6 @@ export class DespachosComponent {
           this.fail(err, true);
         },
       });
-    // Provisional hasta la CU17: si el usuario no puede verlos, simplemente no se muestran.
-    this.api
-      .awaitingApproval()
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({ next: (r) => this.porAprobar.set(r), error: () => this.porAprobar.set([]) });
   }
 
   cargarNotas(reset = false): void {
@@ -138,13 +131,6 @@ export class DespachosComponent {
   navigate(delta: number): void {
     this.page += delta;
     this.cargarNotas();
-  }
-
-  aprobar(p: PedidoPendienteAprobacion): void {
-    this.ejecutar(this.api.approve(p.id), () => {
-      this.success.set(`Pedido ${p.numeroPedido} aprobado: ya se puede despachar.`);
-      this.cargarPendientes();
-    });
   }
 
   // ------------------------------------------------------------- preparar --

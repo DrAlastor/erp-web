@@ -97,15 +97,3 @@ export interface Sucursal {
   id: number;
   nombre: string;
 }
-
-/** Provisional hasta la CU17: pedido esperando la validación comercial. */
-export interface PedidoPendienteAprobacion {
-  id: number;
-  numeroPedido: string;
-  fecha: string;
-  clienteRazonSocial: string;
-  sucursalNombre: string;
-  total: number;
-  estado: string;
-  observaciones: string | null;
-}

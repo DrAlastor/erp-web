@@ -5,7 +5,6 @@ import {
   Despacho,
   DespachoPage,
   DespachoRequest,
-  PedidoPendienteAprobacion,
   PedidoPorDespachar,
   Sucursal,
 } from '../models/despacho.model';
@@ -49,15 +48,5 @@ export class DespachosService {
 
   branches() {
     return this.http.get<Sucursal[]>(`${environment.apiUrl}/almacenes`);
-  }
-
-  /** Provisional hasta la CU17. */
-  awaitingApproval() {
-    return this.http.get<PedidoPendienteAprobacion[]>(`${environment.apiUrl}/pedidos/pendientes-de-aprobacion`);
-  }
-
-  /** Provisional hasta la CU17. */
-  approve(pedidoId: number) {
-    return this.http.post<PedidoPendienteAprobacion>(`${environment.apiUrl}/pedidos/${pedidoId}/aprobar`, {});
   }
 }

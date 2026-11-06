@@ -21,5 +21,3 @@ enganche para el asiento de costo de venta cuando exista la CU26.
 Tablas: NOTAS_DESPACHO, DESPACHO_DETALLES, INVENTARIO_SUCURSAL, KARDEX_MOVIMIENTOS
 (esquema ERP_Asus, sin cambios).
 
-PROVISIONAL: compartido/controller/PedidoProvisionalController permite aprobar pedidos
-(POST /api/pedidos/{id}/aprobar) mientras no exista la CU17. Se borra cuando llegue.

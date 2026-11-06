@@ -40,22 +40,6 @@
   @switch (vista()) {
     <!-- =================================================== POR DESPACHAR -->
     @case ('pendientes') {
-      @if (porAprobar().length) {
-        <section class="provisional" aria-label="Pedidos esperando validación comercial">
-          <h3>Esperando validación comercial</h3>
-          <p>
-            Estos pedidos todavía no fueron aprobados. Puede autorizarlos directamente aquí o gestionarlos desde Validación Comercial.
-          </p>
-          <ul>
-            @for (p of porAprobar(); track p.id) {
-              <li>
-                <span><strong>{{ p.numeroPedido }}</strong> · {{ p.clienteRazonSocial }} · Bs {{ p.total | number: '1.2-2' }}</span>
-                <button [disabled]="busy()" (click)="aprobar(p)">Aprobar</button>
-              </li>
-            }
-          </ul>
-        </section>
-      }
 
       <form class="filters" (ngSubmit)="cargarPendientes()">
         <label>
