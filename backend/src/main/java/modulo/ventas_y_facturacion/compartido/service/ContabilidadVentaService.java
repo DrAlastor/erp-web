@@ -118,7 +118,8 @@ public class ContabilidadVentaService {
         return asientoRepository.save(asiento).getNumeroAsiento();
     }
 
-    private PeriodoContable periodoAbierto(LocalDate fecha) {
+    /** Periodo de la fecha (lo crea ABIERTO si no existe); 409 si está cerrado. */
+    public PeriodoContable periodoAbierto(LocalDate fecha) {
         PeriodoContable periodo = periodoRepository.findByGestionAndMes(fecha.getYear(), fecha.getMonthValue())
                 .orElseGet(() -> periodoRepository.save(PeriodoContable.builder()
                         .gestion(fecha.getYear())
@@ -135,7 +136,8 @@ public class ContabilidadVentaService {
         return periodo;
     }
 
-    private String siguienteNumero(int gestion) {
+    /** Siguiente número correlativo AS-AAAA-NNNN de la gestión. */
+    public String siguienteNumero(int gestion) {
         String prefijo = "AS-" + gestion + "-";
         String ultimo = asientoRepository.ultimoNumero(prefijo + "%");
         int siguiente = 1;
