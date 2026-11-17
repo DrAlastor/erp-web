@@ -38,6 +38,8 @@ import { ReportesPorVozComponent } from '../../modulos/reportes-y-bi/cu39-report
 import { ConstructorQbeComponent } from '../../modulos/reportes-y-bi/cu38-constructor-reportes-qbe/components/constructor-qbe.component';
 import { CuentasPorPagarComponent } from '../../modulos/tesoreria-y-cajas/cu34-cuentas-por-pagar-cxp/components/cuentas-por-pagar.component';
 import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-dashboard-analitico-kpis/components/dashboard-ejecutivo.component';
+import { AsientosContablesComponent } from '../../modulos/contabilidad-y-finanzas/cu27-gestionar-asientos-contables/components/asientos-contables.component';
+import { CuentasPorCobrarComponent } from '../../modulos/contabilidad-y-finanzas/cu29-cuentas-por-cobrar-y-cobros/components/cuentas-por-cobrar.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -48,7 +50,7 @@ import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-da
     ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
     BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,
     ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
-    CuentasPorPagarComponent, DashboardEjecutivoComponent],
+    CuentasPorPagarComponent, DashboardEjecutivoComponent, AsientosContablesComponent, CuentasPorCobrarComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

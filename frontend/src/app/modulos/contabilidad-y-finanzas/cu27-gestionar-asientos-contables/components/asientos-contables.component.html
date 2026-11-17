@@ -1,0 +1,316 @@
+<div class="header">
+  <div>
+    <h2>Asientos contables</h2>
+    <p>Libro Diario: asientos manuales y los que generan ventas, cobros y notas de crédito.</p>
+  </div>
+  @if (vista() === 'lista' && !forbidden() && permisos().editar) {
+    <button class="primary" (click)="nuevo()">Nuevo asiento</button>
+  } @else if (vista() !== 'lista') {
+    <button (click)="volver()">← Volver al Libro Diario</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- ============================================================ LIBRO DIARIO -->
+    @case ('lista') {
+      <form class="filters" (ngSubmit)="load(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="filtro.search" maxlength="150" placeholder="Número o glosa" />
+        </label>
+        <label>
+          Origen
+          <select name="origen" [(ngModel)]="filtro.origen" (change)="load(true)">
+            <option value="">Todos</option>
+            <option value="MANUAL">Manuales</option>
+            <option value="AUTOMATICO">Automáticos</option>
+          </select>
+        </label>
+        <label>
+          Tipo
+          <select name="tipo" [(ngModel)]="filtro.tipo" (change)="load(true)">
+            <option value="">Todos</option>
+            <optgroup label="Manuales">
+              @for (t of tiposManuales(); track t) { <option [value]="t">{{ t }}</option> }
+            </optgroup>
+            <optgroup label="Automáticos">
+              @for (t of tiposAutomaticos; track t) { <option [value]="t">{{ t }}</option> }
+            </optgroup>
+          </select>
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="filtro.estado" (change)="load(true)">
+            <option value="">Todos</option>
+            <option value="BORRADOR">Borrador</option>
+            <option value="MAYORIZADO">Contabilizado</option>
+            <option value="ANULADO">Anulado</option>
+          </select>
+        </label>
+        <label>
+          Desde
+          <input name="desde" type="date" [(ngModel)]="filtro.desde" (change)="load(true)" />
+        </label>
+        <label>
+          Hasta
+          <input name="hasta" type="date" [(ngModel)]="filtro.hasta" (change)="load(true)" />
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+        <button type="button" [disabled]="busy()" (click)="limpiarFiltros()">Limpiar</button>
+      </form>
+
+      @if (loading()) {
+        <p role="status">Cargando asientos...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Libro Diario</caption>
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Glosa</th>
+                <th class="num">Debe Bs</th>
+                <th class="num">Haber Bs</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of asientos(); track a.id) {
+                <tr>
+                  <td class="mono"><strong>{{ a.numero }}</strong></td>
+                  <td>{{ a.fecha }}</td>
+                  <td>
+                    {{ a.tipo }}
+                    @if (!a.manual) { <br /><small class="tag">Automático</small> }
+                  </td>
+                  <td class="glosa">{{ a.glosa }}</td>
+                  <td class="num">{{ a.totalDebe | number: '1.2-2' }}</td>
+                  <td class="num">{{ a.totalHaber | number: '1.2-2' }}</td>
+                  <td><span class="badge" [attr.data-estado]="a.estado">{{ a.estado === 'MAYORIZADO' ? 'CONTABILIZADO' : a.estado }}</span></td>
+                  <td class="actions">
+                    <button [disabled]="busy()" (click)="abrir(a.id)">Ver</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="8">No hay asientos con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} asientos</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ================================================================== EDITOR -->
+    @case ('editor') {
+      <form class="panel" aria-label="Asiento contable" (ngSubmit)="guardar(false)" novalidate>
+        <h3>{{ editandoId() ? 'Corregir asiento en borrador' : 'Nuevo asiento' }}</h3>
+        <p class="hint">
+          Se guarda como borrador y se puede corregir hasta contabilizarlo. Cada línea lleva su importe en el
+          debe o en el haber, y el total del debe tiene que ser igual al del haber.
+        </p>
+
+        <div class="form-grid">
+          <label>
+            Fecha *
+            <input name="fecha" type="date" [(ngModel)]="fecha" required />
+          </label>
+          <label>
+            Tipo *
+            <select name="tipo" [(ngModel)]="tipo">
+              @for (t of tiposManuales(); track t) { <option [value]="t">{{ t }}</option> }
+            </select>
+          </label>
+          <span></span>
+          <label class="full">
+            Glosa *
+            <textarea name="glosa" rows="2" [(ngModel)]="glosa" maxlength="500"
+              placeholder="Ej.: Depósito de la recaudación del día en Banco Unión"></textarea>
+          </label>
+        </div>
+
+        <div class="table-scroll">
+          <table class="lineas">
+            <caption class="sr-only">Líneas del asiento</caption>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cuenta</th>
+                <th>Glosa de la línea</th>
+                <th class="num">Debe Bs</th>
+                <th class="num">Haber Bs</th>
+                <th><span class="sr-only">Quitar</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of lineas(); track $index; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td class="cuenta">
+                    <input [name]="'cuenta' + i" list="cuentas-movimiento" [ngModel]="l.cuentaTexto"
+                      (ngModelChange)="buscarCuenta(i, $event)" placeholder="Código o nombre"
+                      [attr.aria-label]="'Cuenta de la línea ' + (i + 1)" [attr.aria-invalid]="!l.cuentaId && !!l.cuentaTexto" />
+                    @if (l.cuentaTexto && !l.cuentaId) { <small class="field-error">Elige una cuenta de la lista.</small> }
+                  </td>
+                  <td>
+                    <input [name]="'glosa' + i" [(ngModel)]="l.glosa" maxlength="255" [attr.aria-label]="'Glosa de la línea ' + (i + 1)" />
+                  </td>
+                  <td class="num">
+                    <input [name]="'debe' + i" type="number" min="0" step="0.01" [ngModel]="l.debe"
+                      (ngModelChange)="cambiarImporte(i, 'debe', $event)" [attr.aria-label]="'Debe de la línea ' + (i + 1)" />
+                  </td>
+                  <td class="num">
+                    <input [name]="'haber' + i" type="number" min="0" step="0.01" [ngModel]="l.haber"
+                      (ngModelChange)="cambiarImporte(i, 'haber', $event)" [attr.aria-label]="'Haber de la línea ' + (i + 1)" />
+                  </td>
+                  <td>
+                    <button type="button" class="icon" [disabled]="lineas().length <= 2" (click)="quitarLinea(i)"
+                      [attr.aria-label]="'Quitar línea ' + (i + 1)">✕</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">
+                  <button type="button" (click)="agregarLinea()">+ Agregar línea</button>
+                  <button type="button" (click)="copiarGlosa()">Copiar glosa a las líneas</button>
+                </td>
+                <td class="num"><strong>{{ cuadre().debe | number: '1.2-2' }}</strong></td>
+                <td class="num"><strong>{{ cuadre().haber | number: '1.2-2' }}</strong></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <datalist id="cuentas-movimiento">
+          @for (c of cuentas(); track c.id) { <option [value]="etiqueta(c)"></option> }
+        </datalist>
+
+        <p class="cuadre" [class.ok]="cuadre().cuadra" role="status">
+          @if (cuadre().cuadra) {
+            ✓ El asiento cuadra: Bs {{ cuadre().debe | number: '1.2-2' }} al debe y al haber.
+          } @else {
+            Diferencia: Bs {{ cuadre().diferencia | number: '1.2-2' }}
+          }
+        </p>
+
+        @if (erroresForm().length) {
+          <ul class="message error">
+            @for (e of erroresForm(); track e) { <li>{{ e }}</li> }
+          </ul>
+        }
+
+        <div class="actions">
+          <button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Guardando...' : 'Guardar borrador' }}</button>
+          <button type="button" [disabled]="busy() || !cuadre().cuadra" (click)="guardar(true)">Guardar y contabilizar</button>
+          <button type="button" [disabled]="busy()" (click)="editandoId() ? abrir(editandoId()!) : volver()">Cancelar</button>
+        </div>
+      </form>
+    }
+
+    <!-- ================================================================= DETALLE -->
+    @case ('detalle') {
+      @if (detalle(); as a) {
+        <section class="panel">
+          <div class="detail-head">
+            <h3>
+              <span class="mono">{{ a.numero }}</span>
+              <span class="badge" [attr.data-estado]="a.estado">{{ a.estado === 'MAYORIZADO' ? 'CONTABILIZADO' : a.estado }}</span>
+              @if (!a.manual) { <small class="tag">Automático</small> }
+            </h3>
+          </div>
+          <dl class="ficha">
+            <dt>Fecha</dt><dd>{{ a.fecha }}</dd>
+            <dt>Tipo</dt><dd>{{ a.tipo }}</dd>
+            <dt>Periodo</dt><dd>{{ a.periodo || '—' }} @if (a.estadoPeriodo) { <small>({{ a.estadoPeriodo }})</small> }</dd>
+            <dt>Glosa</dt><dd>{{ a.glosa }}</dd>
+            <dt>Registrado por</dt><dd>{{ a.creadoPor || '—' }}</dd>
+          </dl>
+
+          <div class="table-scroll">
+            <table>
+              <caption class="sr-only">Líneas del asiento {{ a.numero }}</caption>
+              <thead>
+                <tr><th>Cuenta</th><th>Glosa</th><th class="num">Debe Bs</th><th class="num">Haber Bs</th></tr>
+              </thead>
+              <tbody>
+                @for (l of a.lineas; track l.id) {
+                  <tr>
+                    <td><span class="mono">{{ l.cuentaCodigo }}</span> {{ l.cuentaNombre }}</td>
+                    <td>{{ l.glosa || '—' }}</td>
+                    <td class="num">{{ l.debe ? (l.debe | number: '1.2-2') : '' }}</td>
+                    <td class="num">{{ l.haber ? (l.haber | number: '1.2-2') : '' }}</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2"><strong>Totales</strong></td>
+                  <td class="num"><strong>{{ a.totalDebe | number: '1.2-2' }}</strong></td>
+                  <td class="num"><strong>{{ a.totalHaber | number: '1.2-2' }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          @if (!a.manual) {
+            <p class="hint">Este asiento lo generó el sistema; se corrige desde su documento de origen (venta, cobro o nota de crédito).</p>
+          }
+
+          <div class="actions">
+            @if (a.editable && permisos().editar) {
+              <button [disabled]="busy()" (click)="editar(a)">Corregir</button>
+              <button class="primary" [disabled]="busy()" (click)="contabilizar(a)">Contabilizar</button>
+            }
+            @if (a.anulable && permisos().anular) {
+              <button class="danger" [disabled]="busy()" (click)="pedirAnulacion()">Anular</button>
+            }
+          </div>
+        </section>
+
+        @if (anulando()) {
+          <div class="modal-backdrop">
+            <section class="confirmation" role="dialog" aria-modal="true" aria-labelledby="anular-title">
+              <h3 id="anular-title">Anular {{ a.numero }}</h3>
+              @if (a.estado === 'MAYORIZADO') {
+                <p>
+                  El asiento ya está contabilizado: no se borra. Se registra con la fecha de hoy un asiento de
+                  <strong>reversión</strong> con las mismas cuentas e importes invertidos, y este queda anulado.
+                </p>
+              } @else {
+                <p>El borrador queda anulado y no afecta a los libros.</p>
+              }
+              <label>
+                Motivo
+                <input name="motivo" [(ngModel)]="motivo" maxlength="300" placeholder="Ej.: se registró en la cuenta equivocada" />
+              </label>
+              <div class="actions">
+                <button type="button" [disabled]="busy()" (click)="anulando.set(false)">Cancelar</button>
+                <button class="danger" [disabled]="busy() || motivo.trim().length < 5" (click)="anular(a)">Anular asiento</button>
+              </div>
+            </section>
+          </div>
+        }
+      }
+    }
+  }
+}
