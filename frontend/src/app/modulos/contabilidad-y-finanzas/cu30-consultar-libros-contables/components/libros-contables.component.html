@@ -1,0 +1,374 @@
+<div class="libros-container">
+
+  <!-- ENCABEZADO Y TABS -->
+  <header class="libros-header no-print">
+    <div class="titulo-seccion">
+      <h2>Libros Contables Principales</h2>
+      <p class="subtitulo">Auditoría, trazabilidad y verificación de partida doble y saldos del mayor</p>
+    </div>
+
+    <div class="tabs-nav">
+      <button type="button" class="tab-btn" [class.active]="pestanaActiva() === 'diario'" (click)="cambiarPestana('diario')">
+        📖 Libro Diario
+      </button>
+      <button type="button" class="tab-btn" [class.active]="pestanaActiva() === 'mayor'" (click)="cambiarPestana('mayor')">
+        📑 Libro Mayor
+      </button>
+    </div>
+  </header>
+
+  <!-- MENSAJES DE ERROR -->
+  @if (errorMsg()) {
+    <div class="alerta-error">
+      <span>⚠️ {{ errorMsg() }}</span>
+      <button type="button" (click)="errorMsg.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- VISTA 1: LIBRO DIARIO                                          -->
+  <!-- ============================================================== -->
+  @if (pestanaActiva() === 'diario') {
+    <section class="seccion-libro">
+      
+      <!-- BARRA DE FILTROS -->
+      <div class="panel-filtros no-print">
+        <div class="filtros-grid">
+          <div class="campo">
+            <label for="filtro-periodo-diario">Periodo Contable</label>
+            <select id="filtro-periodo-diario" [(ngModel)]="filtroDiario.periodoId" (change)="onPeriodoDiarioChange()">
+              <option [ngValue]="null">Todos los Periodos</option>
+              @for (p of periodos(); track p.id) {
+                <option [ngValue]="p.id">{{ p.nombre }} ({{ p.gestion }}) - {{ p.estado }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="fecha-inicio-diario">Fecha Desde</label>
+            <input type="date" id="fecha-inicio-diario" [(ngModel)]="filtroDiario.fechaInicio" />
+          </div>
+
+          <div class="campo">
+            <label for="fecha-fin-diario">Fecha Hasta</label>
+            <input type="date" id="fecha-fin-diario" [(ngModel)]="filtroDiario.fechaFin" />
+          </div>
+
+          <div class="campo">
+            <label for="tipo-asiento-diario">Tipo de Asiento</label>
+            <select id="tipo-asiento-diario" [(ngModel)]="filtroDiario.tipoAsiento">
+              @for (tipo of tiposAsiento(); track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="estado-asiento-diario">Estado</label>
+            <select id="estado-asiento-diario" [(ngModel)]="filtroDiario.estado">
+              <option value="TODOS">Todos los Estados</option>
+              <option value="MAYORIZADO">Mayorizado (Firme)</option>
+              <option value="BORRADOR">Borrador</option>
+              <option value="ANULADO">Anulado</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="busqueda-diario">Buscar por N° o Glosa</label>
+            <input type="text" id="busqueda-diario" [(ngModel)]="filtroDiario.busqueda" placeholder="Ej: AS-2026 o facturas..." />
+          </div>
+        </div>
+
+        <div class="acciones-filtros">
+          <button type="button" class="btn btn-primario" (click)="consultarDiario()" [disabled]="cargando()">
+            🔍 Consultar Diario
+          </button>
+          <button type="button" class="btn btn-secundario" (click)="verTodoElAnoDiario()">
+            📅 Ver Todo 2026 (Todas las Ventas)
+          </button>
+          <button type="button" class="btn btn-secundario" (click)="limpiarFiltrosDiario()">
+            Limpiar
+          </button>
+          <div class="spacer"></div>
+          <button type="button" class="btn btn-outline" (click)="exportarDiario()" [disabled]="!datosDiario()?.asientos?.length">
+            📥 Exportar Excel (CSV)
+          </button>
+          <button type="button" class="btn btn-outline" (click)="imprimir()">
+            🖨️ Imprimir
+          </button>
+        </div>
+      </div>
+
+      <!-- CARGANDO -->
+      @if (cargando()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Consultando registros contables...</p>
+        </div>
+      }
+
+      <!-- RESULTADOS LIBRO DIARIO -->
+      @if (!cargando() && datosDiario(); as diario) {
+        
+        <!-- RESUMEN DE PARTIDA DOBLE -->
+        <div class="kpi-panel">
+          <div class="kpi-card">
+            <span class="kpi-label">Periodo Activo</span>
+            <strong class="kpi-val">{{ diario.periodoSeleccionado }}</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Total Comprobantes</span>
+            <strong class="kpi-val">{{ diario.totalAsientos }}</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Total Débitos (Debe)</span>
+            <strong class="kpi-val monto">Bs. {{ diario.totalDebeGeneral | number:'1.2-2' }}</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Total Créditos (Haber)</span>
+            <strong class="kpi-val monto">Bs. {{ diario.totalHaberGeneral | number:'1.2-2' }}</strong>
+          </div>
+          <div class="kpi-card" [class.kpi-cuadrado]="diario.estaCuadrado" [class.kpi-descuadrado]="!diario.estaCuadrado">
+            <span class="kpi-label">Partida Doble</span>
+            <strong class="kpi-val">
+              {{ diario.estaCuadrado ? '✓ CUADRADO' : '✗ DESCUADRADO' }}
+            </strong>
+          </div>
+        </div>
+
+        <!-- LISTADO DE ASIENTOS -->
+        @if (diario.asientos.length === 0) {
+          <div class="vacio-card">
+            <p>No se encontraron asientos contables con los filtros seleccionados.</p>
+          </div>
+        } @else {
+          <div class="asientos-lista">
+            @for (asiento of diario.asientos; track asiento.id) {
+              <div class="asiento-card">
+                <div class="asiento-cabecera">
+                  <div class="cabecera-meta">
+                    <span class="asiento-num">{{ asiento.numeroAsiento }}</span>
+                    <span class="asiento-fecha">📅 {{ asiento.fecha }}</span>
+                    <span class="badge badge-tipo">{{ asiento.tipoAsiento }}</span>
+                    <span class="badge" [class.badge-mayorizado]="asiento.estado === 'MAYORIZADO'" [class.badge-borrador]="asiento.estado === 'BORRADOR'">
+                      {{ asiento.estado }}
+                    </span>
+                  </div>
+                  <div class="cabecera-totales">
+                    <span>Debe: <strong>Bs. {{ asiento.totalDebe | number:'1.2-2' }}</strong></span>
+                    <span>Haber: <strong>Bs. {{ asiento.totalHaber | number:'1.2-2' }}</strong></span>
+                  </div>
+                </div>
+
+                <div class="asiento-glosa">
+                  <strong>Glosa:</strong> {{ asiento.glosa }}
+                </div>
+
+                <!-- DETALLE DE CUENTAS POR ASIENTO -->
+                <div class="tabla-responsive">
+                  <table class="tabla-detalles">
+                    <thead>
+                      <tr>
+                        <th style="width: 140px;">Código</th>
+                        <th>Cuenta Contable</th>
+                        <th>Detalle / Subglosa</th>
+                        <th class="col-monto" style="width: 130px;">Debe (BOB)</th>
+                        <th class="col-monto" style="width: 130px;">Haber (BOB)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (lin of asiento.detalles; track lin.id) {
+                        <tr>
+                          <td class="mono font-semibold">{{ lin.cuentaCodigo }}</td>
+                          <td>{{ lin.cuentaNombre }}</td>
+                          <td class="texto-secundario">{{ lin.glosa || '—' }}</td>
+                          <td class="col-monto">{{ lin.debe > 0 ? (lin.debe | number:'1.2-2') : '—' }}</td>
+                          <td class="col-monto">{{ lin.haber > 0 ? (lin.haber | number:'1.2-2') : '—' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                    <tfoot>
+                      <tr class="fila-totales">
+                        <td colspan="3" class="text-right">Sumas Iguales:</td>
+                        <td class="col-monto">Bs. {{ asiento.totalDebe | number:'1.2-2' }}</td>
+                        <td class="col-monto">Bs. {{ asiento.totalHaber | number:'1.2-2' }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </section>
+  }
+
+  <!-- ============================================================== -->
+  <!-- VISTA 2: LIBRO MAYOR                                           -->
+  <!-- ============================================================== -->
+  @if (pestanaActiva() === 'mayor') {
+    <section class="seccion-libro">
+      
+      <!-- BARRA DE FILTROS MAYOR -->
+      <div class="panel-filtros no-print">
+        <div class="filtros-grid">
+          <div class="campo campo-ancho">
+            <label for="filtro-cuenta-mayor">Cuenta Contable</label>
+            <select id="filtro-cuenta-mayor" [(ngModel)]="filtroMayor.cuentaId">
+              <option [ngValue]="null">Todas las cuentas con movimiento</option>
+              @for (c of cuentas(); track c.id) {
+                <option [ngValue]="c.id">{{ c.codigo }} - {{ c.nombre }} ({{ c.naturaleza }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="filtro-periodo-mayor">Periodo Contable</label>
+            <select id="filtro-periodo-mayor" [(ngModel)]="filtroMayor.periodoId" (change)="onPeriodoMayorChange()">
+              <option [ngValue]="null">Personalizado / Todos</option>
+              @for (p of periodos(); track p.id) {
+                <option [ngValue]="p.id">{{ p.nombre }} ({{ p.gestion }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="fecha-inicio-mayor">Fecha Desde</label>
+            <input type="date" id="fecha-inicio-mayor" [(ngModel)]="filtroMayor.fechaInicio" />
+          </div>
+
+          <div class="campo">
+            <label for="fecha-fin-mayor">Fecha Hasta</label>
+            <input type="date" id="fecha-fin-mayor" [(ngModel)]="filtroMayor.fechaFin" />
+          </div>
+        </div>
+
+        <div class="acciones-filtros">
+          <button type="button" class="btn btn-primario" (click)="consultarMayor()" [disabled]="cargando()">
+            🔍 Consultar Mayor
+          </button>
+          <button type="button" class="btn btn-secundario" (click)="verTodoElAnoMayor()">
+            📅 Ver Todo 2026 (Todas las Cuentas)
+          </button>
+          <button type="button" class="btn btn-secundario" (click)="limpiarFiltrosMayor()">
+            Limpiar
+          </button>
+          <div class="spacer"></div>
+          <button type="button" class="btn btn-outline" (click)="exportarMayor()" [disabled]="!datosMayor()?.cuentas?.length">
+            📥 Exportar Excel (CSV)
+          </button>
+          <button type="button" class="btn btn-outline" (click)="imprimir()">
+            🖨️ Imprimir
+          </button>
+        </div>
+      </div>
+
+      <!-- CARGANDO -->
+      @if (cargando()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Calculando saldos y extractos de mayor...</p>
+        </div>
+      }
+
+      <!-- RESULTADOS LIBRO MAYOR -->
+      @if (!cargando() && datosMayor(); as mayor) {
+        
+        <div class="resumen-mayor-info">
+          <span>Periodo: <strong>{{ mayor.periodoSeleccionado }}</strong></span>
+          <span>Cuentas con actividad: <strong>{{ mayor.totalCuentas }}</strong></span>
+        </div>
+
+        @if (mayor.cuentas.length === 0) {
+          <div class="vacio-card">
+            <p>No se encontraron movimientos para la cuenta o fechas seleccionadas.</p>
+          </div>
+        } @else {
+          <div class="mayores-lista">
+            @for (cuenta of mayor.cuentas; track cuenta.cuentaId) {
+              <div class="mayor-card">
+                
+                <!-- CABECERA DE CUENTA -->
+                <div class="mayor-card-header">
+                  <div class="cuenta-titulo">
+                    <span class="cuenta-codigo mono">{{ cuenta.codigo }}</span>
+                    <h3 class="cuenta-nombre">{{ cuenta.nombre }}</h3>
+                    <span class="badge badge-tipo">{{ cuenta.tipo }}</span>
+                    <span class="badge" [class.badge-deudora]="cuenta.naturaleza === 'DEUDORA'" [class.badge-acreedora]="cuenta.naturaleza === 'ACREEDORA'">
+                      Naturaleza {{ cuenta.naturaleza }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- BANNER DE SALDOS -->
+                <div class="mayor-saldos-grid">
+                  <div class="saldo-item">
+                    <span class="label">Saldo Anterior:</span>
+                    <strong class="val">Bs. {{ cuenta.saldoAnterior | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="saldo-item">
+                    <span class="label">Débitos del Periodo:</span>
+                    <strong class="val text-success">Bs. {{ cuenta.totalDebe | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="saldo-item">
+                    <span class="label">Créditos del Periodo:</span>
+                    <strong class="val text-danger">Bs. {{ cuenta.totalHaber | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="saldo-item saldo-destacado">
+                    <span class="label">Saldo Actual:</span>
+                    <strong class="val">Bs. {{ cuenta.saldoFinal | number:'1.2-2' }}</strong>
+                  </div>
+                </div>
+
+                <!-- EXTRACTO DE MOVIMIENTOS -->
+                @if (cuenta.movimientos.length === 0) {
+                  <p class="sin-movs">Sin movimientos en el rango de fechas (se mantiene el saldo anterior).</p>
+                } @else {
+                  <div class="tabla-responsive">
+                    <table class="tabla-mayor">
+                      <thead>
+                        <tr>
+                          <th style="width: 100px;">Fecha</th>
+                          <th style="width: 130px;">Comprobante</th>
+                          <th style="width: 100px;">Tipo</th>
+                          <th>Concepto / Glosa</th>
+                          <th class="col-monto" style="width: 120px;">Debe (BOB)</th>
+                          <th class="col-monto" style="width: 120px;">Haber (BOB)</th>
+                          <th class="col-monto" style="width: 140px;">Saldo Acumulado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (mov of cuenta.movimientos; track $index) {
+                          <tr>
+                            <td>{{ mov.fecha }}</td>
+                            <td class="mono font-semibold">{{ mov.numeroAsiento }}</td>
+                            <td><span class="badge-mini">{{ mov.tipoAsiento }}</span></td>
+                            <td>{{ mov.glosa }}</td>
+                            <td class="col-monto">{{ mov.debe > 0 ? (mov.debe | number:'1.2-2') : '—' }}</td>
+                            <td class="col-monto">{{ mov.haber > 0 ? (mov.haber | number:'1.2-2') : '—' }}</td>
+                            <td class="col-monto font-semibold">Bs. {{ mov.saldoAcumulado | number:'1.2-2' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot>
+                        <tr class="fila-totales">
+                          <td colspan="4" class="text-right">Totales del Periodo:</td>
+                          <td class="col-monto">Bs. {{ cuenta.totalDebe | number:'1.2-2' }}</td>
+                          <td class="col-monto">Bs. {{ cuenta.totalHaber | number:'1.2-2' }}</td>
+                          <td class="col-monto font-bold">Bs. {{ cuenta.saldoFinal | number:'1.2-2' }}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        }
+      }
+    </section>
+  }
+
+</div>

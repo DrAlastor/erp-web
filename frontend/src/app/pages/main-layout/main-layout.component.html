@@ -139,6 +139,10 @@
       <app-cuentas-por-pagar />
       } @else if (fn.id === 'dashboard-ejecutivo' || fn.id === 'cu36-dashboard-ejecutivo') {
       <app-dashboard-ejecutivo />
+      } @else if (fn.id === 'consultar-libros-contables' || fn.slug === 'consultar-libros-contables') {
+      <app-libros-contables />
+      } @else if (fn.id === 'consultar-informacion-financiera' || fn.slug === 'consultar-informacion-financiera') {
+      <app-informacion-financiera />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>
