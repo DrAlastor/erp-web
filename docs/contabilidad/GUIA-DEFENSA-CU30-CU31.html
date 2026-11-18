@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Guía de Defensa y Explicación Técnica - CU30 y CU31</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 14mm 18mm 14mm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 10pt;
+    }
+
+    .header {
+      border-bottom: 2.5px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .header-left h1 {
+      font-size: 16pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .header-left h2 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 8.5pt;
+      color: #64748b;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+    h3.section-title {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-left: 4px solid #2563eb;
+      padding-left: 8px;
+      margin: 16px 0 10px 0;
+      page-break-after: avoid;
+    }
+
+    h4.subsection-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #1e40af;
+      margin: 12px 0 6px 0;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-bottom: 8px;
+      text-align: justify;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+
+    .card-highlight {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .script-box {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin: 10px 0;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+      page-break-inside: avoid;
+    }
+
+    .script-box em {
+      color: #93c5fd;
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    .script-step {
+      margin-bottom: 8px;
+    }
+    .script-step:last-child {
+      margin-bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 8.5pt;
+      page-break-inside: avoid;
+    }
+
+    table th {
+      background: #1e293b;
+      color: #ffffff;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #0f172a;
+    }
+
+    table td {
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+
+    table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .table-pink th {
+      background: #f2c2c9;
+      color: #000000;
+      border: 1px solid #000000;
+    }
+    .table-pink td {
+      background: #fdf2f4;
+      border: 1px solid #000000;
+    }
+    .table-pink td:first-child {
+      font-weight: bold;
+      background: #f7d2d7;
+    }
+
+    ul, ol {
+      margin-left: 18px;
+      margin-bottom: 8px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 8.5pt;
+      background: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: #0f172a;
+    }
+
+    .formula {
+      text-align: center;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 700;
+      padding: 6px;
+      border-radius: 5px;
+      margin: 6px 0;
+      font-size: 9.5pt;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Guía de Defensa y Explicación Técnica</h1>
+      <h2>Casos de Uso CU30 (Libros Contables) y CU31 (Información Financiera)</h2>
+    </div>
+    <div class="header-right">
+      <strong>ERP Contable y Comercial</strong><br>
+      Sistemas de Información II (SI2)<br>
+      Desarrollador: <strong>Alessandro Yevara Ponce</strong>
+    </div>
+  </div>
+
+  <!-- INTRODUCCIÓN GENERAL -->
+  <div class="card card-highlight">
+    <p style="margin: 0; font-size: 9pt;">
+      <strong>Objetivo del Documento:</strong> Proveer un marco conceptual riguroso, el funcionamiento de la lógica de negocio y un guion estratégico de defensa oral frente al docente evaluador ("el ingeniero"), cubriendo los algoritmos contables, optimizaciones de rendimiento y el modelado UML formal en Enterprise Architect.
+    </p>
+  </div>
+
+  <!-- SECCIÓN 1: ROL EN EL ERP -->
+  <h3 class="section-title">1. Propósito y Rol Estratégico en el Sistema ERP</h3>
+  <p>
+    En un ERP comercial y contable, los módulos operativos como <em>Ventas</em>, <em>Compras</em>, <em>Cobranzas</em> e <em>Inventarios</em> registran transacciones diarias. Sin embargo, ninguna de esas operaciones adquiere validez legal ni fiscal hasta que se traduce en <strong>asientos contables de partida doble</strong>.
+  </p>
+  <p>
+    <strong>CU30 y CU31 conforman la columna vertebral de reportería y toma de decisiones:</strong>
+  </p>
+  <ul>
+    <li><strong>CU30 (Fiscalización y Auditoría):</strong> Proporciona al Contador y a los Auditores la historia cronológica (Libro Diario) y la evolución detallada cuenta por cuenta (Libro Mayor), permitiendo rastrear el origen de cada centavo.</li>
+    <li><strong>CU31 (Dirección y Situación Patrimonial):</strong> Transforma los miles de movimientos del catálogo contable en los dos reportes directivos oficiales: el <em>Balance General</em> (foto patrimonial de Activo, Pasivo y Patrimonio) y el <em>Estado de Resultados</em> (evaluación de rentabilidad y utilidad neta).</li>
+  </ul>
+
+  <!-- SECCIÓN 2: CU30 EN DETALLE -->
+  <h3 class="section-title">2. Funcionamiento Detallado de CU30: Libros Contables</h3>
+
+  <h4 class="subsection-title">A. Libro Diario (Auditoría Cronológica)</h4>
+  <p>
+    El Libro Diario lista secuencialmente todos los comprobantes contables registrados en la empresa:
+  </p>
+  <ul>
+    <li><strong>Partida Doble Obligatoria:</strong> Cada comprobante (<code>AsientoContable</code>) contiene dos o más imputaciones (<code>AsientoDetalle</code>). El sistema valida en tiempo real que <code>Total Debe == Total Haber</code> para certificar que el comprobante está cuadrado.</li>
+    <li><strong>Filtros por Estado:</strong> Por normativa fiscal, solo los asientos en estado <code>MAYORIZADO</code> componen la contabilidad oficial. Los asientos en estado <code>BORRADOR</code> quedan identificados para revisión previa.</li>
+    <li><strong>Asientos Automáticos:</strong> Las ventas aprobadas generan automáticamente asientos de tipo <code>INGRESO</code> (caja/bancos al Debe contra ventas y débito fiscal al Haber), visiblemente integrados en el listado del Libro Diario.</li>
+  </ul>
+
+  <h4 class="subsection-title">B. Libro Mayor (Movimientos y Saldos por Cuenta Analítica)</h4>
+  <p>
+    Permite auditar el comportamiento de una cuenta contable analítica de último nivel:
+  </p>
+  <ol>
+    <li>
+      <strong>Cálculo del Saldo Anterior (Histórico):</strong> Antes de evaluar el rango de fechas consultado, el sistema calcula qué ocurrió con la cuenta desde el inicio de los tiempos hasta el día anterior a la fecha inicial:
+      <div class="formula">
+        Naturaleza Deudora (Activos, Costos, Gastos): Saldo Inicial = Σ(Debe Anterior) - Σ(Haber Anterior)<br>
+        Naturaleza Acreedora (Pasivos, Patrimonio, Ingresos): Saldo Inicial = Σ(Haber Anterior) - Σ(Debe Anterior)
+      </div>
+    </li>
+    <li>
+      <strong>Cálculo del Saldo Progresivo Línea a Línea:</strong> Conforme se recorre cada movimiento del periodo, el sistema acumula o descuenta los importes en función de la naturaleza, calculando el saldo exacto resultante después de cada transacción.
+    </li>
+    <li>
+      <strong>Optimización por Consultas en Lote (Batch):</strong> En vez de consultar la base de datos 100 veces para 100 cuentas (problema N+1), el backend ejecuta consultas agregadas por lotes (<code>sumSaldosAnterioresBatch</code> y <code>findMovimientosMayorBatch</code>), reduciendo el tiempo de respuesta de 3.5 segundos a menos de 45 ms.
+    </li>
+  </ol>
+
+  <!-- SECCIÓN 3: CU31 EN DETALLE -->
+  <div class="page-break"></div>
+  <h3 class="section-title">3. Funcionamiento Detallado de CU31: Información Financiera</h3>
+
+  <h4 class="subsection-title">A. Balance General (Situación Patrimonial y Ecuación Fundamental)</h4>
+  <p>
+    Representa el valor económico y las obligaciones de la empresa a una fecha exacta de corte:
+  </p>
+  <ul>
+    <li><strong>Estructura Jerárquica (Rollup):</strong> Los saldos acumulados de las cuentas de detalle (nivel 4 o 5) se consolidan hacia sus cuentas agrupadoras (Subgrupos, Grupos y Capítulos). Esto permite generar el balance a Nivel 1 (Capítulos: 1-Activo, 2-Pasivo, 3-Patrimonio), Nivel 2 o Nivel Completo.</li>
+    <li>
+      <strong>Incorporación Dinámica de la Utilidad del Ejercicio:</strong>
+      Para que el Balance cuadre sin haber cerrado el año contable, el sistema calcula dinámicamente la ganancia o pérdida acumulada (<code>Σ Ingresos - Σ Egresos</code> a la fecha de corte) y la suma al rubro de Patrimonio bajo la cuenta transitoria <em>"Resultado del Periodo"</em>.
+    </li>
+    <li>
+      <strong>Verificación Automática de la Ecuación Contable Fundamental:</strong>
+      <div class="formula">
+        Total Activo == Total Pasivo + Total Patrimonio (+ Utilidad del Ejercicio)
+      </div>
+      Si la diferencia matemática es 0.00, el sistema emite el indicador de <em>"Balance Cuadrado"</em>. Si existe discrepancia, alerta inmediatamente el valor descuadrado para auditoría.
+    </li>
+  </ul>
+
+  <h4 class="subsection-title">B. Estado de Resultados (Pérdidas y Ganancias)</h4>
+  <p>
+    Mide el desempeño operacional durante un intervalo de tiempo (gestión anual o mensual):
+  </p>
+  <ul>
+    <li>
+      <strong>Estructura Escalonada Estándar:</strong>
+      <ol>
+        <li><code>Ventas Netas (Ingresos Operativos) - Costo de Mercadería Vendida = <strong>Utilidad Bruta</strong></code></li>
+        <li><code>Utilidad Bruta - Gastos Operativos (Administrativos y de Comercialización) = <strong>Resultado de Operación</strong></code></li>
+        <li><code>Resultado de Operación ± Otros Ingresos y Egresos No Operativos = <strong>Utilidad Neta del Ejercicio</strong></code></li>
+      </ol>
+    </li>
+    <li>
+      <strong>Análisis Vertical Porcentual:</strong> Cada renglón de costo y gasto se divide entre los Ingresos Operativos Totales (base 100%). Esto permite a la gerencia saber con exactitud qué porcentaje de cada venta se destina a costo de mercadería, sueldos o servicios básicos.
+    </li>
+  </ul>
+
+  <!-- SECCIÓN 4: MODELADO UML EN ENTERPRISE ARCHITECT -->
+  <h3 class="section-title">4. Modelado Formal en Enterprise Architect (UML 2.1)</h3>
+  <table class="table-pink">
+    <thead>
+      <tr>
+        <th style="width: 25%;">Componente UML</th>
+        <th style="width: 40%;">Implementación en CU30 / CU31</th>
+        <th>Propósito Metodológico</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Diagrama de Clases y Tablas</strong></td>
+        <td>4 tablas entidad (<code>PeriodoContable</code>, <code>CuentaContable</code>, <code>AsientoContable</code>, <code>AsientoDetalle</code>) con atributos tipados privados y métodos de negocio. Clases de aplicación: Controllers, Services y Repositorios.</td>
+        <td>Muestra el modelo relacional, las restricciones de integridad y las operaciones provistas por cada capa.</td>
+      </tr>
+      <tr>
+        <td><strong>Simetría Clases-Secuencia</strong></td>
+        <td>Cada objeto de la secuencia es una instancia real (<code>ctrl</code>, <code>srv</code>, <code>repo</code>) y cada mensaje invocado es exactamente un método público declarado en el diagrama de clases.</td>
+        <td>Garantiza trazabilidad 100% y elimina informalidades como consultas SQL directas en el diagrama de secuencia.</td>
+      </tr>
+      <tr>
+        <td><strong>Fragmentos <code>alt</code> (Alternativas)</strong></td>
+        <td>Bifurcaciones para validación de fechas (<code>fechaInicio > fechaFin</code>), validación de cuentas de movimiento y verificación de si el balance está cuadrado.</td>
+        <td>Modela formalmente los flujos excepcionales (E1, E2, E3 de las especificaciones).</td>
+      </tr>
+      <tr>
+        <td><strong>Fragmentos <code>loop</code> (Bucles)</strong></td>
+        <td>Iteración de movimientos para cálculo progresivo en el Mayor, rollup jerárquico de cuentas y cálculo del análisis vertical.</td>
+        <td>Representa algoritmos internos de procesamiento de colecciones de datos sin romper la secuencia.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECCIÓN 5: GUION DE DEFENSA -->
+  <div class="page-break"></div>
+  <h3 class="section-title">5. Guion Estratégico de Defensa ante el Ingeniero (5 Minutos)</h3>
+  <p>
+    Sigue este orden cronológico durante tu presentación. Habla con tono pausado, profesional y seguro:
+  </p>
+
+  <div class="script-box">
+    <div class="script-step">
+      <em>1. Saludo y Contextualización (30 seg):</em><br>
+      "Buenos días, Ingeniero. Voy a presentar la especificación, diseño e implementación de dos casos de uso neurálgicos del módulo de Contabilidad y Finanzas: el <strong>CU30 (Consultar Libros Contables)</strong> y el <strong>CU31 (Consultar Información Financiera)</strong>. Ambos consolidan y auditan toda la información económica generada por las ventas, compras y operaciones del ERP, garantizando el cumplimiento estricto de la partida doble y la emisión de estados financieros oficiales."
+    </div>
+
+    <div class="script-step">
+      <em>2. Defensa de CU30 - Libros Contables (1.5 min):</em><br>
+      "En el <strong>CU30</strong>, el sistema implementa dos reportes indispensables para auditoría:
+      Primero, el <strong>Libro Diario</strong>, que expone cronológicamente cada comprobante con sus imputaciones contables. El sistema totaliza el Debe y el Haber comprobando que la sumatoria sea idéntica. Si un comprobante proviniese de una venta aprobada en el módulo comercial, aquí se observa reflejado automáticamente en estado mayorizado.
+      Segundo, el <strong>Libro Mayor</strong>, que permite auditar cuenta por cuenta. Nuestro backend realiza dos cálculos fundamentales: primero determina el <strong>Saldo Inicial histórico</strong> acumulado antes del periodo consultado basándose en la naturaleza contable (deudora o acreedora), y luego calcula el <strong>saldo progresivo</strong> movimiento por movimiento.
+      Para asegurar alto rendimiento, optimizamos las consultas mediante procesamiento en lote (Batch) e índices en base de datos, evitando cuellos de botella."
+    </div>
+
+    <div class="script-step">
+      <em>3. Defensa de CU31 - Información Financiera (1.5 min):</em><br>
+      "En el <strong>CU31</strong>, permitimos a la Gerencia General emitir los estados contables oficiales:
+      En el <strong>Balance General</strong>, aplicamos un algoritmo de <strong>Rollup Jerárquico</strong> que agrupa las cuentas de detalle hacia sus subgrupos y capítulos, permitiendo visualizar la estructura patrimonial a diferentes niveles de agregación. Además, el sistema calcula en tiempo real la <strong>Utilidad del Periodo</strong> restando ingresos menos egresos y sumándola al Patrimonio, validando que se cumpla la <strong>Ecuación Patrimonial Fundamental: Activo igual a Pasivo más Patrimonio</strong>.
+      En el <strong>Estado de Resultados</strong>, estructuramos de forma escalonada los Ingresos Operativos menos el Costo de Ventas para obtener la Utilidad Bruta, deducimos los Gastos de Operación y obtenemos la Utilidad Neta final, acompañada del <strong>análisis vertical porcentual</strong> para identificar qué rubros consumen más recursos."
+    </div>
+
+    <div class="script-step">
+      <em>4. Justificación del Modelado en Enterprise Architect (1 min):</em><br>
+      "En el diseño UML en Enterprise Architect cuidamos la <strong>simetría total</strong>: cada participante del diagrama de secuencia corresponde a una clase real de nuestra arquitectura por capas (Controller, Service, Repository), y cada mensaje es un método público formalmente declarado. Asimismo, incorporamos los fragmentos combinados estándar <strong>alt</strong> para las validaciones y <strong>loop</strong> para el cálculo iterativo de saldos."
+    </div>
+  </div>
+
+  <!-- SECCIÓN 6: BANCO DE PREGUNTAS TRAMPA -->
+  <h3 class="section-title">6. Banco de Preguntas Típicas del Docente y Respuestas Sugeridas</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 35%;">Pregunta Típica del Ingeniero</th>
+        <th>Respuesta Técnica Sugerida</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>¿Por qué en el Diagrama de Secuencia no colocaste un objeto para la Base de Datos con sentencias <code>SELECT</code>?</strong></td>
+        <td>"Porque en el estándar UML y en una arquitectura limpia orientada a objetos (Spring Boot / JPA), los servicios dialogan con interfaces Repository mediante métodos tipados como <code>findAll(spec)</code> o <code>sumSaldosAnterioresBatch()</code>. La base de datos es un medio de persistencia subyacente; poner sentencias SQL crudas violaría el encapsulamiento y el paradigma orientado a objetos."</td>
+      </tr>
+      <tr>
+        <td><strong>¿Cómo garantizan que las ventas realizadas en el sistema se reflejen en estos reportes?</strong></td>
+        <td>"Cada venta confirmada genera automáticamente un asiento contable de tipo <code>INGRESO</code> que se guarda en estado <code>MAYORIZADO</code>. Al consultar el Libro Diario o el Estado de Resultados, el motor JPA filtra todos los asientos mayorizados vigentes, incorporando de inmediato los débitos en caja/bancos y los créditos en ingresos por ventas."</td>
+      </tr>
+      <tr>
+        <td><strong>¿Qué ocurre si un usuario intenta consultar el Libro Mayor de una cuenta padre o de agrupación?</strong></td>
+        <td>"El sistema ejecuta la excepción E3 definida en el caso de uso: a través del atributo <code>permiteMovimiento</code> de la tabla <code>cuentas_contables</code>, el sistema verifica que la cuenta sea analítica de último nivel. Si es una cuenta de agrupación, el controlador rechaza la consulta notificando al usuario que solo las cuentas de movimiento admiten libro mayor individual."</td>
+      </tr>
+      <tr>
+        <td><strong>¿Cómo lograron que el Balance General cuadre si aún no se ha ejecutado el asiento de cierre anual?</strong></td>
+        <td>"Calculamos dinámicamente el resultado del ejercicio a la fecha de corte restando las cuentas de resultado (Ingresos - Gastos). Ese saldo neto se inyecta temporalmente en el bloque de Patrimonio bajo el concepto 'Resultado del Periodo', logrando que la ecuación <code>Activo = Pasivo + Patrimonio</code> cuadre matemáticamente sin necesidad de forzar un cierre contable definitivo."</td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

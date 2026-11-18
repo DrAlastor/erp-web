@@ -1,0 +1,412 @@
+<div class="financiera-container">
+
+  <!-- CABECERA PRINCIPAL -->
+  <header class="header-financiera">
+    <div class="header-titles">
+      <h2>📊 Consultar Información Financiera</h2>
+      <p>Generación oficial de Balance General (Situación Patrimonial) y Estado de Resultados (Pérdidas y Ganancias)</p>
+    </div>
+    <div class="header-actions no-print">
+      <button class="btn btn-secondary" (click)="imprimir()">
+        🖨️ Imprimir
+      </button>
+      <button class="btn btn-export" *ngIf="tabActiva === 'balance'" (click)="exportarBalanceCsv()">
+        📥 Exportar Balance (CSV)
+      </button>
+      <button class="btn btn-export" *ngIf="tabActiva === 'resultados'" (click)="exportarResultadosCsv()">
+        📥 Exportar Resultados (CSV)
+      </button>
+    </div>
+  </header>
+
+  <!-- PESTAÑAS PRINCIPALES -->
+  <nav class="nav-tabs no-print">
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'balance'"
+      (click)="cambiarTab('balance')"
+    >
+      ⚖️ Balance General
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'resultados'"
+      (click)="cambiarTab('resultados')"
+    >
+      📈 Estado de Resultados
+    </button>
+  </nav>
+
+  <!-- MENSAJES DE ERROR -->
+  <div class="alert alert-error" *ngIf="errorMensaje">
+    <span>⚠️ {{ errorMensaje }}</span>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- VISTA 1: BALANCE GENERAL                                       -->
+  <!-- ============================================================== -->
+  <section class="vista-content" *ngIf="tabActiva === 'balance'">
+
+    <!-- PANEL DE FILTROS -->
+    <div class="panel-filtros card no-print">
+      <div class="filtros-grid">
+        <div class="form-group">
+          <label>Gestión Fiscal</label>
+          <select [(ngModel)]="filtroBalance.gestion">
+            <option [ngValue]="null">Gestión Actual</option>
+            <option *ngFor="let g of gestiones" [ngValue]="g">{{ g }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Mes de Corte</label>
+          <select [(ngModel)]="filtroBalance.mesCorte">
+            <option [ngValue]="null">Al cierre de gestión (Anual)</option>
+            <option *ngFor="let m of meses" [ngValue]="m.valor">{{ m.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Específica de Corte (Opcional)</label>
+          <input type="date" [(ngModel)]="filtroBalance.fechaCorte" />
+        </div>
+
+        <div class="form-group">
+          <label>Nivel de Detalle</label>
+          <select [(ngModel)]="filtroBalance.nivel">
+            <option [ngValue]="1">Nivel 1 - Capítulos Principales</option>
+            <option [ngValue]="2">Nivel 2 - Grupos</option>
+            <option [ngValue]="3">Nivel 3 - Subgrupos</option>
+            <option [ngValue]="4">Nivel 4 - Cuentas Analíticas (Detalle)</option>
+          </select>
+        </div>
+
+        <div class="form-group btn-container">
+          <button class="btn btn-primary" (click)="consultarBalance()" [disabled]="cargando">
+            <span *ngIf="cargando">Cargando...</span>
+            <span *ngIf="!cargando">🔍 Generar Balance</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARJETAS RESUMEN DE ECUACIÓN PATRIMONIAL -->
+    <div class="kpi-grid" *ngIf="balanceData">
+      <div class="kpi-card card-activo">
+        <div class="kpi-label">TOTAL ACTIVO</div>
+        <div class="kpi-value">BOB {{ balanceData.cuadre.totalActivos | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Bienes, derechos y disponibilidades</div>
+      </div>
+
+      <div class="kpi-card card-pasivo">
+        <div class="kpi-label">TOTAL PASIVO</div>
+        <div class="kpi-value">BOB {{ balanceData.cuadre.totalPasivos | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Obligaciones con terceros</div>
+      </div>
+
+      <div class="kpi-card card-patrimonio">
+        <div class="kpi-label">TOTAL PATRIMONIO NETO</div>
+        <div class="kpi-value">BOB {{ balanceData.cuadre.totalPatrimonioNeto | number:'1.2-2' }}</div>
+        <div class="kpi-sub">
+          Capital (BOB {{ balanceData.cuadre.totalPatrimonioCuentas | number:'1.2-2' }}) + Utilidad (BOB {{ balanceData.cuadre.utilidadEjercicio | number:'1.2-2' }})
+        </div>
+      </div>
+
+      <div class="kpi-card" [class.card-cuadrado]="balanceData.cuadre.estaCuadrado" [class.card-descuadrado]="!balanceData.cuadre.estaCuadrado">
+        <div class="kpi-label">ECUACIÓN PATRIMONIAL</div>
+        <div class="kpi-badge">
+          {{ balanceData.cuadre.estaCuadrado ? '✓ BALANCE CUADRADO' : '⚠️ DESCUADRADO' }}
+        </div>
+        <div class="kpi-sub font-mono">
+          Activo = Pasivo + Patrimonio | Dif: BOB {{ balanceData.cuadre.diferencia | number:'1.2-2' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLAS DE BALANCE (ACTIVO / PASIVO Y PATRIMONIO) -->
+    <div class="balance-columnas" *ngIf="balanceData">
+
+      <!-- COLUMNA IZQUIERDA: ACTIVOS -->
+      <div class="card balance-seccion">
+        <div class="seccion-header header-activos">
+          <h3>1. ACTIVOS</h3>
+          <span class="total-badge">Total: BOB {{ balanceData.cuadre.totalActivos | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="tabla-scroll">
+          <table class="tabla-financiera">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Código</th>
+                <th style="width: 50%;">Nombre de la Cuenta</th>
+                <th style="width: 25%; text-align: right;">Saldo (BOB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let nodo of balanceData.activos">
+                <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: nodo }"></ng-container>
+              </ng-container>
+              <tr *ngIf="balanceData.activos.length === 0">
+                <td colspan="3" class="text-center text-muted">Sin cuentas de activo con saldo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: PASIVOS Y PATRIMONIO -->
+      <div class="balance-columna-derecha">
+
+        <!-- PASIVOS -->
+        <div class="card balance-seccion mb-4">
+          <div class="seccion-header header-pasivos">
+            <h3>2. PASIVOS</h3>
+            <span class="total-badge">Total: BOB {{ balanceData.cuadre.totalPasivos | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="tabla-scroll">
+            <table class="tabla-financiera">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Código</th>
+                  <th style="width: 50%;">Nombre de la Cuenta</th>
+                  <th style="width: 25%; text-align: right;">Saldo (BOB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let nodo of balanceData.pasivos">
+                  <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: nodo }"></ng-container>
+                </ng-container>
+                <tr *ngIf="balanceData.pasivos.length === 0">
+                  <td colspan="3" class="text-center text-muted">Sin pasivos registrados (BOB 0.00)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PATRIMONIO -->
+        <div class="card balance-seccion">
+          <div class="seccion-header header-patrimonio">
+            <h3>3. PATRIMONIO NETO</h3>
+            <span class="total-badge">Total: BOB {{ balanceData.cuadre.totalPatrimonioNeto | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="tabla-scroll">
+            <table class="tabla-financiera">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Código</th>
+                  <th style="width: 50%;">Nombre de la Cuenta</th>
+                  <th style="width: 25%; text-align: right;">Saldo (BOB)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let nodo of balanceData.patrimonio">
+                  <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: nodo }"></ng-container>
+                </ng-container>
+
+                <!-- LÍNEA ESPECIAL DE UTILIDAD DEL EJERCICIO -->
+                <tr class="fila-utilidad">
+                  <td class="font-mono"><strong>3.X</strong></td>
+                  <td><strong>Resultado del Ejercicio (Utilidad / Pérdida Neta)</strong></td>
+                  <td class="text-right font-mono" [class.text-green]="balanceData.cuadre.utilidadEjercicio >= 0" [class.text-red]="balanceData.cuadre.utilidadEjercicio < 0">
+                    <strong>BOB {{ balanceData.cuadre.utilidadEjercicio | number:'1.2-2' }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="total-cierre-pasivo-patrimonio">
+            <span>TOTAL PASIVO + PATRIMONIO NETO:</span>
+            <span class="font-mono font-bold">BOB {{ balanceData.cuadre.totalPasivoMasPatrimonio | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- VISTA 2: ESTADO DE RESULTADOS                                  -->
+  <!-- ============================================================== -->
+  <section class="vista-content" *ngIf="tabActiva === 'resultados'">
+
+    <!-- PANEL DE FILTROS -->
+    <div class="panel-filtros card no-print">
+      <div class="filtros-grid">
+        <div class="form-group">
+          <label>Gestión Fiscal</label>
+          <select [(ngModel)]="filtroResultados.gestion">
+            <option [ngValue]="null">Gestión Actual</option>
+            <option *ngFor="let g of gestiones" [ngValue]="g">{{ g }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Desde (Opcional)</label>
+          <input type="date" [(ngModel)]="filtroResultados.fechaInicio" />
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Hasta (Opcional)</label>
+          <input type="date" [(ngModel)]="filtroResultados.fechaFin" />
+        </div>
+
+        <div class="form-group">
+          <label>Nivel de Cuentas</label>
+          <select [(ngModel)]="filtroResultados.nivel">
+            <option [ngValue]="1">Nivel 1 - Capítulos</option>
+            <option [ngValue]="2">Nivel 2 - Grupos</option>
+            <option [ngValue]="3">Nivel 3 - Subgrupos</option>
+            <option [ngValue]="4">Nivel 4 - Cuentas Analíticas</option>
+          </select>
+        </div>
+
+        <div class="form-group btn-container">
+          <button class="btn btn-primary" (click)="consultarResultados()" [disabled]="cargando">
+            <span *ngIf="cargando">Cargando...</span>
+            <span *ngIf="!cargando">🔍 Generar Estado</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARJETAS DE RESULTADOS FINANCIEROS -->
+    <div class="kpi-grid" *ngIf="resultadosData">
+      <div class="kpi-card card-ingreso">
+        <div class="kpi-label">INGRESOS OPERATIVOS</div>
+        <div class="kpi-value">BOB {{ resultadosData.totalIngresosOperativos | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Base del análisis vertical (100%)</div>
+      </div>
+
+      <div class="kpi-card card-costo">
+        <div class="kpi-label">COSTO DE VENTAS</div>
+        <div class="kpi-value">BOB {{ resultadosData.totalCostoVentas | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Costo de mercadería vendida</div>
+      </div>
+
+      <div class="kpi-card card-bruta">
+        <div class="kpi-label">UTILIDAD BRUTA</div>
+        <div class="kpi-value">BOB {{ resultadosData.utilidadBruta | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Margen Bruto: {{ resultadosData.margenBrutoPorcentaje | number:'1.2-2' }}%</div>
+      </div>
+
+      <div class="kpi-card" [class.card-cuadrado]="resultadosData.utilidadNeta >= 0" [class.card-descuadrado]="resultadosData.utilidadNeta < 0">
+        <div class="kpi-label">UTILIDAD NETA DEL PERIODO</div>
+        <div class="kpi-value">BOB {{ resultadosData.utilidadNeta | number:'1.2-2' }}</div>
+        <div class="kpi-sub">Margen Neto: {{ resultadosData.margenNetoPorcentaje | number:'1.2-2' }}%</div>
+      </div>
+    </div>
+
+    <!-- RESUMEN ESCALONADO OFICIAL -->
+    <div class="card mb-4" *ngIf="resultadosData">
+      <div class="seccion-header header-escalonado">
+        <h3>Estructura Escalonada de Pérdidas y Ganancias ({{ resultadosData.periodoNombre }})</h3>
+      </div>
+
+      <div class="tabla-scroll">
+        <table class="tabla-escalonada">
+          <thead>
+            <tr>
+              <th style="width: 60%;">Concepto / Rubro</th>
+              <th style="width: 20%; text-align: right;">Importe (BOB)</th>
+              <th style="width: 20%; text-align: right;">% Análisis Vertical</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of resultadosData.resumenEscalonado" [class.fila-resaltada]="r.clave.includes('UTILIDAD') || r.clave.includes('RESULTADO')">
+              <td class="font-bold">{{ r.titulo }}</td>
+              <td class="text-right font-mono" [class.font-bold]="r.clave.includes('UTILIDAD')">
+                BOB {{ r.monto | number:'1.2-2' }}
+              </td>
+              <td class="text-right font-mono text-muted">
+                {{ r.porcentajeVertical | number:'1.2-2' }}%
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DESGLOSE DETALLADO DE CUENTAS DE INGRESO Y EGRESO -->
+    <div class="balance-columnas" *ngIf="resultadosData">
+
+      <!-- DETALLE DE INGRESOS -->
+      <div class="card balance-seccion">
+        <div class="seccion-header header-ingreso">
+          <h3>4. Desglose de Ingresos</h3>
+          <span class="total-badge">BOB {{ resultadosData.totalIngresosOperativos | number:'1.2-2' }}</span>
+        </div>
+        <div class="tabla-scroll">
+          <table class="tabla-financiera">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Código</th>
+                <th style="width: 45%;">Nombre de Cuenta</th>
+                <th style="width: 15%; text-align: center;">Nivel</th>
+                <th style="width: 15%; text-align: right;">Saldo (BOB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let nodo of resultadosData.detalleIngresos">
+                <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: nodo }"></ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DETALLE DE EGRESOS -->
+      <div class="card balance-seccion">
+        <div class="seccion-header header-egreso">
+          <h3>5. Desglose de Costos y Egresos</h3>
+          <span class="total-badge">BOB {{ (resultadosData.totalCostoVentas + resultadosData.totalGastosOperativos) | number:'1.2-2' }}</span>
+        </div>
+        <div class="tabla-scroll">
+          <table class="tabla-financiera">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Código</th>
+                <th style="width: 45%;">Nombre de Cuenta</th>
+                <th style="width: 15%; text-align: center;">Nivel</th>
+                <th style="width: 15%; text-align: right;">Saldo (BOB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let nodo of resultadosData.detalleEgresos">
+                <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: nodo }"></ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- TEMPLATE RECURSIVO PARA RENDERIZAR CUENTAS EN ÁRBOL -->
+<ng-template #nodoTemplate let-nodo="nodo">
+  <tr [class.fila-padre]="!nodo.permiteMovimiento" [class.fila-detalle]="nodo.permiteMovimiento">
+    <td class="col-codigo font-mono" [style.padding-left.rem]="(nodo.nivel - 1) * 1.1 + 0.5">
+      <span class="codigo-badge">{{ nodo.codigo }}</span>
+    </td>
+    <td class="col-nombre" [style.padding-left.rem]="(nodo.nivel - 1) * 0.8">
+      <span [class.font-bold]="!nodo.permiteMovimiento">{{ nodo.nombre }}</span>
+    </td>
+    <td class="col-nivel text-center text-muted" *ngIf="tabActiva === 'resultados'">
+      N{{ nodo.nivel }}
+    </td>
+    <td class="col-saldo text-right font-mono" [class.font-bold]="!nodo.permiteMovimiento">
+      BOB {{ nodo.saldo | number:'1.2-2' }}
+    </td>
+  </tr>
+  <ng-container *ngFor="let hijo of nodo.subcuentas">
+    <ng-container *ngTemplateOutlet="nodoTemplate; context: { nodo: hijo }"></ng-container>
+  </ng-container>
+</ng-template>

@@ -147,6 +147,10 @@
       <app-asientos-contables />
       } @else if (fn.id === 'cuentas-por-cobrar-y-cobros' || fn.id === 'cu29-cuentas-por-cobrar-y-cobros') {
       <app-cuentas-por-cobrar />
+      } @else if (fn.id === 'consultar-libros-contables' || fn.slug === 'consultar-libros-contables') {
+      <app-libros-contables />
+      } @else if (fn.id === 'consultar-informacion-financiera' || fn.slug === 'consultar-informacion-financiera') {
+      <app-informacion-financiera />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

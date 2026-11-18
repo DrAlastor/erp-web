@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<xmi:Documentation exporter="Enterprise Architect" exporterVersion="6.5"/>
+	<uml:Model xmi:type="uml:Model" name="EA_Model" visibility="public">
+		<packagedElement xmi:type="uml:Package" xmi:id="EAPK_CU31_FINANCIERA" name="CU31 - Consultar Informacion Financiera" visibility="public">
+			<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT_31_G" name="Gerente General" visibility="public"/>
+			<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT_31_C" name="Contador" visibility="public"/>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_PERIODO" name="PeriodoContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_2" name="gestion: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_3" name="mes: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_4" name="nombre: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_5" name="fechaInicio: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_6" name="fechaFin: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_7" name="estado: EstadoPeriodo" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_8" name="fechaCierre: LocalDateTime" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="estaAbierto()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="cerrarPeriodo()" visibility="public">
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="contieneFecha(fecha)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_1" name="fecha"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_CUENTA" name="CuentaContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_2" name="codigo: String [UK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_3" name="nombre: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_4" name="nivel: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_5" name="tipo: TipoCuenta" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_6" name="naturaleza: NaturalezaCuenta" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_7" name="permiteMovimiento: Boolean" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_8" name="padreId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_9" name="activo: Boolean" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="esDeudora()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="esAcreedora()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="calcularSaldoNeto(debe, haber)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_D" name="debe"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_H" name="haber"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="esCuentaMovimiento()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_ASIENTO" name="AsientoContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_2" name="numeroAsiento: String [UK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_3" name="fecha: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_4" name="periodoId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_5" name="tipoAsiento: TipoAsiento" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_6" name="glosa: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_7" name="totalDebe: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_8" name="totalHaber: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_9" name="estado: EstadoAsiento" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="verificarPartidaDoble()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="mayorizar()" visibility="public">
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="anular(motivo)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_M" name="motivo"/>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_DETALLE" name="AsientoDetalle" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_2" name="asientoId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_3" name="cuentaContableId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_4" name="glosa: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_5" name="debe: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_6" name="haber: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="getImporteNeto()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="esMovimientoDebe()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="esMovimientoHaber()" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU31_CTRL" name="InformacionFinancieraController" visibility="public">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_FC_1" name="- finanzasService: InformacionFinancieraService" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_1" name="obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_G1" name="gestion"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_2" name="obtenerEstadoResultados(gestion, inicio, fin, nivel)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_G2" name="gestion"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_3" name="exportarBalanceGeneralCsv(gestion, fechaCorte)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_4" name="exportarEstadoResultadosCsv(gestion, inicio, fin)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU31_SRV" name="InformacionFinancieraServiceImpl" visibility="public">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_FS_1" name="- finanzasRepo: InformacionFinancieraRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_FS_2" name="- cuentaRepo: CuentaContableRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_1" name="generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_2" name="generarEstadoResultados(gestion, inicio, fin, nivel)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_3" name="calcularSaldoRollupJerarquico(saldos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_4" name="calcularUtilidadEjercicio(ingresos, egresos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_5" name="validarEcuacionPatrimonial(activo, pasivo, patrimonio)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_5_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_6" name="marcarBalanceCuadrado(estado)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_6_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_7" name="calcularEstructuraEscalonada(movimientos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_7_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_8" name="calcularAnalisisVertical(ingresos, costos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_8_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU31_REPO" name="InformacionFinancieraRepository" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_1" name="obtenerSaldosAcumuladosAFecha(fechaCorte)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FR_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_2" name="obtenerMovimientosPeriodo(inicio, fin)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FR_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_PERIODO_ASIENTO" name="registra">
+				<memberEnd xmi:idref="ASSOC_PERIODO_ASIENTO_src"/>
+				<memberEnd xmi:idref="ASSOC_PERIODO_ASIENTO_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_PERIODO_ASIENTO_src" name="periodoContable" type="EAID_TB_PERIODO" association="ASSOC_PERIODO_ASIENTO"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_PERIODO_ASIENTO_tgt" name="asientos" type="EAID_TB_ASIENTO" association="ASSOC_PERIODO_ASIENTO"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_ASIENTO_DETALLE" name="compuesto_por">
+				<memberEnd xmi:idref="ASSOC_ASIENTO_DETALLE_src"/>
+				<memberEnd xmi:idref="ASSOC_ASIENTO_DETALLE_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_ASIENTO_DETALLE_src" name="asientoContable" type="EAID_TB_ASIENTO" association="ASSOC_ASIENTO_DETALLE"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_ASIENTO_DETALLE_tgt" name="detalles" type="EAID_TB_DETALLE" association="ASSOC_ASIENTO_DETALLE"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CUENTA_DETALLE" name="imputada_en">
+				<memberEnd xmi:idref="ASSOC_CUENTA_DETALLE_src"/>
+				<memberEnd xmi:idref="ASSOC_CUENTA_DETALLE_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_DETALLE_src" name="cuentaContable" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_DETALLE"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_DETALLE_tgt" name="asientoDetalles" type="EAID_TB_DETALLE" association="ASSOC_CUENTA_DETALLE"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CUENTA_SUBGRUPO" name="subcuentas">
+				<memberEnd xmi:idref="ASSOC_CUENTA_SUBGRUPO_src"/>
+				<memberEnd xmi:idref="ASSOC_CUENTA_SUBGRUPO_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_SUBGRUPO_src" name="padre" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_SUBGRUPO"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_SUBGRUPO_tgt" name="hijos" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_SUBGRUPO"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CU31_CTRL_SRV" name="delegatesTo">
+				<memberEnd xmi:idref="ASSOC_CU31_CTRL_SRV_src"/>
+				<memberEnd xmi:idref="ASSOC_CU31_CTRL_SRV_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU31_CTRL_SRV_src" name="controller" type="EAID_CU31_CTRL" association="ASSOC_CU31_CTRL_SRV"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU31_CTRL_SRV_tgt" name="service" type="EAID_CU31_SRV" association="ASSOC_CU31_CTRL_SRV"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CU31_SRV_REPO" name="queries">
+				<memberEnd xmi:idref="ASSOC_CU31_SRV_REPO_src"/>
+				<memberEnd xmi:idref="ASSOC_CU31_SRV_REPO_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU31_SRV_REPO_src" name="service" type="EAID_CU31_SRV" association="ASSOC_CU31_SRV_REPO"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU31_SRV_REPO_tgt" name="repository" type="EAID_CU31_REPO" association="ASSOC_CU31_SRV_REPO"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU31_BALANCE" name="Diagrama de Secuencia - CU31 Balance General">
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B1" name="g: Gerente General"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B2" name="ctrl: InformacionFinancieraController"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B3" name="srv: InformacionFinancieraServiceImpl"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B4" name="repo: InformacionFinancieraRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_B_LOOP" name="loop [Rollup Jerarquico de Cuentas]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_L1_spec" value="Para cada cuenta en arbol jerarquico"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_B_ALT" name="alt [Ecuacion Patrimonial]" interactionOperator="alt">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_1_spec" value="Activo == Pasivo + Patrimonio + Utilidad"/>
+						</guard>
+					</operand>
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_2">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_2_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_2_spec" value="else: Descuadre patrimonial"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_send" covered="LL_31_B1"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_recv" covered="LL_31_B2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B1" name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" sendEvent="M_31_B1_send" receiveEvent="M_31_B1_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B2_send" covered="LL_31_B2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B2_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B2" name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" sendEvent="M_31_B2_send" receiveEvent="M_31_B2_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B3_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B3_recv" covered="LL_31_B4"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B3" name="3: obtenerSaldosAcumuladosAFecha(fechaCorte)" sendEvent="M_31_B3_send" receiveEvent="M_31_B3_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B4_send" covered="LL_31_B4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B4_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B4" name="4: saldosCuentas" sendEvent="M_31_B4_send" receiveEvent="M_31_B4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B5" name="5: calcularSaldoRollupJerarquico(saldos)" sendEvent="M_31_B5_send" receiveEvent="M_31_B5_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B6_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B6_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B6" name="6: calcularUtilidadEjercicio(ingresos, egresos)" sendEvent="M_31_B6_send" receiveEvent="M_31_B6_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B7_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B7_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B7" name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" sendEvent="M_31_B7_send" receiveEvent="M_31_B7_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B8" name="8: marcarBalanceCuadrado(true)" sendEvent="M_31_B8_send" receiveEvent="M_31_B8_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_recv" covered="LL_31_B2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B9" name="9: balanceGeneralResponse" sendEvent="M_31_B9_send" receiveEvent="M_31_B9_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_send" covered="LL_31_B2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_recv" covered="LL_31_B1"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B10" name="10: 200 OK (balanceGeneralResponse)" sendEvent="M_31_B10_send" receiveEvent="M_31_B10_recv" messageSort="reply"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU31_RESULTADOS" name="Diagrama de Secuencia - CU31 Estado de Resultados">
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R1" name="g: Gerente General"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R2" name="ctrl: InformacionFinancieraController"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R3" name="srv: InformacionFinancieraServiceImpl"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R4" name="repo: InformacionFinancieraRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_R_LOOP" name="loop [Analisis Vertical Porcentual]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_R_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_R_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_R_L1_spec" value="Para cada cuenta de costo y gasto"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_send" covered="LL_31_R1"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_recv" covered="LL_31_R2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R1" name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" sendEvent="M_31_R1_send" receiveEvent="M_31_R1_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R2_send" covered="LL_31_R2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R2_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R2" name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" sendEvent="M_31_R2_send" receiveEvent="M_31_R2_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R3_send" covered="LL_31_R3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R3_recv" covered="LL_31_R4"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R3" name="3: obtenerMovimientosPeriodo(inicio, fin)" sendEvent="M_31_R3_send" receiveEvent="M_31_R3_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R4_send" covered="LL_31_R4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R4_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R4" name="4: movimientosPeriodo" sendEvent="M_31_R4_send" receiveEvent="M_31_R4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_send" covered="LL_31_R3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R5" name="5: calcularEstructuraEscalonada(movimientos)" sendEvent="M_31_R5_send" receiveEvent="M_31_R5_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R6_send" covered="LL_31_R3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R6_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R6" name="6: calcularAnalisisVertical(ingresos, costos)" sendEvent="M_31_R6_send" receiveEvent="M_31_R6_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R7_send" covered="LL_31_R3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R7_recv" covered="LL_31_R2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R7" name="7: estadoResultadosResponse" sendEvent="M_31_R7_send" receiveEvent="M_31_R7_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_send" covered="LL_31_R2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_recv" covered="LL_31_R1"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R8" name="8: 200 OK (estadoResultadosResponse)" sendEvent="M_31_R8_send" receiveEvent="M_31_R8_recv" messageSort="reply"/>
+			</packagedElement>
+		</packagedElement>
+	</uml:Model>
+	<xmi:Extension extender="Enterprise Architect" extenderID="6.5">
+		<elements>
+			<element xmi:idref="EAPK_CU31_FINANCIERA" name="CU31 - Consultar Informacion Financiera" scope="public">
+				<model package2="EAPK_CU31_FINANCIERA" package="EAPK_CU31_FINANCIERA" tpos="0" ea_eleType="package"/>
+				<properties isSpecification="false" sType="Package" nType="0" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_ACT_31_G" name="Gerente General" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Actor" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_ACT_31_C" name="Contador" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Actor" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_PERIODO" name="PeriodoContable" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_CUENTA" name="CuentaContable" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_ASIENTO" name="AsientoContable" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_DETALLE" name="AsientoDetalle" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU31_CTRL" name="InformacionFinancieraController" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU31_SRV" name="InformacionFinancieraServiceImpl" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU31_REPO" name="InformacionFinancieraRepository" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B1" name="g: Gerente General" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B2" name="ctrl: InformacionFinancieraController" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B3" name="srv: InformacionFinancieraServiceImpl" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B4" name="repo: InformacionFinancieraRepository" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_31_B_LOOP" name="loop [Rollup Jerarquico de Cuentas]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_31_B_ALT" name="alt [Ecuacion Patrimonial]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="alt" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R1" name="g: Gerente General" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R2" name="ctrl: InformacionFinancieraController" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R3" name="srv: InformacionFinancieraServiceImpl" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R4" name="repo: InformacionFinancieraRepository" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_31_R_LOOP" name="loop [Analisis Vertical Porcentual]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
+			</element>
+		</elements>
+		<packages>
+			<package xmi:id="EAPK_CU31_FINANCIERA" name="CU31 - Consultar Informacion Financiera">
+				<properties name="CU31 - Consultar Informacion Financiera" scope="public"/>
+			</package>
+		</packages>
+		<connectors>
+			<connector xmi:idref="ASSOC_PERIODO_ASIENTO">
+				<source xmi:idref="EAID_TB_PERIODO">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_ASIENTO">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_ASIENTO_DETALLE">
+				<source xmi:idref="EAID_TB_ASIENTO">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_DETALLE">
+					<type multiplicity="2..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CUENTA_DETALLE">
+				<source xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_DETALLE">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CUENTA_SUBGRUPO">
+				<source xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="0..1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CU31_CTRL_SRV">
+				<source xmi:idref="EAID_CU31_CTRL">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_CU31_SRV">
+					<type multiplicity="1" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CU31_SRV_REPO">
+				<source xmi:idref="EAID_CU31_SRV">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_CU31_REPO">
+					<type multiplicity="1" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="M_31_B1">
+				<source xmi:idref="LL_31_B1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B2">
+				<source xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B3">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B4">
+					<model type="Sequence"/>
+				</target>
+				<properties name="3: obtenerSaldosAcumuladosAFecha(fechaCorte)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B4">
+				<source xmi:idref="LL_31_B4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: saldosCuentas" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B5">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="5: calcularSaldoRollupJerarquico(saldos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=620;PtEndY=-280;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B6">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="6: calcularUtilidadEjercicio(ingresos, egresos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="6" style="PtStartX=580;PtStartY=-300;PtEndX=620;PtEndY=-320;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B7">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=620;PtEndY=-360;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B8">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="8: marcarBalanceCuadrado(true)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="8" style="PtStartX=580;PtStartY=-380;PtEndX=620;PtEndY=-400;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B9">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="9: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="9" style="PtStartX=580;PtStartY=-420;PtEndX=360;PtEndY=-420;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B10">
+				<source xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="10: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="10" style="PtStartX=360;PtStartY=-460;PtEndX=140;PtEndY=-460;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_R1">
+				<source xmi:idref="LL_31_R1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R2">
+				<source xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R3">
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R4">
+					<model type="Sequence"/>
+				</target>
+				<properties name="3: obtenerMovimientosPeriodo(inicio, fin)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R4">
+				<source xmi:idref="LL_31_R4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: movimientosPeriodo" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R5">
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="5: calcularEstructuraEscalonada(movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=620;PtEndY=-280;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R6">
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="6: calcularAnalisisVertical(ingresos, costos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="6" style="PtStartX=580;PtStartY=-300;PtEndX=620;PtEndY=-320;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R7">
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="7: estadoResultadosResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=360;PtEndY=-340;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+			<connector xmi:idref="M_31_R8">
+				<source xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="8: 200 OK (estadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="8" style="PtStartX=360;PtStartY=-380;PtEndX=140;PtEndY=-380;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
+			</connector>
+		</connectors>
+		<diagrams>
+			<diagram xmi:id="EAID_DIAG_CLASS_EAPK_CU31_FINANCIERA">
+				<model package="EAPK_CU31_FINANCIERA" owner="EAPK_CU31_FINANCIERA"/>
+				<properties name="Diagrama de Base de Datos y Clases - CU31 - Consultar Informacion Financiera" type="Logical"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="EAID_TB_PERIODO" seq="1" geometry="Left=50;Top=50;Right=330;Bottom=366;"/>
+					<element subject="EAID_TB_CUENTA" seq="2" geometry="Left=370;Top=50;Right=650;Bottom=408;"/>
+					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
+					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
+					<element subject="EAID_CU31_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
+					<element subject="EAID_CU31_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=686;"/>
+					<element subject="EAID_CU31_REPO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=514;"/>
+				</elements>
+			</diagram>
+			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU31_BALANCE">
+				<model package="EAPK_CU31_FINANCIERA" owner="EAPK_CU31_FINANCIERA"/>
+				<properties name="Diagrama de Secuencia - CU31 Balance General" type="Sequence"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="LL_31_B1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=660;"/>
+					<element subject="LL_31_B2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=660;"/>
+					<element subject="LL_31_B3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=660;"/>
+					<element subject="LL_31_B4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=660;"/>
+					<element subject="FRAG_31_B_LOOP" seq="5" geometry="Left=240;Top=210;Right=860;Bottom=270;"/>
+					<element subject="FRAG_31_B_ALT" seq="6" geometry="Left=40;Top=310;Right=880;Bottom=440;"/>
+				</elements>
+			</diagram>
+			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU31_RESULTADOS">
+				<model package="EAPK_CU31_FINANCIERA" owner="EAPK_CU31_FINANCIERA"/>
+				<properties name="Diagrama de Secuencia - CU31 Estado de Resultados" type="Sequence"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="LL_31_R1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=570;"/>
+					<element subject="LL_31_R2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=570;"/>
+					<element subject="LL_31_R3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=570;"/>
+					<element subject="LL_31_R4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=570;"/>
+					<element subject="FRAG_31_R_LOOP" seq="5" geometry="Left=240;Top=250;Right=860;Bottom=330;"/>
+				</elements>
+			</diagram>
+		</diagrams>
+	</xmi:Extension>
+</xmi:XMI>

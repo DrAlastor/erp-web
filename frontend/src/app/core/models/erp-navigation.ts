@@ -74,8 +74,8 @@ export const ERP_MODULES: ErpModule[] = [
       { id: 'asientos-contables', slug: 'asientos-contables', name: 'Gestionar Asientos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CONTADOR', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] },
       { id: 'integracion-contable-automatica', slug: 'integracion-contable-automatica', name: 'Integración Contable Automática', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
       { id: 'cuentas-por-cobrar-y-cobros', slug: 'cuentas-por-cobrar-y-cobros', name: 'Gestionar Cuentas por Cobrar y Cobros', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO', 'CONTADOR', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] },
-      { id: 'consultar-libros-contables', slug: 'consultar-libros-contables', name: 'Consultar Libros Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'consultar-informacion-financiera', slug: 'consultar-informacion-financiera', name: 'Consultar Información Financiera', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] }
+      { id: 'consultar-libros-contables', slug: 'consultar-libros-contables', name: 'Consultar Libros Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CONTADOR', 'GERENTE'] },
+      { id: 'consultar-informacion-financiera', slug: 'consultar-informacion-financiera', name: 'Consultar Información Financiera', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CONTADOR', 'GERENTE'] }
     ]
   },
   {
