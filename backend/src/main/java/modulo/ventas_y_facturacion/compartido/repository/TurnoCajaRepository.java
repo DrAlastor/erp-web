@@ -16,8 +16,6 @@ public interface TurnoCajaRepository extends JpaRepository<TurnoCaja, Long> {
 
     List<TurnoCaja> findByEstadoOrderByFechaAperturaDesc(String estado);
 
-    Optional<TurnoCaja> findFirstByCajeroIdAndEstadoOrderByFechaAperturaDesc(Long cajeroId, String estado);
-
     Optional<TurnoCaja> findFirstBySucursalIdAndCajeroIdAndEstadoOrderByFechaAperturaDesc(
             Integer sucursalId, Long cajeroId, String estado);
 
