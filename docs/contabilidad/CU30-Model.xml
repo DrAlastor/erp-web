@@ -29,14 +29,14 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_8" name="fechaCierre: LocalDateTime" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="+ estaAbierto(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="estaAbierto()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="+ cerrarPeriodo(): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="cerrarPeriodo()" visibility="public">
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="+ contieneFecha(fecha: LocalDate): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="contieneFecha(fecha)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_1" name="fecha"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
@@ -71,24 +71,24 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_9" name="activo: Boolean" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="+ esDeudora(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="esDeudora()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="+ esAcreedora(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="esAcreedora()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="+ calcularSaldoNeto(debe: BigDecimal, haber: BigDecimal): BigDecimal" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="calcularSaldoNeto(debe, haber)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_D" name="debe"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_H" name="haber"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="+ esCuentaMovimiento(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="esCuentaMovimiento()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_4_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
@@ -122,14 +122,14 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_9" name="estado: EstadoAsiento" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="+ verificarPartidaDoble(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="verificarPartidaDoble()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="+ mayorizar(): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="mayorizar()" visibility="public">
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="+ anular(motivo: String): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="anular(motivo)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_M" name="motivo"/>
 				</ownedOperation>
 			</packagedElement>
@@ -152,17 +152,17 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_6" name="haber: BigDecimal" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="+ getImporteNeto(): BigDecimal" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="getImporteNeto()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="+ esMovimientoDebe(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="esMovimientoDebe()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="+ esMovimientoHaber(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="esMovimientoHaber()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
@@ -172,25 +172,25 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LC_1" name="- librosService: LibrosContablesService" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_1" name="+ consultarLibroDiario(filtro: FiltroDiarioDTO): ResponseEntity<LibroDiarioResponse>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_1" name="consultarLibroDiario(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F1" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_2" name="+ consultarLibroMayor(filtro: FiltroMayorDTO): ResponseEntity<LibroMayorResponse>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_2" name="consultarLibroMayor(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F2" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_3" name="+ exportarDiarioCsv(filtro: FiltroDiarioDTO): ResponseEntity<byte[]>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_3" name="exportarDiarioCsv(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F3" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_4" name="+ exportarMayorCsv(filtro: FiltroMayorDTO): ResponseEntity<byte[]>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_4" name="exportarMayorCsv(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F4" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_4_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
@@ -210,44 +210,54 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LS_4" name="- cuentaRepo: CuentaContableRepository" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_1" name="+ obtenerLibroDiario(filtro: FiltroDiarioDTO): LibroDiarioResponse" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_1" name="obtenerLibroDiario(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S1" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_2" name="+ obtenerLibroMayor(filtro: FiltroMayorDTO): LibroMayorResponse" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_2" name="obtenerLibroMayor(filtro)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S2" name="filtro"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_3" name="+ calcularSaldoInicial(cuentaId: Long, fecha: LocalDate): BigDecimal" visibility="public">
-					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S3" name="cuentaId"/>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_3" name="calcularTotalesYCuadre(asientos)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_4" name="+ exportarLibroDiarioCsv(filtro: FiltroDiarioDTO): byte[]" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_4" name="calcularSaldoProgresivo(saldos, movimientos)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_5" name="calcularSaldoInicial(cuentaId, fecha)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S3" name="cuentaId"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_5_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_6" name="exportarLibroDiarioCsv(filtro)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_6_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_REPO_DIARIO" name="LibroDiarioRepository" visibility="public">
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RDI_1" name="+ findAll(spec: Specification<AsientoContable>, sort: Sort): List<AsientoContable>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RDI_1" name="findAll(spec)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RDI_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_REPO_MAYOR" name="LibroMayorRepository" visibility="public">
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_1" name="+ sumSaldosAnterioresBatch(fechaInicio: LocalDate): List<Object[]>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_1" name="sumSaldosAnterioresBatch(fechaInicio)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RMA_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_2" name="+ findMovimientosMayorBatch(inicio: LocalDate, fin: LocalDate): List<AsientoDetalle>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_2" name="findMovimientosMayorBatch(fechaInicio, fechaFin)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RMA_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
@@ -299,81 +309,61 @@
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D1" name="c: Contador"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D2" name="ctrl: LibrosContablesController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D3" name="srv: LibrosContablesServiceImpl"/>
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D4" name="repo: LibroDiarioRepository"/>
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D5" name="db: BaseDeDatosPostgreSQL"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D4" name="repoDiario: LibroDiarioRepository"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_send" covered="LL_30_D1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_recv" covered="LL_30_D2"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D1" name="1: consultarLibroDiario(periodoId, desde, hasta, tipo, estado)" sendEvent="M_30_D1_send" receiveEvent="M_30_D1_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D1" name="1: consultarLibroDiario(filtro)" sendEvent="M_30_D1_send" receiveEvent="M_30_D1_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D2_send" covered="LL_30_D2"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D2_recv" covered="LL_30_D3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D2" name="2: obtenerLibroDiario(filtroDiarioDTO)" sendEvent="M_30_D2_send" receiveEvent="M_30_D2_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D2" name="2: obtenerLibroDiario(filtro)" sendEvent="M_30_D2_send" receiveEvent="M_30_D2_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D3_send" covered="LL_30_D3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D3_recv" covered="LL_30_D4"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D3" name="3: findAll(specLibroDiario, sortFechaAsc)" sendEvent="M_30_D3_send" receiveEvent="M_30_D3_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D3" name="3: findAll(spec)" sendEvent="M_30_D3_send" receiveEvent="M_30_D3_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D4_send" covered="LL_30_D4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D4_recv" covered="LL_30_D5"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D4" name="4: SELECT * FROM asientos_contables JOIN asiento_detalles" sendEvent="M_30_D4_send" receiveEvent="M_30_D4_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_send" covered="LL_30_D5"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_recv" covered="LL_30_D4"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D5" name="5: return ResultSet (asientos con detalles)" sendEvent="M_30_D5_send" receiveEvent="M_30_D5_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_send" covered="LL_30_D4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_recv" covered="LL_30_D3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D6" name="6: return List<AsientoContable>" sendEvent="M_30_D6_send" receiveEvent="M_30_D6_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_send" covered="LL_30_D3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_recv" covered="LL_30_D3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D7" name="7: calcularTotalesYValidarCuadre(totalDebe, totalHaber)" sendEvent="M_30_D7_send" receiveEvent="M_30_D7_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_send" covered="LL_30_D3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_recv" covered="LL_30_D2"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D8" name="8: return LibroDiarioResponse (asientos, totalDebe, totalHaber, balanceado)" sendEvent="M_30_D8_send" receiveEvent="M_30_D8_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D9_send" covered="LL_30_D2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D9_recv" covered="LL_30_D1"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D9" name="9: 200 OK HTTP (JSON LibroDiarioResponse)" sendEvent="M_30_D9_send" receiveEvent="M_30_D9_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D4_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D4" name="4: listaAsientos" sendEvent="M_30_D4_send" receiveEvent="M_30_D4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D5" name="5: calcularTotalesYCuadre(asientos)" sendEvent="M_30_D5_send" receiveEvent="M_30_D5_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_recv" covered="LL_30_D2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D6" name="6: libroDiarioResponse" sendEvent="M_30_D6_send" receiveEvent="M_30_D6_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_send" covered="LL_30_D2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_recv" covered="LL_30_D1"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D7" name="7: 200 OK (libroDiarioResponse)" sendEvent="M_30_D7_send" receiveEvent="M_30_D7_recv" messageSort="reply"/>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU30_MAYOR" name="Diagrama de Secuencia - CU30 Libro Mayor">
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M1" name="c: Contador"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M2" name="ctrl: LibrosContablesController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M3" name="srv: LibrosContablesServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M4" name="repoMayor: LibroMayorRepository"/>
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M5" name="db: BaseDeDatosPostgreSQL"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_send" covered="LL_30_M1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_recv" covered="LL_30_M2"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M1" name="1: consultarLibroMayor(cuentaId, periodoId, desde, hasta)" sendEvent="M_30_M1_send" receiveEvent="M_30_M1_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M1" name="1: consultarLibroMayor(filtro)" sendEvent="M_30_M1_send" receiveEvent="M_30_M1_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M2_send" covered="LL_30_M2"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M2_recv" covered="LL_30_M3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M2" name="2: obtenerLibroMayor(filtroMayorDTO)" sendEvent="M_30_M2_send" receiveEvent="M_30_M2_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M2" name="2: obtenerLibroMayor(filtro)" sendEvent="M_30_M2_send" receiveEvent="M_30_M2_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M3_send" covered="LL_30_M3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M3_recv" covered="LL_30_M4"/>
 				<message xmi:type="uml:Message" xmi:id="M_30_M3" name="3: sumSaldosAnterioresBatch(fechaInicio)" sendEvent="M_30_M3_send" receiveEvent="M_30_M3_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M4_send" covered="LL_30_M4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M4_recv" covered="LL_30_M5"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M4" name="4: SELECT cta_id, SUM(debe), SUM(haber) WHERE fecha < fechaInicio" sendEvent="M_30_M4_send" receiveEvent="M_30_M4_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M5_send" covered="LL_30_M5"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M4_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M4" name="4: saldosAnteriores" sendEvent="M_30_M4_send" receiveEvent="M_30_M4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M5_send" covered="LL_30_M3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M5_recv" covered="LL_30_M4"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M5" name="5: return ResultSet saldos acumulados batch" sendEvent="M_30_M5_send" receiveEvent="M_30_M5_recv" messageSort="reply"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M5" name="5: findMovimientosMayorBatch(fechaInicio, fechaFin)" sendEvent="M_30_M5_send" receiveEvent="M_30_M5_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M6_send" covered="LL_30_M4"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M6_recv" covered="LL_30_M3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M6" name="6: return List<Object[]> saldosAnteriores" sendEvent="M_30_M6_send" receiveEvent="M_30_M6_recv" messageSort="reply"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M6" name="6: movimientos" sendEvent="M_30_M6_send" receiveEvent="M_30_M6_recv" messageSort="reply"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M7_send" covered="LL_30_M3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M7_recv" covered="LL_30_M4"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M7" name="7: findMovimientosMayorBatch(fechaInicio, fechaFin)" sendEvent="M_30_M7_send" receiveEvent="M_30_M7_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_send" covered="LL_30_M4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_recv" covered="LL_30_M5"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M8" name="8: SELECT d.*, a.fecha, a.numero FROM asiento_detalles d JOIN asientos a" sendEvent="M_30_M8_send" receiveEvent="M_30_M8_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_send" covered="LL_30_M5"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_recv" covered="LL_30_M4"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M9" name="9: return ResultSet movimientos periodo" sendEvent="M_30_M9_send" receiveEvent="M_30_M9_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M10_send" covered="LL_30_M4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M10_recv" covered="LL_30_M3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M10" name="10: return List<AsientoDetalle>" sendEvent="M_30_M10_send" receiveEvent="M_30_M10_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M11_send" covered="LL_30_M3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M11_recv" covered="LL_30_M3"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M11" name="11: calcularSaldoProgresivoPorCuenta(saldoInicial, movimientos)" sendEvent="M_30_M11_send" receiveEvent="M_30_M11_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M12_send" covered="LL_30_M3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M12_recv" covered="LL_30_M2"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M12" name="12: return LibroMayorResponse (cuentas, saldoInicial, movimientos, saldoFinal)" sendEvent="M_30_M12_send" receiveEvent="M_30_M12_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M13_send" covered="LL_30_M2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M13_recv" covered="LL_30_M1"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_M13" name="13: 200 OK HTTP (JSON LibroMayorResponse)" sendEvent="M_30_M13_send" receiveEvent="M_30_M13_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M7_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M7" name="7: calcularSaldoProgresivo(saldos, movimientos)" sendEvent="M_30_M7_send" receiveEvent="M_30_M7_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_send" covered="LL_30_M3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_recv" covered="LL_30_M2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M8" name="8: libroMayorResponse" sendEvent="M_30_M8_send" receiveEvent="M_30_M8_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_send" covered="LL_30_M2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_recv" covered="LL_30_M1"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M9" name="9: 200 OK (libroMayorResponse)" sendEvent="M_30_M9_send" receiveEvent="M_30_M9_recv" messageSort="reply"/>
 			</packagedElement>
 		</packagedElement>
 	</uml:Model>
@@ -492,67 +482,55 @@
 			<connector xmi:idref="M_30_D1">
 				<source xmi:idref="LL_30_D1"/>
 				<target xmi:idref="LL_30_D2"/>
-				<properties name="1: consultarLibroDiario(periodoId, desde, hasta, tipo, estado)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="1: consultarLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="1"/>
 			</connector>
 			<connector xmi:idref="M_30_D2">
 				<source xmi:idref="LL_30_D2"/>
 				<target xmi:idref="LL_30_D3"/>
-				<properties name="2: obtenerLibroDiario(filtroDiarioDTO)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="2: obtenerLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="2"/>
 			</connector>
 			<connector xmi:idref="M_30_D3">
 				<source xmi:idref="LL_30_D3"/>
 				<target xmi:idref="LL_30_D4"/>
-				<properties name="3: findAll(specLibroDiario, sortFechaAsc)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="3: findAll(spec)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="3"/>
 			</connector>
 			<connector xmi:idref="M_30_D4">
 				<source xmi:idref="LL_30_D4"/>
-				<target xmi:idref="LL_30_D5"/>
-				<properties name="4: SELECT * FROM asientos_contables JOIN asiento_detalles" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_30_D3"/>
+				<properties name="4: listaAsientos" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="4"/>
 			</connector>
 			<connector xmi:idref="M_30_D5">
-				<source xmi:idref="LL_30_D5"/>
-				<target xmi:idref="LL_30_D4"/>
-				<properties name="5: return ResultSet (asientos con detalles)" ea_type="Sequence" direction="Source -> Destination"/>
+				<source xmi:idref="LL_30_D3"/>
+				<target xmi:idref="LL_30_D3"/>
+				<properties name="5: calcularTotalesYCuadre(asientos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="5"/>
 			</connector>
 			<connector xmi:idref="M_30_D6">
-				<source xmi:idref="LL_30_D4"/>
-				<target xmi:idref="LL_30_D3"/>
-				<properties name="6: return List<AsientoContable>" ea_type="Sequence" direction="Source -> Destination"/>
+				<source xmi:idref="LL_30_D3"/>
+				<target xmi:idref="LL_30_D2"/>
+				<properties name="6: libroDiarioResponse" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="6"/>
 			</connector>
 			<connector xmi:idref="M_30_D7">
-				<source xmi:idref="LL_30_D3"/>
-				<target xmi:idref="LL_30_D3"/>
-				<properties name="7: calcularTotalesYValidarCuadre(totalDebe, totalHaber)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7"/>
-			</connector>
-			<connector xmi:idref="M_30_D8">
-				<source xmi:idref="LL_30_D3"/>
-				<target xmi:idref="LL_30_D2"/>
-				<properties name="8: return LibroDiarioResponse (asientos, totalDebe, totalHaber, balanceado)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="8"/>
-			</connector>
-			<connector xmi:idref="M_30_D9">
 				<source xmi:idref="LL_30_D2"/>
 				<target xmi:idref="LL_30_D1"/>
-				<properties name="9: 200 OK HTTP (JSON LibroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
+				<properties name="7: 200 OK (libroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="7"/>
 			</connector>
 			<connector xmi:idref="M_30_M1">
 				<source xmi:idref="LL_30_M1"/>
 				<target xmi:idref="LL_30_M2"/>
-				<properties name="1: consultarLibroMayor(cuentaId, periodoId, desde, hasta)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="1: consultarLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="1"/>
 			</connector>
 			<connector xmi:idref="M_30_M2">
 				<source xmi:idref="LL_30_M2"/>
 				<target xmi:idref="LL_30_M3"/>
-				<properties name="2: obtenerLibroMayor(filtroMayorDTO)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="2: obtenerLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="2"/>
 			</connector>
 			<connector xmi:idref="M_30_M3">
@@ -563,63 +541,39 @@
 			</connector>
 			<connector xmi:idref="M_30_M4">
 				<source xmi:idref="LL_30_M4"/>
-				<target xmi:idref="LL_30_M5"/>
-				<properties name="4: SELECT cta_id, SUM(debe), SUM(haber) WHERE fecha < fechaInicio" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="4: saldosAnteriores" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="4"/>
 			</connector>
 			<connector xmi:idref="M_30_M5">
-				<source xmi:idref="LL_30_M5"/>
+				<source xmi:idref="LL_30_M3"/>
 				<target xmi:idref="LL_30_M4"/>
-				<properties name="5: return ResultSet saldos acumulados batch" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="5: findMovimientosMayorBatch(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="5"/>
 			</connector>
 			<connector xmi:idref="M_30_M6">
 				<source xmi:idref="LL_30_M4"/>
 				<target xmi:idref="LL_30_M3"/>
-				<properties name="6: return List<Object[]> saldosAnteriores" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="6: movimientos" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="6"/>
 			</connector>
 			<connector xmi:idref="M_30_M7">
 				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M4"/>
-				<properties name="7: findMovimientosMayorBatch(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="7: calcularSaldoProgresivo(saldos, movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="7"/>
 			</connector>
 			<connector xmi:idref="M_30_M8">
-				<source xmi:idref="LL_30_M4"/>
-				<target xmi:idref="LL_30_M5"/>
-				<properties name="8: SELECT d.*, a.fecha, a.numero FROM asiento_detalles d JOIN asientos a" ea_type="Sequence" direction="Source -> Destination"/>
+				<source xmi:idref="LL_30_M3"/>
+				<target xmi:idref="LL_30_M2"/>
+				<properties name="8: libroMayorResponse" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="8"/>
 			</connector>
 			<connector xmi:idref="M_30_M9">
-				<source xmi:idref="LL_30_M5"/>
-				<target xmi:idref="LL_30_M4"/>
-				<properties name="9: return ResultSet movimientos periodo" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
-			</connector>
-			<connector xmi:idref="M_30_M10">
-				<source xmi:idref="LL_30_M4"/>
-				<target xmi:idref="LL_30_M3"/>
-				<properties name="10: return List<AsientoDetalle>" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="10"/>
-			</connector>
-			<connector xmi:idref="M_30_M11">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M3"/>
-				<properties name="11: calcularSaldoProgresivoPorCuenta(saldoInicial, movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="11"/>
-			</connector>
-			<connector xmi:idref="M_30_M12">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M2"/>
-				<properties name="12: return LibroMayorResponse (cuentas, saldoInicial, movimientos, saldoFinal)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="12"/>
-			</connector>
-			<connector xmi:idref="M_30_M13">
 				<source xmi:idref="LL_30_M2"/>
 				<target xmi:idref="LL_30_M1"/>
-				<properties name="13: 200 OK HTTP (JSON LibroMayorResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="13"/>
+				<properties name="9: 200 OK (libroMayorResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="9"/>
 			</connector>
 		</connectors>
 		<diagrams>
@@ -633,7 +587,7 @@
 					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
 					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
 					<element subject="EAID_CU30_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
-					<element subject="EAID_CU30_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=638;"/>
+					<element subject="EAID_CU30_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=682;"/>
 					<element subject="EAID_CU30_REPO_DIARIO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=492;"/>
 					<element subject="EAID_CU30_REPO_MAYOR" seq="8" geometry="Left=1010;Top=380;Right=1290;Bottom=514;"/>
 				</elements>
@@ -647,7 +601,6 @@
 					<element subject="LL_30_D2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
 					<element subject="LL_30_D3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
 					<element subject="LL_30_D4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
-					<element subject="LL_30_D5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU30_MAYOR">
@@ -659,7 +612,6 @@
 					<element subject="LL_30_M2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
 					<element subject="LL_30_M3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
 					<element subject="LL_30_M4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
-					<element subject="LL_30_M5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
 				</elements>
 			</diagram>
 		</diagrams>

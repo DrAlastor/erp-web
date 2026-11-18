@@ -30,14 +30,14 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_8" name="fechaCierre: LocalDateTime" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="+ estaAbierto(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="estaAbierto()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="+ cerrarPeriodo(): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="cerrarPeriodo()" visibility="public">
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="+ contieneFecha(fecha: LocalDate): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="contieneFecha(fecha)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_1" name="fecha"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
@@ -72,24 +72,24 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_9" name="activo: Boolean" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="+ esDeudora(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="esDeudora()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="+ esAcreedora(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="esAcreedora()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="+ calcularSaldoNeto(debe: BigDecimal, haber: BigDecimal): BigDecimal" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="calcularSaldoNeto(debe, haber)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_D" name="debe"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_H" name="haber"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="+ esCuentaMovimiento(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="esCuentaMovimiento()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_4_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
@@ -123,14 +123,14 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_9" name="estado: EstadoAsiento" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="+ verificarPartidaDoble(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="verificarPartidaDoble()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="+ mayorizar(): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="mayorizar()" visibility="public">
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="+ anular(motivo: String): void" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="anular(motivo)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_M" name="motivo"/>
 				</ownedOperation>
 			</packagedElement>
@@ -153,17 +153,17 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_6" name="haber: BigDecimal" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="+ getImporteNeto(): BigDecimal" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="getImporteNeto()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="+ esMovimientoDebe(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="esMovimientoDebe()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="+ esMovimientoHaber(): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="esMovimientoHaber()" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
@@ -173,24 +173,24 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_FC_1" name="- finanzasService: InformacionFinancieraService" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_1" name="+ obtenerBalanceGeneral(gestion: Integer, mes: Integer, fechaCorte: LocalDate, nivel: Integer): ResponseEntity<BalanceGeneralResponse>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_1" name="obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_G1" name="gestion"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_2" name="+ obtenerEstadoResultados(gestion: Integer, inicio: LocalDate, fin: LocalDate, nivel: Integer): ResponseEntity<EstadoResultadosResponse>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_2" name="obtenerEstadoResultados(gestion, inicio, fin, nivel)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_G2" name="gestion"/>
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_3" name="+ exportarBalanceGeneralCsv(gestion: Integer, fechaCorte: LocalDate): ResponseEntity<byte[]>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_3" name="exportarBalanceGeneralCsv(gestion, fechaCorte)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_4" name="+ exportarEstadoResultadosCsv(gestion: Integer, inicio: LocalDate, fin: LocalDate): ResponseEntity<byte[]>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FC_4" name="exportarEstadoResultadosCsv(gestion, inicio, fin)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FC_4_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
@@ -203,39 +203,49 @@
 				<ownedAttribute xmi:type="uml:Property" xmi:id="A_FS_2" name="- cuentaRepo: CuentaContableRepository" visibility="private">
 					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 				</ownedAttribute>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_1" name="+ generarBalanceGeneral(gestion: Integer, mes: Integer, fechaCorte: LocalDate, nivel: Integer): BalanceGeneralResponse" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_1" name="generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_2" name="+ generarEstadoResultados(gestion: Integer, inicio: LocalDate, fin: LocalDate, nivel: Integer): EstadoResultadosResponse" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_2" name="generarEstadoResultados(gestion, inicio, fin, nivel)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_3" name="+ calcularSaldoRollupJerarquico(cuentas: List<CuentaContable>, saldos: Map): List<NodoFinancieroDTO>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_3" name="calcularSaldoRollupJerarquico(saldos)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_3_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_4" name="+ calcularUtilidadEjercicio(ingresos: BigDecimal, egresos: BigDecimal): BigDecimal" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_4" name="calcularUtilidadEjercicio(ingresos, egresos)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_4_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_5" name="+ validarEcuacionPatrimonial(activo: BigDecimal, pasivo: BigDecimal, patrimonio: BigDecimal): Boolean" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_5" name="validarEcuacionPatrimonial(activo, pasivo, patrimonio)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_5_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_6" name="calcularEstructuraEscalonada(movimientos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_6_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_7" name="calcularAnalisisVertical(ingresos, costos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_7_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU31_REPO" name="InformacionFinancieraRepository" visibility="public">
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_1" name="+ obtenerSaldosAcumuladosAFecha(fechaCorte: LocalDate): List<SaldoCuentaDTO>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_1" name="obtenerSaldosAcumuladosAFecha(fechaCorte)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FR_1_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_2" name="+ obtenerMovimientosPeriodo(inicio: LocalDate, fin: LocalDate): List<MovimientoCuentaDTO>" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FR_2" name="obtenerMovimientosPeriodo(inicio, fin)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FR_2_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
@@ -278,81 +288,67 @@
 				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU31_SRV_REPO_tgt" name="repository" type="EAID_CU31_REPO" association="ASSOC_CU31_SRV_REPO"/>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU31_BALANCE" name="Diagrama de Secuencia - CU31 Balance General">
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B1" name="g: Gerente / Contador"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B1" name="g: Gerente General"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B2" name="ctrl: InformacionFinancieraController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B3" name="srv: InformacionFinancieraServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B4" name="repo: InformacionFinancieraRepository"/>
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B5" name="db: BaseDeDatosPostgreSQL"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_send" covered="LL_31_B1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_recv" covered="LL_31_B2"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B1" name="1: obtenerBalanceGeneral(gestion, mesCorte, fechaCorte, nivel)" sendEvent="M_31_B1_send" receiveEvent="M_31_B1_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B1" name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" sendEvent="M_31_B1_send" receiveEvent="M_31_B1_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B2_send" covered="LL_31_B2"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B2_recv" covered="LL_31_B3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B2" name="2: generarBalanceGeneral(gestion, mesCorte, fechaCorte, nivel)" sendEvent="M_31_B2_send" receiveEvent="M_31_B2_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B2" name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" sendEvent="M_31_B2_send" receiveEvent="M_31_B2_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B3_send" covered="LL_31_B3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B3_recv" covered="LL_31_B4"/>
 				<message xmi:type="uml:Message" xmi:id="M_31_B3" name="3: obtenerSaldosAcumuladosAFecha(fechaCorte)" sendEvent="M_31_B3_send" receiveEvent="M_31_B3_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B4_send" covered="LL_31_B4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B4_recv" covered="LL_31_B5"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B4" name="4: SELECT c.id, c.tipo, SUM(d.debe), SUM(d.haber) WHERE fecha <= fechaCorte" sendEvent="M_31_B4_send" receiveEvent="M_31_B4_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_send" covered="LL_31_B5"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_recv" covered="LL_31_B4"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B5" name="5: return ResultSet saldos por cuenta" sendEvent="M_31_B5_send" receiveEvent="M_31_B5_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B6_send" covered="LL_31_B4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B4_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B4" name="4: saldosCuentas" sendEvent="M_31_B4_send" receiveEvent="M_31_B4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B5_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B5" name="5: calcularSaldoRollupJerarquico(saldos)" sendEvent="M_31_B5_send" receiveEvent="M_31_B5_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B6_send" covered="LL_31_B3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B6_recv" covered="LL_31_B3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B6" name="6: return List<SaldoCuentaDTO>" sendEvent="M_31_B6_send" receiveEvent="M_31_B6_recv" messageSort="reply"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B6" name="6: calcularUtilidadEjercicio(ingresos, egresos)" sendEvent="M_31_B6_send" receiveEvent="M_31_B6_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B7_send" covered="LL_31_B3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B7_recv" covered="LL_31_B3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B7" name="7: calcularSaldoRollupJerarquico(Activo, Pasivo, Patrimonio)" sendEvent="M_31_B7_send" receiveEvent="M_31_B7_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B7" name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" sendEvent="M_31_B7_send" receiveEvent="M_31_B7_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_send" covered="LL_31_B3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_recv" covered="LL_31_B3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B8" name="8: calcularUtilidadEjercicio(Ingresos - Egresos)" sendEvent="M_31_B8_send" receiveEvent="M_31_B8_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_send" covered="LL_31_B3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_recv" covered="LL_31_B3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B9" name="9: validarEcuacionPatrimonial(Activo == Pasivo + Patrimonio + Utilidad)" sendEvent="M_31_B9_send" receiveEvent="M_31_B9_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_send" covered="LL_31_B3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_recv" covered="LL_31_B2"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B10" name="10: return BalanceGeneralResponse (activos, pasivos, patrimonio, cuadra)" sendEvent="M_31_B10_send" receiveEvent="M_31_B10_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B11_send" covered="LL_31_B2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B11_recv" covered="LL_31_B1"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B11" name="11: 200 OK HTTP (JSON BalanceGeneralResponse)" sendEvent="M_31_B11_send" receiveEvent="M_31_B11_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_recv" covered="LL_31_B2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B8" name="8: balanceGeneralResponse" sendEvent="M_31_B8_send" receiveEvent="M_31_B8_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_send" covered="LL_31_B2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_recv" covered="LL_31_B1"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B9" name="9: 200 OK (balanceGeneralResponse)" sendEvent="M_31_B9_send" receiveEvent="M_31_B9_recv" messageSort="reply"/>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU31_RESULTADOS" name="Diagrama de Secuencia - CU31 Estado de Resultados">
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R1" name="g: Gerente / Contador"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R1" name="g: Gerente General"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R2" name="ctrl: InformacionFinancieraController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R3" name="srv: InformacionFinancieraServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R4" name="repo: InformacionFinancieraRepository"/>
-				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R5" name="db: BaseDeDatosPostgreSQL"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_send" covered="LL_31_R1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_recv" covered="LL_31_R2"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R1" name="1: obtenerEstadoResultados(gestion, fechaInicio, fechaFin, nivel)" sendEvent="M_31_R1_send" receiveEvent="M_31_R1_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R1" name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" sendEvent="M_31_R1_send" receiveEvent="M_31_R1_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R2_send" covered="LL_31_R2"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R2_recv" covered="LL_31_R3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R2" name="2: generarEstadoResultados(gestion, fechaInicio, fechaFin, nivel)" sendEvent="M_31_R2_send" receiveEvent="M_31_R2_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R2" name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" sendEvent="M_31_R2_send" receiveEvent="M_31_R2_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R3_send" covered="LL_31_R3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R3_recv" covered="LL_31_R4"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R3" name="3: obtenerMovimientosPeriodo(fechaInicio, fechaFin)" sendEvent="M_31_R3_send" receiveEvent="M_31_R3_recv" messageSort="synchCall"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R3" name="3: obtenerMovimientosPeriodo(inicio, fin)" sendEvent="M_31_R3_send" receiveEvent="M_31_R3_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R4_send" covered="LL_31_R4"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R4_recv" covered="LL_31_R5"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R4" name="4: SELECT c.id, c.tipo, SUM(d.debe), SUM(d.haber) WHERE tipo IN ('INGRESO','EGRESO')" sendEvent="M_31_R4_send" receiveEvent="M_31_R4_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_send" covered="LL_31_R5"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_recv" covered="LL_31_R4"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R5" name="5: return ResultSet movimientos ingresos y egresos" sendEvent="M_31_R5_send" receiveEvent="M_31_R5_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R6_send" covered="LL_31_R4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R4_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R4" name="4: movimientosPeriodo" sendEvent="M_31_R4_send" receiveEvent="M_31_R4_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_send" covered="LL_31_R3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R5_recv" covered="LL_31_R3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R5" name="5: calcularEstructuraEscalonada(movimientos)" sendEvent="M_31_R5_send" receiveEvent="M_31_R5_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R6_send" covered="LL_31_R3"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R6_recv" covered="LL_31_R3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R6" name="6: return List<MovimientoCuentaDTO>" sendEvent="M_31_R6_send" receiveEvent="M_31_R6_recv" messageSort="reply"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R6" name="6: calcularAnalisisVertical(ingresos, costos)" sendEvent="M_31_R6_send" receiveEvent="M_31_R6_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R7_send" covered="LL_31_R3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R7_recv" covered="LL_31_R3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R7" name="7: calcularEstructuraEscalonada(Ventas - Costos = Bruta; - Gastos = Neta)" sendEvent="M_31_R7_send" receiveEvent="M_31_R7_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_send" covered="LL_31_R3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_recv" covered="LL_31_R3"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R8" name="8: calcularAnalisisVerticalPorcentual(baseIngresosOperativos)" sendEvent="M_31_R8_send" receiveEvent="M_31_R8_recv" messageSort="synchCall"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R9_send" covered="LL_31_R3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R9_recv" covered="LL_31_R2"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R9" name="9: return EstadoResultadosResponse (estructura, utilidadNeta, analisisVertical)" sendEvent="M_31_R9_send" receiveEvent="M_31_R9_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R10_send" covered="LL_31_R2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R10_recv" covered="LL_31_R1"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_R10" name="10: 200 OK HTTP (JSON EstadoResultadosResponse)" sendEvent="M_31_R10_send" receiveEvent="M_31_R10_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R7_recv" covered="LL_31_R2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R7" name="7: estadoResultadosResponse" sendEvent="M_31_R7_send" receiveEvent="M_31_R7_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_send" covered="LL_31_R2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R8_recv" covered="LL_31_R1"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_R8" name="8: 200 OK (estadoResultadosResponse)" sendEvent="M_31_R8_send" receiveEvent="M_31_R8_recv" messageSort="reply"/>
 			</packagedElement>
 		</packagedElement>
 	</uml:Model>
@@ -462,13 +458,13 @@
 			<connector xmi:idref="M_31_B1">
 				<source xmi:idref="LL_31_B1"/>
 				<target xmi:idref="LL_31_B2"/>
-				<properties name="1: obtenerBalanceGeneral(gestion, mesCorte, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="1"/>
 			</connector>
 			<connector xmi:idref="M_31_B2">
 				<source xmi:idref="LL_31_B2"/>
 				<target xmi:idref="LL_31_B3"/>
-				<properties name="2: generarBalanceGeneral(gestion, mesCorte, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="2"/>
 			</connector>
 			<connector xmi:idref="M_31_B3">
@@ -479,111 +475,87 @@
 			</connector>
 			<connector xmi:idref="M_31_B4">
 				<source xmi:idref="LL_31_B4"/>
-				<target xmi:idref="LL_31_B5"/>
-				<properties name="4: SELECT c.id, c.tipo, SUM(d.debe), SUM(d.haber) WHERE fecha <= fechaCorte" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_31_B3"/>
+				<properties name="4: saldosCuentas" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="4"/>
 			</connector>
 			<connector xmi:idref="M_31_B5">
-				<source xmi:idref="LL_31_B5"/>
-				<target xmi:idref="LL_31_B4"/>
-				<properties name="5: return ResultSet saldos por cuenta" ea_type="Sequence" direction="Source -> Destination"/>
+				<source xmi:idref="LL_31_B3"/>
+				<target xmi:idref="LL_31_B3"/>
+				<properties name="5: calcularSaldoRollupJerarquico(saldos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="5"/>
 			</connector>
 			<connector xmi:idref="M_31_B6">
-				<source xmi:idref="LL_31_B4"/>
+				<source xmi:idref="LL_31_B3"/>
 				<target xmi:idref="LL_31_B3"/>
-				<properties name="6: return List<SaldoCuentaDTO>" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="6: calcularUtilidadEjercicio(ingresos, egresos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="6"/>
 			</connector>
 			<connector xmi:idref="M_31_B7">
 				<source xmi:idref="LL_31_B3"/>
 				<target xmi:idref="LL_31_B3"/>
-				<properties name="7: calcularSaldoRollupJerarquico(Activo, Pasivo, Patrimonio)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="7"/>
 			</connector>
 			<connector xmi:idref="M_31_B8">
 				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B3"/>
-				<properties name="8: calcularUtilidadEjercicio(Ingresos - Egresos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_31_B2"/>
+				<properties name="8: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="8"/>
 			</connector>
 			<connector xmi:idref="M_31_B9">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B3"/>
-				<properties name="9: validarEcuacionPatrimonial(Activo == Pasivo + Patrimonio + Utilidad)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
-			</connector>
-			<connector xmi:idref="M_31_B10">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B2"/>
-				<properties name="10: return BalanceGeneralResponse (activos, pasivos, patrimonio, cuadra)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="10"/>
-			</connector>
-			<connector xmi:idref="M_31_B11">
 				<source xmi:idref="LL_31_B2"/>
 				<target xmi:idref="LL_31_B1"/>
-				<properties name="11: 200 OK HTTP (JSON BalanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="11"/>
+				<properties name="9: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="9"/>
 			</connector>
 			<connector xmi:idref="M_31_R1">
 				<source xmi:idref="LL_31_R1"/>
 				<target xmi:idref="LL_31_R2"/>
-				<properties name="1: obtenerEstadoResultados(gestion, fechaInicio, fechaFin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="1"/>
 			</connector>
 			<connector xmi:idref="M_31_R2">
 				<source xmi:idref="LL_31_R2"/>
 				<target xmi:idref="LL_31_R3"/>
-				<properties name="2: generarEstadoResultados(gestion, fechaInicio, fechaFin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="2"/>
 			</connector>
 			<connector xmi:idref="M_31_R3">
 				<source xmi:idref="LL_31_R3"/>
 				<target xmi:idref="LL_31_R4"/>
-				<properties name="3: obtenerMovimientosPeriodo(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="3: obtenerMovimientosPeriodo(inicio, fin)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="3"/>
 			</connector>
 			<connector xmi:idref="M_31_R4">
 				<source xmi:idref="LL_31_R4"/>
-				<target xmi:idref="LL_31_R5"/>
-				<properties name="4: SELECT c.id, c.tipo, SUM(d.debe), SUM(d.haber) WHERE tipo IN ('INGRESO','EGRESO')" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_31_R3"/>
+				<properties name="4: movimientosPeriodo" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="4"/>
 			</connector>
 			<connector xmi:idref="M_31_R5">
-				<source xmi:idref="LL_31_R5"/>
-				<target xmi:idref="LL_31_R4"/>
-				<properties name="5: return ResultSet movimientos ingresos y egresos" ea_type="Sequence" direction="Source -> Destination"/>
+				<source xmi:idref="LL_31_R3"/>
+				<target xmi:idref="LL_31_R3"/>
+				<properties name="5: calcularEstructuraEscalonada(movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="5"/>
 			</connector>
 			<connector xmi:idref="M_31_R6">
-				<source xmi:idref="LL_31_R4"/>
+				<source xmi:idref="LL_31_R3"/>
 				<target xmi:idref="LL_31_R3"/>
-				<properties name="6: return List<MovimientoCuentaDTO>" ea_type="Sequence" direction="Source -> Destination"/>
+				<properties name="6: calcularAnalisisVertical(ingresos, costos)" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="6"/>
 			</connector>
 			<connector xmi:idref="M_31_R7">
 				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R3"/>
-				<properties name="7: calcularEstructuraEscalonada(Ventas - Costos = Bruta; - Gastos = Neta)" ea_type="Sequence" direction="Source -> Destination"/>
+				<target xmi:idref="LL_31_R2"/>
+				<properties name="7: estadoResultadosResponse" ea_type="Sequence" direction="Source -> Destination"/>
 				<appearance seq_no="7"/>
 			</connector>
 			<connector xmi:idref="M_31_R8">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R3"/>
-				<properties name="8: calcularAnalisisVerticalPorcentual(baseIngresosOperativos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="8"/>
-			</connector>
-			<connector xmi:idref="M_31_R9">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R2"/>
-				<properties name="9: return EstadoResultadosResponse (estructura, utilidadNeta, analisisVertical)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
-			</connector>
-			<connector xmi:idref="M_31_R10">
 				<source xmi:idref="LL_31_R2"/>
 				<target xmi:idref="LL_31_R1"/>
-				<properties name="10: 200 OK HTTP (JSON EstadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="10"/>
+				<properties name="8: 200 OK (estadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="8"/>
 			</connector>
 		</connectors>
 		<diagrams>
@@ -597,7 +569,7 @@
 					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
 					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
 					<element subject="EAID_CU31_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
-					<element subject="EAID_CU31_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=620;"/>
+					<element subject="EAID_CU31_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=664;"/>
 					<element subject="EAID_CU31_REPO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=514;"/>
 				</elements>
 			</diagram>
@@ -610,7 +582,6 @@
 					<element subject="LL_31_B2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
 					<element subject="LL_31_B3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
 					<element subject="LL_31_B4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
-					<element subject="LL_31_B5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU31_RESULTADOS">
@@ -622,7 +593,6 @@
 					<element subject="LL_31_R2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
 					<element subject="LL_31_R3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
 					<element subject="LL_31_R4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
-					<element subject="LL_31_R5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
 				</elements>
 			</diagram>
 		</diagrams>
