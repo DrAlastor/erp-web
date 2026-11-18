@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * CU32 - Apertura de Caja (tabla TURNOS_CAJA). Un cajero tiene a lo sumo un turno abierto;
@@ -133,9 +134,13 @@ public class CajaService {
 
         BigDecimal ingresos = BigDecimal.ZERO;
         BigDecimal egresos = BigDecimal.ZERO;
+        // Los cobros de CxC (CU29) ya entran en cobrosCxc; su movimiento INGRESO no se suma otra vez.
+        Set<String> recibosCobro = consultaRepository.recibosDeCobros(turno.getId());
         for (MovimientoCaja movimiento : movimientoRepository.findByTurnoCajaIdOrderByFechaHoraAsc(turno.getId())) {
             FormaPago pago = movimiento.getFormaPago();
             if (pago == null || !pago.esEfectivo()) continue;
+            if (TIPO_INGRESO.equalsIgnoreCase(movimiento.getTipo()) && movimiento.getNumeroComprobante() != null
+                    && recibosCobro.contains(movimiento.getNumeroComprobante())) continue;
             if (TIPO_INGRESO.equalsIgnoreCase(movimiento.getTipo())) ingresos = ingresos.add(movimiento.getMonto());
             if (MovimientoCaja.TIPO_EGRESO.equalsIgnoreCase(movimiento.getTipo())) egresos = egresos.add(movimiento.getMonto());
         }

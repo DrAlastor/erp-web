@@ -5,6 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Consultas de la caja sobre tablas que no tienen entidad JPA en este módulo
@@ -23,5 +25,15 @@ public class CajaConsultaRepository {
                 FROM cobros c JOIN formas_pago f ON f.id = c.forma_pago_id
                 WHERE c.turno_caja_id = ? AND UPPER(f.codigo) = 'EFECTIVO'
                 """, BigDecimal.class, turnoId);
+    }
+
+    /**
+     * Recibos (RC-...) de los cobros de cuentas por cobrar ligados al turno. La CU29 deja además
+     * un movimiento INGRESO con ese recibo como comprobante; el arqueo ya los cuenta por
+     * {@link #cobrosCxcEfectivo}, así que esos movimientos no se vuelven a sumar.
+     */
+    public Set<String> recibosDeCobros(Long turnoId) {
+        return new HashSet<>(jdbc.queryForList(
+                "SELECT numero_recibo FROM cobros WHERE turno_caja_id = ?", String.class, turnoId));
     }
 }

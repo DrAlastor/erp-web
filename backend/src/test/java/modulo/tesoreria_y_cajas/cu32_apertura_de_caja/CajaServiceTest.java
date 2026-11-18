@@ -148,6 +148,32 @@ class CajaServiceTest {
     }
 
     @Test
+    void elCobroDeCxcNoSeCuentaDosVecesEnElArqueo() {
+        // La CU29 guarda el cobro (con turno) y además un movimiento INGRESO con el recibo.
+        TurnoCaja turno = turnoAbierto(CAJERO);
+        when(almacenes.findByActivoTrue()).thenReturn(List.of(sucursal(true)));
+        when(almacenes.findById(1)).thenReturn(Optional.of(sucursal(true)));
+        when(turnos.findFirstByCajeroIdAndEstadoOrderByFechaAperturaDesc(CAJERO, "ABIERTO")).thenReturn(Optional.of(turno));
+        when(pagos.sumarCobrosPorTurno(50L)).thenReturn(BigDecimal.ZERO);
+        when(pagos.sumarCobrosEfectivoPorTurno(50L)).thenReturn(BigDecimal.ZERO);
+        when(consultas.cobrosCxcEfectivo(50L)).thenReturn(new BigDecimal("50.00"));
+        when(consultas.recibosDeCobros(50L)).thenReturn(java.util.Set.of("RC-2026-0001"));
+        FormaPago efectivo = FormaPago.builder().id(1L).codigo("EFECTIVO").nombre("Efectivo").activo(true).build();
+        when(movimientos.findByTurnoCajaIdOrderByFechaHoraAsc(50L)).thenReturn(List.of(
+                MovimientoCaja.builder().tipo("INGRESO").monto(new BigDecimal("50.00")).formaPago(efectivo)
+                        .numeroComprobante("RC-2026-0001").build(),
+                MovimientoCaja.builder().tipo("INGRESO").monto(new BigDecimal("10.00")).formaPago(efectivo).build()));
+        when(formas.findByActivoTrueOrderByIdAsc()).thenReturn(List.of(efectivo));
+        when(secuencias.vigentes(any(), any())).thenReturn(List.of());
+
+        EstadoCajaResponse estado = service.estado(null);
+
+        // 100 fondo + 50 cobro CxC + 10 ingreso manual; el movimiento del recibo no se suma otra vez
+        assertThat(estado.resumen().montoEsperado()).isEqualByComparingTo("160.00");
+        assertThat(estado.resumen().ingresos()).isEqualByComparingTo("10.00");
+    }
+
+    @Test
     void estadoSinTurnoNoTraeResumen() {
         when(almacenes.findByActivoTrue()).thenReturn(List.of());
         when(turnos.findFirstByCajeroIdAndEstadoOrderByFechaAperturaDesc(CAJERO, "ABIERTO")).thenReturn(Optional.empty());
