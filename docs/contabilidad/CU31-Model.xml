@@ -228,13 +228,18 @@
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_6" name="calcularEstructuraEscalonada(movimientos)" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_6" name="marcarBalanceCuadrado(estado)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_6_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_7" name="calcularEstructuraEscalonada(movimientos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_7_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_7" name="calcularAnalisisVertical(ingresos, costos)" visibility="public">
-					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_7_ret" direction="return">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_FS_8" name="calcularAnalisisVertical(ingresos, costos)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_FS_8_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
@@ -292,6 +297,25 @@
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B2" name="ctrl: InformacionFinancieraController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B3" name="srv: InformacionFinancieraServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_B4" name="repo: InformacionFinancieraRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_B_LOOP" name="loop [Rollup Jerarquico de Cuentas]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_L1_spec" value="Para cada cuenta en arbol jerarquico"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_B_ALT" name="alt [Ecuacion Patrimonial]" interactionOperator="alt">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_1_spec" value="Activo == Pasivo + Patrimonio + Utilidad"/>
+						</guard>
+					</operand>
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_B_2">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_B_2_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_B_2_spec" value="else: Descuadre patrimonial"/>
+						</guard>
+					</operand>
+				</fragment>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_send" covered="LL_31_B1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B1_recv" covered="LL_31_B2"/>
 				<message xmi:type="uml:Message" xmi:id="M_31_B1" name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" sendEvent="M_31_B1_send" receiveEvent="M_31_B1_recv" messageSort="synchCall"/>
@@ -314,17 +338,27 @@
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B7_recv" covered="LL_31_B3"/>
 				<message xmi:type="uml:Message" xmi:id="M_31_B7" name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" sendEvent="M_31_B7_send" receiveEvent="M_31_B7_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_send" covered="LL_31_B3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_recv" covered="LL_31_B2"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B8" name="8: balanceGeneralResponse" sendEvent="M_31_B8_send" receiveEvent="M_31_B8_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_send" covered="LL_31_B2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_recv" covered="LL_31_B1"/>
-				<message xmi:type="uml:Message" xmi:id="M_31_B9" name="9: 200 OK (balanceGeneralResponse)" sendEvent="M_31_B9_send" receiveEvent="M_31_B9_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B8_recv" covered="LL_31_B3"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B8" name="8: marcarBalanceCuadrado(true)" sendEvent="M_31_B8_send" receiveEvent="M_31_B8_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_send" covered="LL_31_B3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B9_recv" covered="LL_31_B2"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B9" name="9: balanceGeneralResponse" sendEvent="M_31_B9_send" receiveEvent="M_31_B9_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_send" covered="LL_31_B2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_B10_recv" covered="LL_31_B1"/>
+				<message xmi:type="uml:Message" xmi:id="M_31_B10" name="10: 200 OK (balanceGeneralResponse)" sendEvent="M_31_B10_send" receiveEvent="M_31_B10_recv" messageSort="reply"/>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU31_RESULTADOS" name="Diagrama de Secuencia - CU31 Estado de Resultados">
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R1" name="g: Gerente General"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R2" name="ctrl: InformacionFinancieraController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R3" name="srv: InformacionFinancieraServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_31_R4" name="repo: InformacionFinancieraRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_31_R_LOOP" name="loop [Analisis Vertical Porcentual]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_R_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_R_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_R_L1_spec" value="Para cada cuenta de costo y gasto"/>
+						</guard>
+					</operand>
+				</fragment>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_send" covered="LL_31_R1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_31_R1_recv" covered="LL_31_R2"/>
 				<message xmi:type="uml:Message" xmi:id="M_31_R1" name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" sendEvent="M_31_R1_send" receiveEvent="M_31_R1_recv" messageSort="synchCall"/>
@@ -410,6 +444,14 @@
 				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
 			</element>
+			<element xmi:idref="FRAG_31_B_LOOP" name="loop [Rollup Jerarquico de Cuentas]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_31_B_ALT" name="alt [Ecuacion Patrimonial]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="alt" scope="public"/>
+			</element>
 			<element xmi:idref="LL_31_R1" name="g: Gerente General" scope="public">
 				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
@@ -425,6 +467,10 @@
 			<element xmi:idref="LL_31_R4" name="repo: InformacionFinancieraRepository" scope="public">
 				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_31_R_LOOP" name="loop [Analisis Vertical Porcentual]" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
 			</element>
 		</elements>
 		<packages>
@@ -495,7 +541,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B2">
@@ -506,7 +552,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B3">
@@ -517,7 +563,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="3: obtenerSaldosAcumuladosAFecha(fechaCorte)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B4">
@@ -528,7 +574,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="4: saldosCuentas" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B5">
@@ -539,7 +585,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="5: calcularSaldoRollupJerarquico(saldos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=620;PtEndY=-280;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B6">
@@ -550,7 +596,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="6: calcularUtilidadEjercicio(ingresos, egresos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=600;PtEndY=-320;"/>
+				<appearance seq_no="6" style="PtStartX=580;PtStartY=-300;PtEndX=620;PtEndY=-320;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B7">
@@ -561,29 +607,40 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=600;PtEndY=-360;"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=620;PtEndY=-360;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B8">
 				<source xmi:idref="LL_31_B3">
 					<model type="Sequence"/>
 				</source>
-				<target xmi:idref="LL_31_B2">
+				<target xmi:idref="LL_31_B3">
 					<model type="Sequence"/>
 				</target>
-				<properties name="8: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="8" style="PtStartX=560;PtStartY=-380;PtEndX=350;PtEndY=-380;"/>
+				<properties name="8: marcarBalanceCuadrado(true)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="8" style="PtStartX=580;PtStartY=-380;PtEndX=620;PtEndY=-400;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B9">
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="9: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="9" style="PtStartX=580;PtStartY=-420;PtEndX=360;PtEndY=-420;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
+			</connector>
+			<connector xmi:idref="M_31_B10">
 				<source xmi:idref="LL_31_B2">
 					<model type="Sequence"/>
 				</source>
 				<target xmi:idref="LL_31_B1">
 					<model type="Sequence"/>
 				</target>
-				<properties name="9: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="9" style="PtStartX=350;PtStartY=-420;PtEndX=140;PtEndY=-420;"/>
+				<properties name="10: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="10" style="PtStartX=360;PtStartY=-460;PtEndX=140;PtEndY=-460;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_R1">
@@ -594,7 +651,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R2">
@@ -605,7 +662,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R3">
@@ -616,7 +673,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="3: obtenerMovimientosPeriodo(inicio, fin)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R4">
@@ -627,7 +684,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="4: movimientosPeriodo" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R5">
@@ -638,7 +695,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="5: calcularEstructuraEscalonada(movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=620;PtEndY=-280;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R6">
@@ -649,7 +706,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="6: calcularAnalisisVertical(ingresos, costos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=600;PtEndY=-320;"/>
+				<appearance seq_no="6" style="PtStartX=580;PtStartY=-300;PtEndX=620;PtEndY=-320;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R7">
@@ -660,7 +717,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="7: estadoResultadosResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=350;PtEndY=-340;"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=360;PtEndY=-340;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R8">
@@ -671,7 +728,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="8: 200 OK (estadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="8" style="PtStartX=350;PtStartY=-380;PtEndX=140;PtEndY=-380;"/>
+				<appearance seq_no="8" style="PtStartX=360;PtStartY=-380;PtEndX=140;PtEndY=-380;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 		</connectors>
@@ -686,7 +743,7 @@
 					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
 					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
 					<element subject="EAID_CU31_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
-					<element subject="EAID_CU31_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=664;"/>
+					<element subject="EAID_CU31_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=686;"/>
 					<element subject="EAID_CU31_REPO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=514;"/>
 				</elements>
 			</diagram>
@@ -695,10 +752,12 @@
 				<properties name="Diagrama de Secuencia - CU31 Balance General" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_31_B1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=575;"/>
-					<element subject="LL_31_B2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=575;"/>
-					<element subject="LL_31_B3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=575;"/>
-					<element subject="LL_31_B4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=575;"/>
+					<element subject="LL_31_B1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=660;"/>
+					<element subject="LL_31_B2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=660;"/>
+					<element subject="LL_31_B3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=660;"/>
+					<element subject="LL_31_B4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=660;"/>
+					<element subject="FRAG_31_B_LOOP" seq="5" geometry="Left=240;Top=210;Right=860;Bottom=270;"/>
+					<element subject="FRAG_31_B_ALT" seq="6" geometry="Left=40;Top=310;Right=880;Bottom=440;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU31_RESULTADOS">
@@ -706,10 +765,11 @@
 				<properties name="Diagrama de Secuencia - CU31 Estado de Resultados" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_31_R1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=530;"/>
-					<element subject="LL_31_R2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=530;"/>
-					<element subject="LL_31_R3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=530;"/>
-					<element subject="LL_31_R4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=530;"/>
+					<element subject="LL_31_R1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=570;"/>
+					<element subject="LL_31_R2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=570;"/>
+					<element subject="LL_31_R3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=570;"/>
+					<element subject="LL_31_R4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=570;"/>
+					<element subject="FRAG_31_R_LOOP" seq="5" geometry="Left=240;Top=250;Right=860;Bottom=330;"/>
 				</elements>
 			</diagram>
 		</diagrams>

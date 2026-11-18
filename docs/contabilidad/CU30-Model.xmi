@@ -232,14 +232,19 @@
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_5" name="calcularSaldoInicial(cuentaId, fecha)" visibility="public">
-					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S3" name="cuentaId"/>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_5" name="marcarCuadrado(estado)" visibility="public">
 					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_5_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_6" name="calcularSaldoInicial(cuentaId, fecha)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S3" name="cuentaId"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_6_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
-				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_6" name="exportarLibroDiarioCsv(filtro)" visibility="public">
-					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_6_ret" direction="return">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_7" name="exportarLibroDiarioCsv(filtro)" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_7_ret" direction="return">
 						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
 					</ownedParameter>
 				</ownedOperation>
@@ -310,6 +315,25 @@
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D2" name="ctrl: LibrosContablesController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D3" name="srv: LibrosContablesServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D4" name="repoDiario: LibroDiarioRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_30_D_ALT" name="alt [Validacion de Rango]" interactionOperator="alt">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_D_1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_D_1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_D_1_spec" value="filtro.fechaInicio &gt; filtro.fechaFin"/>
+						</guard>
+					</operand>
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_D_2">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_D_2_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_D_2_spec" value="else: Rango valido"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_30_D_LOOP" name="loop [Para cada asiento]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_D_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_D_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_D_L1_spec" value="Para cada asiento in listaAsientos"/>
+						</guard>
+					</operand>
+				</fragment>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_send" covered="LL_30_D1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_recv" covered="LL_30_D2"/>
 				<message xmi:type="uml:Message" xmi:id="M_30_D1" name="1: consultarLibroDiario(filtro)" sendEvent="M_30_D1_send" receiveEvent="M_30_D1_recv" messageSort="synchCall"/>
@@ -326,17 +350,39 @@
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_recv" covered="LL_30_D3"/>
 				<message xmi:type="uml:Message" xmi:id="M_30_D5" name="5: calcularTotalesYCuadre(asientos)" sendEvent="M_30_D5_send" receiveEvent="M_30_D5_recv" messageSort="synchCall"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_send" covered="LL_30_D3"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_recv" covered="LL_30_D2"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D6" name="6: libroDiarioResponse" sendEvent="M_30_D6_send" receiveEvent="M_30_D6_recv" messageSort="reply"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_send" covered="LL_30_D2"/>
-				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_recv" covered="LL_30_D1"/>
-				<message xmi:type="uml:Message" xmi:id="M_30_D7" name="7: 200 OK (libroDiarioResponse)" sendEvent="M_30_D7_send" receiveEvent="M_30_D7_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D6" name="6: marcarCuadrado(true)" sendEvent="M_30_D6_send" receiveEvent="M_30_D6_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_recv" covered="LL_30_D2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D7" name="7: libroDiarioResponse" sendEvent="M_30_D7_send" receiveEvent="M_30_D7_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_send" covered="LL_30_D2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_recv" covered="LL_30_D1"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D8" name="8: 200 OK (libroDiarioResponse)" sendEvent="M_30_D8_send" receiveEvent="M_30_D8_recv" messageSort="reply"/>
 			</packagedElement>
 			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU30_MAYOR" name="Diagrama de Secuencia - CU30 Libro Mayor">
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M1" name="c: Contador"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M2" name="ctrl: LibrosContablesController"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M3" name="srv: LibrosContablesServiceImpl"/>
 				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M4" name="repoMayor: LibroMayorRepository"/>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_30_M_ALT" name="alt [Validacion de Cuenta]" interactionOperator="alt">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_M_1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_M_1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_M_1_spec" value="!cuenta.permiteMovimiento"/>
+						</guard>
+					</operand>
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_M_2">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_M_2_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_M_2_spec" value="else: Cuenta analitica valida"/>
+						</guard>
+					</operand>
+				</fragment>
+				<fragment xmi:type="uml:CombinedFragment" xmi:id="FRAG_30_M_LOOP" name="loop [Calculo Saldo Progresivo]" interactionOperator="loop">
+					<operand xmi:type="uml:InteractionOperand" xmi:id="OP_M_L1">
+						<guard xmi:type="uml:InteractionConstraint" xmi:id="OP_M_L1_guard">
+							<specification xmi:type="uml:LiteralString" xmi:id="OP_M_L1_spec" value="Para cada movimiento contable"/>
+						</guard>
+					</operand>
+				</fragment>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_send" covered="LL_30_M1"/>
 				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_recv" covered="LL_30_M2"/>
 				<message xmi:type="uml:Message" xmi:id="M_30_M1" name="1: consultarLibroMayor(filtro)" sendEvent="M_30_M1_send" receiveEvent="M_30_M1_recv" messageSort="synchCall"/>
@@ -425,6 +471,14 @@
 				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
 			</element>
+			<element xmi:idref="FRAG_30_D_ALT" name="alt [Validacion de Rango]" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="alt" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_30_D_LOOP" name="loop [Para cada asiento]" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
+			</element>
 			<element xmi:idref="LL_30_M1" name="c: Contador" scope="public">
 				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
@@ -440,6 +494,14 @@
 			<element xmi:idref="LL_30_M4" name="repoMayor: LibroMayorRepository" scope="public">
 				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
 				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_30_M_ALT" name="alt [Validacion de Cuenta]" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="alt" scope="public"/>
+			</element>
+			<element xmi:idref="FRAG_30_M_LOOP" name="loop [Calculo Saldo Progresivo]" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="InteractionFragment" subtype="loop" scope="public"/>
 			</element>
 		</elements>
 		<packages>
@@ -519,7 +581,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="1: consultarLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D2">
@@ -530,7 +592,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="2: obtenerLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D3">
@@ -541,7 +603,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="3: findAll(spec)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D4">
@@ -552,7 +614,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="4: listaAsientos" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D5">
@@ -563,29 +625,40 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="5: calcularTotalesYCuadre(asientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=620;PtEndY=-280;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D6">
 				<source xmi:idref="LL_30_D3">
 					<model type="Sequence"/>
 				</source>
-				<target xmi:idref="LL_30_D2">
+				<target xmi:idref="LL_30_D3">
 					<model type="Sequence"/>
 				</target>
-				<properties name="6: libroDiarioResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=350;PtEndY=-300;"/>
+				<properties name="6: marcarCuadrado(true)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="6" style="PtStartX=580;PtStartY=-300;PtEndX=620;PtEndY=-320;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D7">
+				<source xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="7: libroDiarioResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=360;PtEndY=-340;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
+			</connector>
+			<connector xmi:idref="M_30_D8">
 				<source xmi:idref="LL_30_D2">
 					<model type="Sequence"/>
 				</source>
 				<target xmi:idref="LL_30_D1">
 					<model type="Sequence"/>
 				</target>
-				<properties name="7: 200 OK (libroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="7" style="PtStartX=350;PtStartY=-340;PtEndX=140;PtEndY=-340;"/>
+				<properties name="8: 200 OK (libroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="8" style="PtStartX=360;PtStartY=-380;PtEndX=140;PtEndY=-380;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_M1">
@@ -596,7 +669,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="1: consultarLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=360;PtEndY=-100;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M2">
@@ -607,7 +680,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="2: obtenerLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<appearance seq_no="2" style="PtStartX=360;PtStartY=-140;PtEndX=580;PtEndY=-140;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M3">
@@ -618,7 +691,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="3: sumSaldosAnterioresBatch(fechaInicio)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<appearance seq_no="3" style="PtStartX=580;PtStartY=-180;PtEndX=800;PtEndY=-180;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M4">
@@ -629,7 +702,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="4: saldosAnteriores" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<appearance seq_no="4" style="PtStartX=800;PtStartY=-220;PtEndX=580;PtEndY=-220;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M5">
@@ -640,7 +713,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="5: findMovimientosMayorBatch(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=770;PtEndY=-260;"/>
+				<appearance seq_no="5" style="PtStartX=580;PtStartY=-260;PtEndX=800;PtEndY=-260;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M6">
@@ -651,7 +724,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="6: movimientos" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="6" style="PtStartX=770;PtStartY=-300;PtEndX=560;PtEndY=-300;"/>
+				<appearance seq_no="6" style="PtStartX=800;PtStartY=-300;PtEndX=580;PtEndY=-300;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M7">
@@ -662,7 +735,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="7: calcularSaldoProgresivo(saldos, movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=600;PtEndY=-360;"/>
+				<appearance seq_no="7" style="PtStartX=580;PtStartY=-340;PtEndX=620;PtEndY=-360;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M8">
@@ -673,7 +746,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="8: libroMayorResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="8" style="PtStartX=560;PtStartY=-380;PtEndX=350;PtEndY=-380;"/>
+				<appearance seq_no="8" style="PtStartX=580;PtStartY=-380;PtEndX=360;PtEndY=-380;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M9">
@@ -684,7 +757,7 @@
 					<model type="Sequence"/>
 				</target>
 				<properties name="9: 200 OK (libroMayorResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
-				<appearance seq_no="9" style="PtStartX=350;PtStartY=-420;PtEndX=140;PtEndY=-420;"/>
+				<appearance seq_no="9" style="PtStartX=360;PtStartY=-420;PtEndX=140;PtEndY=-420;"/>
 				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 		</connectors>
@@ -699,7 +772,7 @@
 					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
 					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
 					<element subject="EAID_CU30_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
-					<element subject="EAID_CU30_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=682;"/>
+					<element subject="EAID_CU30_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=704;"/>
 					<element subject="EAID_CU30_REPO_DIARIO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=492;"/>
 					<element subject="EAID_CU30_REPO_MAYOR" seq="8" geometry="Left=1010;Top=380;Right=1290;Bottom=514;"/>
 				</elements>
@@ -709,10 +782,12 @@
 				<properties name="Diagrama de Secuencia - CU30 Libro Diario" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_30_D1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=485;"/>
-					<element subject="LL_30_D2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=485;"/>
-					<element subject="LL_30_D3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=485;"/>
-					<element subject="LL_30_D4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=485;"/>
+					<element subject="LL_30_D1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=570;"/>
+					<element subject="LL_30_D2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=570;"/>
+					<element subject="LL_30_D3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=570;"/>
+					<element subject="LL_30_D4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=570;"/>
+					<element subject="FRAG_30_D_ALT" seq="5" geometry="Left=40;Top=120;Right=880;Bottom=440;"/>
+					<element subject="FRAG_30_D_LOOP" seq="6" geometry="Left=240;Top=250;Right=860;Bottom=330;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU30_MAYOR">
@@ -720,10 +795,12 @@
 				<properties name="Diagrama de Secuencia - CU30 Libro Mayor" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_30_M1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=575;"/>
-					<element subject="LL_30_M2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=575;"/>
-					<element subject="LL_30_M3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=575;"/>
-					<element subject="LL_30_M4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=575;"/>
+					<element subject="LL_30_M1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=615;"/>
+					<element subject="LL_30_M2" seq="2" geometry="Left=280;Top=50;Right=440;Bottom=615;"/>
+					<element subject="LL_30_M3" seq="3" geometry="Left=500;Top=50;Right=660;Bottom=615;"/>
+					<element subject="LL_30_M4" seq="4" geometry="Left=720;Top=50;Right=880;Bottom=615;"/>
+					<element subject="FRAG_30_M_ALT" seq="5" geometry="Left=40;Top=120;Right=880;Bottom=460;"/>
+					<element subject="FRAG_30_M_LOOP" seq="6" geometry="Left=240;Top=290;Right=860;Bottom=370;"/>
 				</elements>
 			</diagram>
 		</diagrams>
