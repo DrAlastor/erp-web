@@ -10,7 +10,7 @@ import modulo.tesoreria_y_cajas.cu32_apertura_de_caja.service.CajaService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController("aperturaCajaController")
 @RequestMapping("/api/cajas")
 @RequiredArgsConstructor
 public class CajaController {

@@ -25,7 +25,7 @@ import java.util.Optional;
  * usuario, empleados, ventas, pago_venta) sin depender de su mapeo JPA. Las escrituras van
  * por las entidades compartidas TurnoCaja y MovimientoCaja.
  */
-@Repository
+@Repository("movimientosCajaConsultaRepository")
 @RequiredArgsConstructor
 public class CajaConsultaRepository {
 

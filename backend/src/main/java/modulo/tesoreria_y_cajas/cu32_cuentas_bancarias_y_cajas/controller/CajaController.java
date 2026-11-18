@@ -29,7 +29,7 @@ import java.util.List;
  * CONSULTAR para lecturas, CREAR para abrir turnos y registrar movimientos. El arqueo, el
  * cierre y el historial viven en la HU-35 (cu35_arqueos_y_conciliaciones), misma base /api/caja.
  */
-@RestController
+@RestController("movimientosCajaController")
 @RequestMapping("/api/caja")
 @RequiredArgsConstructor
 public class CajaController {

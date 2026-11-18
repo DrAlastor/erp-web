@@ -12,7 +12,7 @@ import java.util.Set;
  * Consultas de la caja sobre tablas que no tienen entidad JPA en este módulo
  * (COBROS de cuentas por cobrar, del esquema Tenant_Esquema.sql).
  */
-@Repository
+@Repository("aperturaCajaConsultaRepository")
 @RequiredArgsConstructor
 public class CajaConsultaRepository {
 

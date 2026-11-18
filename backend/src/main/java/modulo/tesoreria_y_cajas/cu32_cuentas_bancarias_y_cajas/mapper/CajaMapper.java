@@ -8,7 +8,7 @@ import modulo.ventas_y_facturacion.compartido.entity.MovimientoCaja;
 import org.springframework.stereotype.Component;
 
 /** Traduce turnos y movimientos de caja a los DTOs de la API; el esperado sale de {@link CalculadoraArqueo}. */
-@Component
+@Component("movimientosCajaMapper")
 public class CajaMapper {
 
     public TurnoResponse toResponse(TurnoFila t) {

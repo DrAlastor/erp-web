@@ -8,7 +8,7 @@ import modulo.catalogo_e_inventario.cu11_movimientos_de_inventario.entity.Almace
 import org.springframework.stereotype.Component;
 
 /** Traduce turnos, sucursales y formas de pago a los DTOs de la API de caja. */
-@Component
+@Component("aperturaCajaMapper")
 public class CajaMapper {
 
     public EstadoCajaResponse.TurnoActivo toTurno(TurnoCaja t, String sucursalNombre) {
