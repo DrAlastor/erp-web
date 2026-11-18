@@ -32,7 +32,7 @@ const etiquetaCuenta = (c: { codigo: string; nombre: string }) => `${c.codigo} �
  * <p>Libro Diario con todos los asientos (manuales y los que generan ventas y cobros),
  * editor de partida doble que muestra el cuadre en vivo, y detalle con las acciones que
  * permite el estado: un BORRADOR se corrige o se contabiliza; uno manual se anula (si ya
- * estaba MAYORIZADO, el backend registra la reversión). Los botones dependen de
+ * estaba MAYORIZADO, sale de los libros; el backend exige que su periodo siga abierto). Los botones dependen de
  * `opciones/permisos`, pero quien decide es el backend.
  */
 @Component({
@@ -269,7 +269,7 @@ export class AsientosContablesComponent {
     this.ejecutar(this.api.anular(a.id, this.motivo.trim()), (r) => {
       this.anulando.set(false);
       this.mostrar(r, mayorizado
-        ? `Asiento ${r.numero} anulado: se registró su reversión con la fecha de hoy.`
+        ? `Asiento ${r.numero} anulado: ya no cuenta en los libros ni en los estados financieros.`
         : `Borrador ${r.numero} anulado.`);
     });
   }

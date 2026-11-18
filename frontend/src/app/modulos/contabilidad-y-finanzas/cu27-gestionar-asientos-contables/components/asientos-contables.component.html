@@ -293,8 +293,8 @@
               <h3 id="anular-title">Anular {{ a.numero }}</h3>
               @if (a.estado === 'MAYORIZADO') {
                 <p>
-                  El asiento ya está contabilizado: no se borra. Se registra con la fecha de hoy un asiento de
-                  <strong>reversión</strong> con las mismas cuentas e importes invertidos, y este queda anulado.
+                  El asiento ya está contabilizado: no se borra, queda <strong>anulado</strong> y deja de contar en
+                  el libro mayor y en los estados financieros. Solo se puede si su periodo sigue abierto.
                 </p>
               } @else {
                 <p>El borrador queda anulado y no afecta a los libros.</p>

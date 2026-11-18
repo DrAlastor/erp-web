@@ -20,6 +20,7 @@ import modulo.ventas_y_facturacion.compartido.entity.CuentaContable;
 import modulo.ventas_y_facturacion.compartido.entity.PeriodoContable;
 import modulo.ventas_y_facturacion.compartido.repository.AsientoContableRepository;
 import modulo.ventas_y_facturacion.compartido.repository.CuentaContableRepository;
+import modulo.ventas_y_facturacion.compartido.repository.PeriodoContableRepository;
 import modulo.ventas_y_facturacion.compartido.service.ContabilidadVentaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -39,9 +40,11 @@ import java.util.Map;
  * HU-27 / CU27: gestionar asientos contables (Libro Diario).
  *
  * <p>Ciclo de un asiento manual: se registra en BORRADOR (se puede corregir), se
- * contabiliza (MAYORIZADO, ya no se toca) y, si estaba mal, se anula: un borrador pasa a
- * ANULADO sin más; uno mayorizado genera un asiento de REVERSION con las mismas líneas
- * invertidas y queda ANULADO. Nunca se borra un asiento. Los asientos automáticos (ventas,
+ * contabiliza (MAYORIZADO, ya no se toca) y, si estaba mal, se anula: pasa a ANULADO y deja
+ * de contar en los libros y estados financieros (CU30/CU31 solo suman MAYORIZADO). Un
+ * mayorizado solo se anula mientras su periodo siga abierto, para no alterar cifras de un
+ * mes cerrado; si ya cerró, se corrige con un asiento de ajuste. Nunca se borra un asiento.
+ * Los asientos automáticos (ventas,
  * cobros, notas de crédito...) se ven aquí pero se corrigen desde su documento.
  */
 @Service
@@ -54,6 +57,7 @@ public class AsientoContableService {
 
     private final AsientoContableRepository asientos;
     private final CuentaContableRepository cuentas;
+    private final PeriodoContableRepository periodos;
     private final AsientoConsultaRepository consultas;
     private final ContabilidadVentaService contabilidad;
     private final UsuarioContableResolver usuarioResolver;
@@ -150,8 +154,10 @@ public class AsientoContableService {
     }
 
     /**
-     * Anula un asiento manual. Si ya estaba mayorizado se registra la reversión en la fecha
-     * de hoy (el periodo de hoy debe estar abierto) y el original queda ANULADO.
+     * Anula un asiento manual: queda ANULADO y sale de los libros. Si ya estaba mayorizado,
+     * su periodo tiene que seguir abierto (409 si cerró). No se registra reversión: el libro
+     * mayor y el balance solo suman asientos MAYORIZADOS, así que una reversión además del
+     * anulado restaría el importe dos veces.
      */
     @Transactional
     public AsientoResponse anular(Long id, AnularAsientoRequest request, Authentication authentication) {
@@ -166,15 +172,13 @@ public class AsientoContableService {
         String motivo = request.motivo().trim();
         String detalle;
         if (ReglasAsiento.MAYORIZADO.equalsIgnoreCase(asiento.getEstado())) {
-            List<ContabilidadVentaService.Partida> inversas = asiento.getDetalles().stream()
-                    .map(d -> new ContabilidadVentaService.Partida(
-                            d.getCuentaContable().getCodigo(), d.getGlosa(), d.getDebe(), d.getHaber()).invertida())
-                    .toList();
-            String reversion = contabilidad.registrarAsiento(LocalDate.now(), ReglasAsiento.REVERSION,
-                    "Reversión de " + asiento.getNumeroAsiento() + ". Motivo: " + motivo,
-                    usuarioResolver.resolver(authentication), inversas);
-            detalle = "Anulación del asiento " + asiento.getNumeroAsiento() + " con la reversión " + reversion
-                    + ". Motivo: " + motivo;
+            PeriodoContable periodo = periodos.findById(asiento.getPeriodoContableId()).orElse(null);
+            if (periodo != null && !periodo.estaAbierto()) {
+                throw conflicto("El asiento " + asiento.getNumeroAsiento() + " pertenece al periodo " + periodo.getNombre()
+                        + ", que está cerrado; corrígelo con un asiento de ajuste en un periodo abierto.");
+            }
+            detalle = "Anulación del asiento mayorizado " + asiento.getNumeroAsiento()
+                    + " (sale del libro mayor y de los estados financieros). Motivo: " + motivo;
         } else {
             detalle = "Anulación del borrador " + asiento.getNumeroAsiento() + ". Motivo: " + motivo;
         }
