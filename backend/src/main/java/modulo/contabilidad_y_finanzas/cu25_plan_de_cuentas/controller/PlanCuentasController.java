@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import modulo.contabilidad_y_finanzas.compartido.PermisoFuncionContable;
+import modulo.contabilidad_y_finanzas.compartido.Solicitante;
 import modulo.contabilidad_y_finanzas.compartido.SolicitanteActual;
 import modulo.contabilidad_y_finanzas.cu25_plan_de_cuentas.dto.CuentaActualizarRequest;
 import modulo.contabilidad_y_finanzas.cu25_plan_de_cuentas.dto.CuentaNodoResponse;
@@ -40,9 +42,21 @@ public class PlanCuentasController {
     static final String MODIFICAR = "hasPermission('CONTABILIDAD','MODIFICAR')";
 
     private final PlanCuentasService service;
+    private final PermisoFuncionContable permisos;
 
-    public PlanCuentasController(PlanCuentasService service) {
+    public PlanCuentasController(PlanCuentasService service, PermisoFuncionContable permisos) {
         this.service = service;
+        this.permisos = permisos;
+    }
+
+    /**
+     * CONTABILIDAD_CREAR/MODIFICAR se concede por cualquier función de Contabilidad con Edición
+     * (p. ej. el Cajero con «Cuentas por Cobrar y Cobros»): se exige además Edición en esta función.
+     */
+    private Solicitante editor(Principal actor, HttpServletRequest http) {
+        Solicitante quien = SolicitanteActual.de(actor, http);
+        permisos.exigirEdicion(quien.usuarioId(), PermisoFuncionContable.PLAN_CUENTAS);
+        return quien;
     }
 
     @GetMapping("/arbol")
@@ -73,7 +87,7 @@ public class PlanCuentasController {
     @PreAuthorize(CREAR)
     public ResponseEntity<CuentaResponse> crear(@Valid @RequestBody CuentaRequest body,
                                                 Principal actor, HttpServletRequest http) {
-        CuentaResponse creada = service.crear(body, SolicitanteActual.de(actor, http));
+        CuentaResponse creada = service.crear(body, editor(actor, http));
         return ResponseEntity.created(URI.create("/api/v1/plan-cuentas/" + creada.id())).body(creada);
     }
 
@@ -81,18 +95,18 @@ public class PlanCuentasController {
     @PreAuthorize(MODIFICAR)
     public CuentaResponse actualizar(@PathVariable Long id, @Valid @RequestBody CuentaActualizarRequest body,
                                      Principal actor, HttpServletRequest http) {
-        return service.actualizar(id, body, SolicitanteActual.de(actor, http));
+        return service.actualizar(id, body, editor(actor, http));
     }
 
     @PatchMapping("/{id}/desactivar")
     @PreAuthorize(MODIFICAR)
     public CuentaResponse desactivar(@PathVariable Long id, Principal actor, HttpServletRequest http) {
-        return service.desactivar(id, SolicitanteActual.de(actor, http));
+        return service.desactivar(id, editor(actor, http));
     }
 
     @PatchMapping("/{id}/reactivar")
     @PreAuthorize(MODIFICAR)
     public CuentaResponse reactivar(@PathVariable Long id, Principal actor, HttpServletRequest http) {
-        return service.reactivar(id, SolicitanteActual.de(actor, http));
+        return service.reactivar(id, editor(actor, http));
     }
 }

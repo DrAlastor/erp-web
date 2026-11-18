@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Control por función para las operaciones de escritura de la CU27 y la CU29.
+ * Control por función para las operaciones de escritura de la CU25, CU26, CU27 y CU29.
  *
  * <p>El evaluador de la CU03 traduce cualquier función de Contabilidad con «Edición» a
  * CONTABILIDAD_CREAR/MODIFICAR para todo el módulo: un Cajero con Edición en «Cuentas por
@@ -26,6 +26,8 @@ public class PermisoFuncionContable {
 
     public static final String ASIENTOS = "Gestionar Asientos Contables";
     public static final String CUENTAS_POR_COBRAR = "Gestionar Cuentas por Cobrar y Cobros";
+    public static final String PLAN_CUENTAS = "Gestionar Plan de Cuentas";
+    public static final String PERIODOS = "Gestionar Periodos Contables";
 
     private final NamedParameterJdbcTemplate jdbc;
 
