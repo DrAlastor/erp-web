@@ -708,3 +708,51 @@ sequenceDiagram
     ctrl -->> g: 200 OK (estadoResp)
     deactivate ctrl
 ```
+
+---
+
+## 6. Modelos de Enterprise Architect (Archivos XML y XMI 2.1)
+
+Para evitar el error de importación en Enterprise Architect:
+> `Error: Cannot find package to insert Sequence diagram "Diagrama de Secuencia - CU30 Consultar Libro Diario" into`
+
+Este error ocurría porque el atributo `owner` de los diagramas apuntaba a un ID de interacción interna en vez del ID de un paquete formalmente declarado en `<packages>` dentro de la extensión de EA. 
+
+En la versión actual se han generado modelos **separados e independientes** para cada caso de uso, asegurando que cada diagrama cuelgue directamente de su propio paquete en el Project Browser:
+
+### 6.1. Archivos Disponibles en `docs/contabilidad/`:
+
+1. **Modelo Específico CU30 - Consultar Libros Contables:**
+   - **`CU30-Model.xml`** / **`CU30-Model.xmi`**
+   - **Contenido:**
+     - Tablas/Clases con atributos privados, tipos y operaciones de negocio: `PeriodoContable`, `CuentaContable`, `AsientoContable`, `AsientoDetalle`.
+     - Clases de aplicación: `LibrosContablesController`, `LibrosContablesServiceImpl`, `LibroDiarioRepository`, `LibroMayorRepository`.
+     - Actor: `Contador`.
+     - Relaciones y cardinalidades de base de datos (1 a N, Composición, etc.).
+     - **Diagrama 1:** *Diagrama de Base de Datos y Clases - CU30 - Consultar Libros Contables*.
+     - **Diagrama 2:** *Diagrama de Secuencia - CU30 Libro Diario* (con participantes, activaciones y retorno).
+     - **Diagrama 3:** *Diagrama de Secuencia - CU30 Libro Mayor* (con cálculo progresivo y lote de saldos anteriores).
+
+2. **Modelo Específico CU31 - Consultar Información Financiera:**
+   - **`CU31-Model.xml`** / **`CU31-Model.xmi`**
+   - **Contenido:**
+     - Tablas/Clases con atributos privados, tipos y operaciones de negocio: `PeriodoContable`, `CuentaContable`, `AsientoContable`, `AsientoDetalle`.
+     - Clases de aplicación: `InformacionFinancieraController`, `InformacionFinancieraServiceImpl`, `InformacionFinancieraRepository`.
+     - Actores: `Gerente General`, `Contador`.
+     - Relaciones de agregación y jerarquía del plan de cuentas.
+     - **Diagrama 1:** *Diagrama de Base de Datos y Clases - CU31 - Consultar Informacion Financiera*.
+     - **Diagrama 2:** *Diagrama de Secuencia - CU31 Balance General* (rollup jerárquico y validación de ecuación patrimonial).
+     - **Diagrama 3:** *Diagrama de Secuencia - CU31 Estado de Resultados* (estructura escalonada y análisis vertical).
+
+3. **Modelo Unificado:**
+   - **`CU30-CU31-Model.xml`** / **`CU30-CU31-Model.xmi`**
+   - Integra ambos módulos en el paquete `Modulo Contabilidad y Finanzas (CU30 y CU31)` con todos sus diagramas vinculados correctamente a la raíz del paquete.
+
+### 6.2. Instrucciones de Importación en Enterprise Architect:
+1. Abra su proyecto en Enterprise Architect.
+2. En el árbol del explorador (**Project Browser**), seleccione el paquete o modelo de destino (ej. `Model` o `ERP Contable y Comercial`).
+3. Vaya a la barra superior: **Publish** (o **Package Control**) $\rightarrow$ **Import XML** $\rightarrow$ **Import Package from XML...** (o atajo `Ctrl + Alt + I`).
+4. Seleccione el archivo `CU30-Model.xml` (o `CU31-Model.xml`).
+5. Haga clic en **Import**.
+6. En el Project Browser aparecerá el paquete con sus diagramas listos para abrir con doble clic.
+

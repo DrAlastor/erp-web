@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<xmi:Documentation exporter="Enterprise Architect" exporterVersion="6.5"/>
+	<uml:Model xmi:type="uml:Model" name="EA_Model" visibility="public">
+		<packagedElement xmi:type="uml:Package" xmi:id="EAPK_CU30_LIBROS" name="CU30 - Consultar Libros Contables" visibility="public">
+			<packagedElement xmi:type="uml:Actor" xmi:id="EAID_ACT_30" name="Contador" visibility="public"/>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_PERIODO" name="PeriodoContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_2" name="gestion: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_3" name="mes: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_4" name="nombre: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_5" name="fechaInicio: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_6" name="fechaFin: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_7" name="estado: EstadoPeriodo" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_PC_8" name="fechaCierre: LocalDateTime" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_1" name="+ estaAbierto(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_2" name="+ cerrarPeriodo(): void" visibility="public">
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_PC_3" name="+ contieneFecha(fecha: LocalDate): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_1" name="fecha"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_PC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_CUENTA" name="CuentaContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_2" name="codigo: String [UK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_3" name="nombre: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_4" name="nivel: Integer" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_5" name="tipo: TipoCuenta" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_6" name="naturaleza: NaturalezaCuenta" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_7" name="permiteMovimiento: Boolean" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_8" name="padreId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_CC_9" name="activo: Boolean" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_1" name="+ esDeudora(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_2" name="+ esAcreedora(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_3" name="+ calcularSaldoNeto(debe: BigDecimal, haber: BigDecimal): BigDecimal" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_D" name="debe"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_H" name="haber"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_CC_4" name="+ esCuentaMovimiento(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_CC_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_ASIENTO" name="AsientoContable" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_2" name="numeroAsiento: String [UK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_3" name="fecha: LocalDate" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_4" name="periodoId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_5" name="tipoAsiento: TipoAsiento" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_6" name="glosa: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_7" name="totalDebe: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_8" name="totalHaber: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AC_9" name="estado: EstadoAsiento" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_1" name="+ verificarPartidaDoble(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_2" name="+ mayorizar(): void" visibility="public">
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AC_3" name="+ anular(motivo: String): void" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_M" name="motivo"/>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_TB_DETALLE" name="AsientoDetalle" visibility="public" stereotype="table">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_1" name="id: Long [PK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_2" name="asientoId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_3" name="cuentaContableId: Long [FK]" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Integer"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_4" name="glosa: String" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_5" name="debe: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_AD_6" name="haber: BigDecimal" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_1" name="+ getImporteNeto(): BigDecimal" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_2" name="+ esMovimientoDebe(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_AD_3" name="+ esMovimientoHaber(): Boolean" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_AD_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#Boolean"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_CTRL" name="LibrosContablesController" visibility="public">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LC_1" name="- librosService: LibrosContablesService" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_1" name="+ consultarLibroDiario(filtro: FiltroDiarioDTO): ResponseEntity<LibroDiarioResponse>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F1" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_2" name="+ consultarLibroMayor(filtro: FiltroMayorDTO): ResponseEntity<LibroMayorResponse>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F2" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_3" name="+ exportarDiarioCsv(filtro: FiltroDiarioDTO): ResponseEntity<byte[]>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F3" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LC_4" name="+ exportarMayorCsv(filtro: FiltroMayorDTO): ResponseEntity<byte[]>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_F4" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LC_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_SRV" name="LibrosContablesServiceImpl" visibility="public">
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LS_1" name="- diarioRepo: LibroDiarioRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LS_2" name="- mayorRepo: LibroMayorRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LS_3" name="- periodoRepo: PeriodoContableRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedAttribute xmi:type="uml:Property" xmi:id="A_LS_4" name="- cuentaRepo: CuentaContableRepository" visibility="private">
+					<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+				</ownedAttribute>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_1" name="+ obtenerLibroDiario(filtro: FiltroDiarioDTO): LibroDiarioResponse" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S1" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_2" name="+ obtenerLibroMayor(filtro: FiltroMayorDTO): LibroMayorResponse" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S2" name="filtro"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_3" name="+ calcularSaldoInicial(cuentaId: Long, fecha: LocalDate): BigDecimal" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="P_S3" name="cuentaId"/>
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_3_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_LS_4" name="+ exportarLibroDiarioCsv(filtro: FiltroDiarioDTO): byte[]" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_LS_4_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_REPO_DIARIO" name="LibroDiarioRepository" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RDI_1" name="+ findAll(spec: Specification<AsientoContable>, sort: Sort): List<AsientoContable>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RDI_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Class" xmi:id="EAID_CU30_REPO_MAYOR" name="LibroMayorRepository" visibility="public">
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_1" name="+ sumSaldosAnterioresBatch(fechaInicio: LocalDate): List<Object[]>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RMA_1_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+				<ownedOperation xmi:type="uml:Operation" xmi:id="O_RMA_2" name="+ findMovimientosMayorBatch(inicio: LocalDate, fin: LocalDate): List<AsientoDetalle>" visibility="public">
+					<ownedParameter xmi:type="uml:Parameter" xmi:id="O_RMA_2_ret" direction="return">
+						<type xmi:type="uml:PrimitiveType" href="http://schema.omg.org/spec/UML/2.1#String"/>
+					</ownedParameter>
+				</ownedOperation>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_PERIODO_ASIENTO" name="registra">
+				<memberEnd xmi:idref="ASSOC_PERIODO_ASIENTO_src"/>
+				<memberEnd xmi:idref="ASSOC_PERIODO_ASIENTO_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_PERIODO_ASIENTO_src" name="periodoContable" type="EAID_TB_PERIODO" association="ASSOC_PERIODO_ASIENTO"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_PERIODO_ASIENTO_tgt" name="asientos" type="EAID_TB_ASIENTO" association="ASSOC_PERIODO_ASIENTO"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_ASIENTO_DETALLE" name="compuesto_por">
+				<memberEnd xmi:idref="ASSOC_ASIENTO_DETALLE_src"/>
+				<memberEnd xmi:idref="ASSOC_ASIENTO_DETALLE_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_ASIENTO_DETALLE_src" name="asientoContable" type="EAID_TB_ASIENTO" association="ASSOC_ASIENTO_DETALLE"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_ASIENTO_DETALLE_tgt" name="detalles" type="EAID_TB_DETALLE" association="ASSOC_ASIENTO_DETALLE"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CUENTA_DETALLE" name="imputada_en">
+				<memberEnd xmi:idref="ASSOC_CUENTA_DETALLE_src"/>
+				<memberEnd xmi:idref="ASSOC_CUENTA_DETALLE_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_DETALLE_src" name="cuentaContable" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_DETALLE"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_DETALLE_tgt" name="asientoDetalles" type="EAID_TB_DETALLE" association="ASSOC_CUENTA_DETALLE"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CUENTA_SUBGRUPO" name="subcuentas">
+				<memberEnd xmi:idref="ASSOC_CUENTA_SUBGRUPO_src"/>
+				<memberEnd xmi:idref="ASSOC_CUENTA_SUBGRUPO_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_SUBGRUPO_src" name="padre" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_SUBGRUPO"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CUENTA_SUBGRUPO_tgt" name="hijos" type="EAID_TB_CUENTA" association="ASSOC_CUENTA_SUBGRUPO"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CU30_CTRL_SRV" name="delegatesTo">
+				<memberEnd xmi:idref="ASSOC_CU30_CTRL_SRV_src"/>
+				<memberEnd xmi:idref="ASSOC_CU30_CTRL_SRV_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_CTRL_SRV_src" name="controller" type="EAID_CU30_CTRL" association="ASSOC_CU30_CTRL_SRV"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_CTRL_SRV_tgt" name="service" type="EAID_CU30_SRV" association="ASSOC_CU30_CTRL_SRV"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CU30_SRV_REPO_D" name="queries">
+				<memberEnd xmi:idref="ASSOC_CU30_SRV_REPO_D_src"/>
+				<memberEnd xmi:idref="ASSOC_CU30_SRV_REPO_D_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_SRV_REPO_D_src" name="service" type="EAID_CU30_SRV" association="ASSOC_CU30_SRV_REPO_D"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_SRV_REPO_D_tgt" name="repoDiario" type="EAID_CU30_REPO_DIARIO" association="ASSOC_CU30_SRV_REPO_D"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Association" xmi:id="ASSOC_CU30_SRV_REPO_M" name="queries">
+				<memberEnd xmi:idref="ASSOC_CU30_SRV_REPO_M_src"/>
+				<memberEnd xmi:idref="ASSOC_CU30_SRV_REPO_M_tgt"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_SRV_REPO_M_src" name="service" type="EAID_CU30_SRV" association="ASSOC_CU30_SRV_REPO_M"/>
+				<ownedEnd xmi:type="uml:Property" xmi:id="ASSOC_CU30_SRV_REPO_M_tgt" name="repoMayor" type="EAID_CU30_REPO_MAYOR" association="ASSOC_CU30_SRV_REPO_M"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU30_DIARIO" name="Diagrama de Secuencia - CU30 Libro Diario">
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D1" name="c: Contador"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D2" name="ctrl: LibrosContablesController"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D3" name="srv: LibrosContablesServiceImpl"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D4" name="repo: LibroDiarioRepository"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_D5" name="db: BaseDeDatosPostgreSQL"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_send" covered="LL_30_D1"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D1_recv" covered="LL_30_D2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D1" name="1: consultarLibroDiario(periodoId, desde, hasta, tipo, estado)" sendEvent="M_30_D1_send" receiveEvent="M_30_D1_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D2_send" covered="LL_30_D2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D2_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D2" name="2: obtenerLibroDiario(filtroDiarioDTO)" sendEvent="M_30_D2_send" receiveEvent="M_30_D2_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D3_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D3_recv" covered="LL_30_D4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D3" name="3: findAll(specLibroDiario, sortFechaAsc)" sendEvent="M_30_D3_send" receiveEvent="M_30_D3_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D4_send" covered="LL_30_D4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D4_recv" covered="LL_30_D5"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D4" name="4: SELECT * FROM asientos_contables JOIN asiento_detalles" sendEvent="M_30_D4_send" receiveEvent="M_30_D4_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_send" covered="LL_30_D5"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D5_recv" covered="LL_30_D4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D5" name="5: return ResultSet (asientos con detalles)" sendEvent="M_30_D5_send" receiveEvent="M_30_D5_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_send" covered="LL_30_D4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D6_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D6" name="6: return List<AsientoContable>" sendEvent="M_30_D6_send" receiveEvent="M_30_D6_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D7_recv" covered="LL_30_D3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D7" name="7: calcularTotalesYValidarCuadre(totalDebe, totalHaber)" sendEvent="M_30_D7_send" receiveEvent="M_30_D7_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_send" covered="LL_30_D3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D8_recv" covered="LL_30_D2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D8" name="8: return LibroDiarioResponse (asientos, totalDebe, totalHaber, balanceado)" sendEvent="M_30_D8_send" receiveEvent="M_30_D8_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D9_send" covered="LL_30_D2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_D9_recv" covered="LL_30_D1"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_D9" name="9: 200 OK HTTP (JSON LibroDiarioResponse)" sendEvent="M_30_D9_send" receiveEvent="M_30_D9_recv" messageSort="reply"/>
+			</packagedElement>
+			<packagedElement xmi:type="uml:Interaction" xmi:id="INT_CU30_MAYOR" name="Diagrama de Secuencia - CU30 Libro Mayor">
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M1" name="c: Contador"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M2" name="ctrl: LibrosContablesController"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M3" name="srv: LibrosContablesServiceImpl"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M4" name="repoMayor: LibroMayorRepository"/>
+				<lifeline xmi:type="uml:Lifeline" xmi:id="LL_30_M5" name="db: BaseDeDatosPostgreSQL"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_send" covered="LL_30_M1"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M1_recv" covered="LL_30_M2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M1" name="1: consultarLibroMayor(cuentaId, periodoId, desde, hasta)" sendEvent="M_30_M1_send" receiveEvent="M_30_M1_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M2_send" covered="LL_30_M2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M2_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M2" name="2: obtenerLibroMayor(filtroMayorDTO)" sendEvent="M_30_M2_send" receiveEvent="M_30_M2_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M3_send" covered="LL_30_M3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M3_recv" covered="LL_30_M4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M3" name="3: sumSaldosAnterioresBatch(fechaInicio)" sendEvent="M_30_M3_send" receiveEvent="M_30_M3_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M4_send" covered="LL_30_M4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M4_recv" covered="LL_30_M5"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M4" name="4: SELECT cta_id, SUM(debe), SUM(haber) WHERE fecha < fechaInicio" sendEvent="M_30_M4_send" receiveEvent="M_30_M4_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M5_send" covered="LL_30_M5"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M5_recv" covered="LL_30_M4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M5" name="5: return ResultSet saldos acumulados batch" sendEvent="M_30_M5_send" receiveEvent="M_30_M5_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M6_send" covered="LL_30_M4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M6_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M6" name="6: return List<Object[]> saldosAnteriores" sendEvent="M_30_M6_send" receiveEvent="M_30_M6_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M7_send" covered="LL_30_M3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M7_recv" covered="LL_30_M4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M7" name="7: findMovimientosMayorBatch(fechaInicio, fechaFin)" sendEvent="M_30_M7_send" receiveEvent="M_30_M7_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_send" covered="LL_30_M4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M8_recv" covered="LL_30_M5"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M8" name="8: SELECT d.*, a.fecha, a.numero FROM asiento_detalles d JOIN asientos a" sendEvent="M_30_M8_send" receiveEvent="M_30_M8_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_send" covered="LL_30_M5"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M9_recv" covered="LL_30_M4"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M9" name="9: return ResultSet movimientos periodo" sendEvent="M_30_M9_send" receiveEvent="M_30_M9_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M10_send" covered="LL_30_M4"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M10_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M10" name="10: return List<AsientoDetalle>" sendEvent="M_30_M10_send" receiveEvent="M_30_M10_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M11_send" covered="LL_30_M3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M11_recv" covered="LL_30_M3"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M11" name="11: calcularSaldoProgresivoPorCuenta(saldoInicial, movimientos)" sendEvent="M_30_M11_send" receiveEvent="M_30_M11_recv" messageSort="synchCall"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M12_send" covered="LL_30_M3"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M12_recv" covered="LL_30_M2"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M12" name="12: return LibroMayorResponse (cuentas, saldoInicial, movimientos, saldoFinal)" sendEvent="M_30_M12_send" receiveEvent="M_30_M12_recv" messageSort="reply"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M13_send" covered="LL_30_M2"/>
+				<fragment xmi:type="uml:OccurrenceSpecification" xmi:id="M_30_M13_recv" covered="LL_30_M1"/>
+				<message xmi:type="uml:Message" xmi:id="M_30_M13" name="13: 200 OK HTTP (JSON LibroMayorResponse)" sendEvent="M_30_M13_send" receiveEvent="M_30_M13_recv" messageSort="reply"/>
+			</packagedElement>
+		</packagedElement>
+	</uml:Model>
+	<xmi:Extension extender="Enterprise Architect" extenderID="6.5">
+		<elements>
+			<element xmi:idref="EAPK_CU30_LIBROS" name="CU30 - Consultar Libros Contables" scope="public">
+				<model package2="EAPK_CU30_LIBROS" package="EAPK_CU30_LIBROS" tpos="0" ea_eleType="package"/>
+				<properties isSpecification="false" sType="Package" nType="0" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_ACT_30" name="Contador" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Actor" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_PERIODO" name="PeriodoContable" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_CUENTA" name="CuentaContable" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_ASIENTO" name="AsientoContable" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_TB_DETALLE" name="AsientoDetalle" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU30_CTRL" name="LibrosContablesController" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU30_SRV" name="LibrosContablesServiceImpl" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU30_REPO_DIARIO" name="LibroDiarioRepository" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+			<element xmi:idref="EAID_CU30_REPO_MAYOR" name="LibroMayorRepository" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Class" scope="public"/>
+			</element>
+		</elements>
+		<packages>
+			<package xmi:id="EAPK_CU30_LIBROS" name="CU30 - Consultar Libros Contables">
+				<properties name="CU30 - Consultar Libros Contables" scope="public"/>
+			</package>
+		</packages>
+		<connectors>
+			<connector xmi:idref="ASSOC_PERIODO_ASIENTO">
+				<source xmi:idref="EAID_TB_PERIODO">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_ASIENTO">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_ASIENTO_DETALLE">
+				<source xmi:idref="EAID_TB_ASIENTO">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_DETALLE">
+					<type multiplicity="2..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CUENTA_DETALLE">
+				<source xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_DETALLE">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CUENTA_SUBGRUPO">
+				<source xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="0..1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_TB_CUENTA">
+					<type multiplicity="0..*" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CU30_CTRL_SRV">
+				<source xmi:idref="EAID_CU30_CTRL">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_CU30_SRV">
+					<type multiplicity="1" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CU30_SRV_REPO_D">
+				<source xmi:idref="EAID_CU30_SRV">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_CU30_REPO_DIARIO">
+					<type multiplicity="1" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="ASSOC_CU30_SRV_REPO_M">
+				<source xmi:idref="EAID_CU30_SRV">
+					<type multiplicity="1" aggregation="none"/>
+				</source>
+				<target xmi:idref="EAID_CU30_REPO_MAYOR">
+					<type multiplicity="1" aggregation="none"/>
+				</target>
+				<properties ea_type="Association" direction="Source -> Destination"/>
+			</connector>
+			<connector xmi:idref="M_30_D1">
+				<source xmi:idref="LL_30_D1"/>
+				<target xmi:idref="LL_30_D2"/>
+				<properties name="1: consultarLibroDiario(periodoId, desde, hasta, tipo, estado)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="1"/>
+			</connector>
+			<connector xmi:idref="M_30_D2">
+				<source xmi:idref="LL_30_D2"/>
+				<target xmi:idref="LL_30_D3"/>
+				<properties name="2: obtenerLibroDiario(filtroDiarioDTO)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="2"/>
+			</connector>
+			<connector xmi:idref="M_30_D3">
+				<source xmi:idref="LL_30_D3"/>
+				<target xmi:idref="LL_30_D4"/>
+				<properties name="3: findAll(specLibroDiario, sortFechaAsc)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="3"/>
+			</connector>
+			<connector xmi:idref="M_30_D4">
+				<source xmi:idref="LL_30_D4"/>
+				<target xmi:idref="LL_30_D5"/>
+				<properties name="4: SELECT * FROM asientos_contables JOIN asiento_detalles" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="4"/>
+			</connector>
+			<connector xmi:idref="M_30_D5">
+				<source xmi:idref="LL_30_D5"/>
+				<target xmi:idref="LL_30_D4"/>
+				<properties name="5: return ResultSet (asientos con detalles)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="5"/>
+			</connector>
+			<connector xmi:idref="M_30_D6">
+				<source xmi:idref="LL_30_D4"/>
+				<target xmi:idref="LL_30_D3"/>
+				<properties name="6: return List<AsientoContable>" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="6"/>
+			</connector>
+			<connector xmi:idref="M_30_D7">
+				<source xmi:idref="LL_30_D3"/>
+				<target xmi:idref="LL_30_D3"/>
+				<properties name="7: calcularTotalesYValidarCuadre(totalDebe, totalHaber)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="7"/>
+			</connector>
+			<connector xmi:idref="M_30_D8">
+				<source xmi:idref="LL_30_D3"/>
+				<target xmi:idref="LL_30_D2"/>
+				<properties name="8: return LibroDiarioResponse (asientos, totalDebe, totalHaber, balanceado)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="8"/>
+			</connector>
+			<connector xmi:idref="M_30_D9">
+				<source xmi:idref="LL_30_D2"/>
+				<target xmi:idref="LL_30_D1"/>
+				<properties name="9: 200 OK HTTP (JSON LibroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="9"/>
+			</connector>
+			<connector xmi:idref="M_30_M1">
+				<source xmi:idref="LL_30_M1"/>
+				<target xmi:idref="LL_30_M2"/>
+				<properties name="1: consultarLibroMayor(cuentaId, periodoId, desde, hasta)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="1"/>
+			</connector>
+			<connector xmi:idref="M_30_M2">
+				<source xmi:idref="LL_30_M2"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="2: obtenerLibroMayor(filtroMayorDTO)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="2"/>
+			</connector>
+			<connector xmi:idref="M_30_M3">
+				<source xmi:idref="LL_30_M3"/>
+				<target xmi:idref="LL_30_M4"/>
+				<properties name="3: sumSaldosAnterioresBatch(fechaInicio)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="3"/>
+			</connector>
+			<connector xmi:idref="M_30_M4">
+				<source xmi:idref="LL_30_M4"/>
+				<target xmi:idref="LL_30_M5"/>
+				<properties name="4: SELECT cta_id, SUM(debe), SUM(haber) WHERE fecha < fechaInicio" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="4"/>
+			</connector>
+			<connector xmi:idref="M_30_M5">
+				<source xmi:idref="LL_30_M5"/>
+				<target xmi:idref="LL_30_M4"/>
+				<properties name="5: return ResultSet saldos acumulados batch" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="5"/>
+			</connector>
+			<connector xmi:idref="M_30_M6">
+				<source xmi:idref="LL_30_M4"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="6: return List<Object[]> saldosAnteriores" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="6"/>
+			</connector>
+			<connector xmi:idref="M_30_M7">
+				<source xmi:idref="LL_30_M3"/>
+				<target xmi:idref="LL_30_M4"/>
+				<properties name="7: findMovimientosMayorBatch(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="7"/>
+			</connector>
+			<connector xmi:idref="M_30_M8">
+				<source xmi:idref="LL_30_M4"/>
+				<target xmi:idref="LL_30_M5"/>
+				<properties name="8: SELECT d.*, a.fecha, a.numero FROM asiento_detalles d JOIN asientos a" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="8"/>
+			</connector>
+			<connector xmi:idref="M_30_M9">
+				<source xmi:idref="LL_30_M5"/>
+				<target xmi:idref="LL_30_M4"/>
+				<properties name="9: return ResultSet movimientos periodo" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="9"/>
+			</connector>
+			<connector xmi:idref="M_30_M10">
+				<source xmi:idref="LL_30_M4"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="10: return List<AsientoDetalle>" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="10"/>
+			</connector>
+			<connector xmi:idref="M_30_M11">
+				<source xmi:idref="LL_30_M3"/>
+				<target xmi:idref="LL_30_M3"/>
+				<properties name="11: calcularSaldoProgresivoPorCuenta(saldoInicial, movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="11"/>
+			</connector>
+			<connector xmi:idref="M_30_M12">
+				<source xmi:idref="LL_30_M3"/>
+				<target xmi:idref="LL_30_M2"/>
+				<properties name="12: return LibroMayorResponse (cuentas, saldoInicial, movimientos, saldoFinal)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="12"/>
+			</connector>
+			<connector xmi:idref="M_30_M13">
+				<source xmi:idref="LL_30_M2"/>
+				<target xmi:idref="LL_30_M1"/>
+				<properties name="13: 200 OK HTTP (JSON LibroMayorResponse)" ea_type="Sequence" direction="Source -> Destination"/>
+				<appearance seq_no="13"/>
+			</connector>
+		</connectors>
+		<diagrams>
+			<diagram xmi:id="EAID_DIAG_CLASS_EAPK_CU30_LIBROS">
+				<model package="EAPK_CU30_LIBROS" owner="EAPK_CU30_LIBROS"/>
+				<properties name="Diagrama de Base de Datos y Clases - CU30 - Consultar Libros Contables" type="Logical"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="EAID_TB_PERIODO" seq="1" geometry="Left=50;Top=50;Right=330;Bottom=366;"/>
+					<element subject="EAID_TB_CUENTA" seq="2" geometry="Left=370;Top=50;Right=650;Bottom=408;"/>
+					<element subject="EAID_TB_ASIENTO" seq="3" geometry="Left=690;Top=50;Right=970;Bottom=386;"/>
+					<element subject="EAID_TB_DETALLE" seq="4" geometry="Left=1010;Top=50;Right=1290;Bottom=326;"/>
+					<element subject="EAID_CU30_CTRL" seq="5" geometry="Left=50;Top=380;Right=330;Bottom=578;"/>
+					<element subject="EAID_CU30_SRV" seq="6" geometry="Left=370;Top=380;Right=650;Bottom=638;"/>
+					<element subject="EAID_CU30_REPO_DIARIO" seq="7" geometry="Left=690;Top=380;Right=970;Bottom=492;"/>
+					<element subject="EAID_CU30_REPO_MAYOR" seq="8" geometry="Left=1010;Top=380;Right=1290;Bottom=514;"/>
+				</elements>
+			</diagram>
+			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU30_DIARIO">
+				<model package="EAPK_CU30_LIBROS" owner="EAPK_CU30_LIBROS"/>
+				<properties name="Diagrama de Secuencia - CU30 Libro Diario" type="Sequence"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="LL_30_D1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
+					<element subject="LL_30_D2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
+					<element subject="LL_30_D3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
+					<element subject="LL_30_D4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_30_D5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
+				</elements>
+			</diagram>
+			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU30_MAYOR">
+				<model package="EAPK_CU30_LIBROS" owner="EAPK_CU30_LIBROS"/>
+				<properties name="Diagrama de Secuencia - CU30 Libro Mayor" type="Sequence"/>
+				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
+				<elements>
+					<element subject="LL_30_M1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
+					<element subject="LL_30_M2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
+					<element subject="LL_30_M3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
+					<element subject="LL_30_M4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_30_M5" seq="5" geometry="Left=900;Top=50;Right=1060;Bottom=580;"/>
+				</elements>
+			</diagram>
+		</diagrams>
+	</xmi:Extension>
+</xmi:XMI>
