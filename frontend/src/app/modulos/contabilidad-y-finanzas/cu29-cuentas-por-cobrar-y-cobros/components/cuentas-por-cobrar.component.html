@@ -1,0 +1,279 @@
+<div class="header">
+  <div>
+    <h2>Cuentas por cobrar</h2>
+    <p>Cuotas de las ventas a crédito, cobros a clientes y estado de cuenta.</p>
+  </div>
+  @if (vista() !== 'cartera') {
+    <button (click)="volver()">← Volver a la cartera</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @switch (vista()) {
+    <!-- ================================================================= CARTERA -->
+    @case ('cartera') {
+      @if (resumen(); as r) {
+        <div class="kpis">
+          <div><span>Saldo por cobrar</span><strong>Bs {{ r.saldoTotal | number: '1.2-2' }}</strong><small>{{ r.cuotasConSaldo }} cuotas</small></div>
+          <div class="alerta">
+            <span>Vencido</span><strong>Bs {{ r.vencido | number: '1.2-2' }}</strong>
+            @if (r.cuotasVencidas) { <button class="link" (click)="filtrarVencidas()">{{ r.cuotasVencidas }} cuotas vencidas →</button> }
+          </div>
+          <div><span>Vence en 7 días</span><strong>Bs {{ r.porVencer7Dias | number: '1.2-2' }}</strong></div>
+          <div><span>Cobrado este mes</span><strong>Bs {{ r.cobradoMes | number: '1.2-2' }}</strong></div>
+        </div>
+        @if (r.vencido > 0 || r.topClientes.length) {
+          <div class="tablero">
+            <section>
+              <h4>Antigüedad de lo vencido</h4>
+              <ul class="barras">
+                @for (t of tramos; track t; let i = $index) {
+                  <li>
+                    <span>{{ t }}</span>
+                    <span class="barra"><span [style.width.%]="r.vencido ? (r.antiguedad[i] / r.vencido) * 100 : 0"></span></span>
+                    <span class="num">Bs {{ r.antiguedad[i] | number: '1.2-2' }}</span>
+                  </li>
+                }
+              </ul>
+            </section>
+            <section>
+              <h4>Clientes con más saldo</h4>
+              <ul class="top">
+                @for (c of r.topClientes; track c.clienteId) {
+                  <li>
+                    <button class="link" (click)="verEstadoCuenta(c.clienteId)">{{ c.razonSocial }}</button>
+                    <span class="num">Bs {{ c.saldo | number: '1.2-2' }}</span>
+                  </li>
+                } @empty {
+                  <li>Sin saldos pendientes.</li>
+                }
+              </ul>
+            </section>
+          </div>
+        }
+      }
+
+      <form class="filters" (ngSubmit)="load(true)">
+        <label>
+          Buscar
+          <input name="search" [(ngModel)]="search" maxlength="150" placeholder="Cliente, NIT/CI o N° de factura" />
+        </label>
+        <label>
+          Estado
+          <select name="estado" [(ngModel)]="estado" (change)="load(true)">
+            @for (f of filtros; track f.valor) { <option [value]="f.valor">{{ f.nombre }}</option> }
+          </select>
+        </label>
+        <label>
+          Cliente
+          <select name="cliente" [(ngModel)]="clienteId" (change)="load(true)">
+            <option [ngValue]="null">Todos</option>
+            @for (c of clientes(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }}</option> }
+          </select>
+        </label>
+        <button class="primary" [disabled]="busy()">Buscar</button>
+        <button type="button" [disabled]="busy()" (click)="limpiarFiltros()">Limpiar</button>
+      </form>
+
+      @if (loading()) {
+        <p role="status">Cargando cuentas por cobrar...</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Cuotas por cobrar</caption>
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>Cliente</th>
+                <th>Cuota</th>
+                <th>Vencimiento</th>
+                <th class="num">Total Bs</th>
+                <th class="num">Cobrado Bs</th>
+                <th class="num">Saldo Bs</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of cuotas(); track c.id) {
+                <tr [class.vencida]="c.vencida">
+                  <td class="mono"><strong>{{ c.documento }}</strong></td>
+                  <td>
+                    <button class="link" (click)="verEstadoCuenta(c.clienteId)">{{ c.clienteRazonSocial }}</button>
+                    <br /><small class="mono">{{ c.clienteNitCi }}</small>
+                  </td>
+                  <td>{{ c.numeroCuota }}</td>
+                  <td>{{ c.fechaVencimiento }}<br /><small [class.texto-alerta]="c.vencida">{{ vencimiento(c) }}</small></td>
+                  <td class="num">{{ c.montoTotal | number: '1.2-2' }}</td>
+                  <td class="num">{{ c.montoCobrado | number: '1.2-2' }}</td>
+                  <td class="num"><strong>{{ c.saldo | number: '1.2-2' }}</strong></td>
+                  <td>
+                    <span class="badge" [attr.data-estado]="c.vencida ? 'VENCIDA' : c.estado">{{ c.vencida ? 'VENCIDA' : c.estado }}</span>
+                  </td>
+                  <td class="actions">
+                    <button [disabled]="busy()" (click)="abrir(c.id)">{{ puedeCobrar() && c.saldo > 0 && c.estado !== 'ANULADA' ? 'Cobrar' : 'Ver' }}</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="9">No hay cuotas con estos filtros.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span>{{ total() }} cuotas</span>
+          <div>
+            <button [disabled]="page === 0 || busy()" (click)="navigate(-1)">Anterior</button>
+            <span>Página {{ pages() ? page + 1 : 0 }} de {{ pages() }}</span>
+            <button [disabled]="page + 1 >= pages() || busy()" (click)="navigate(1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ================================================================= DETALLE -->
+    @case ('detalle') {
+      @if (detalle(); as d) {
+        <section class="panel">
+          <div class="detail-head">
+            <h3>
+              {{ d.cuota.documento }} · cuota {{ d.cuota.numeroCuota }}
+              <span class="badge" [attr.data-estado]="d.cuota.vencida ? 'VENCIDA' : d.cuota.estado">{{ d.cuota.vencida ? 'VENCIDA' : d.cuota.estado }}</span>
+            </h3>
+          </div>
+          <dl class="ficha">
+            <dt>Cliente</dt>
+            <dd><button class="link" (click)="verEstadoCuenta(d.cuota.clienteId)">{{ d.cuota.clienteRazonSocial }}</button> · NIT/CI {{ d.cuota.clienteNitCi }}</dd>
+            <dt>Contacto</dt><dd>{{ d.clienteTelefono || '—' }} @if (d.clienteEmail) { · {{ d.clienteEmail }} }</dd>
+            <dt>Venta</dt><dd>{{ d.fechaVenta || '—' }} · total Bs {{ d.totalVenta | number: '1.2-2' }} · {{ d.cuota.sucursal || '—' }}</dd>
+            <dt>Vencimiento</dt><dd>{{ d.cuota.fechaVencimiento }} <small [class.texto-alerta]="d.cuota.vencida">({{ vencimiento(d.cuota) }})</small></dd>
+          </dl>
+
+          <div class="kpis tres">
+            <div><span>Total de la cuota</span><strong>Bs {{ d.cuota.montoTotal | number: '1.2-2' }}</strong></div>
+            <div><span>Cobrado</span><strong>Bs {{ d.cuota.montoCobrado | number: '1.2-2' }}</strong></div>
+            <div [class.alerta]="d.cuota.vencida"><span>Saldo</span><strong>Bs {{ d.cuota.saldo | number: '1.2-2' }}</strong></div>
+          </div>
+
+          @if (ultimoCobro(); as u) {
+            <p class="message success">
+              Recibo <strong>{{ u.cobro.numeroRecibo }}</strong> · asiento <span class="mono">{{ u.asiento }}</span>
+              @if (u.cobro.turnoCajaId) { · ingresó al turno de caja #{{ u.cobro.turnoCajaId }} }
+              <button class="link" (click)="imprimir(d, u.cobro)">Imprimir recibo</button>
+            </p>
+          }
+
+          @if (d.cobrable && puedeCobrar() && !cobrando()) {
+            <div class="actions"><button class="primary" (click)="nuevoCobro(d)">Registrar cobro</button></div>
+          }
+
+          @if (cobrando()) {
+            <form class="cobro" aria-label="Registrar cobro" (ngSubmit)="registrarCobro(d)" novalidate>
+              <h4>Registrar cobro</h4>
+              <div class="form-grid">
+                <label>
+                  Monto Bs *
+                  <input name="monto" type="number" min="0.01" step="0.01" [(ngModel)]="cobro.monto" required />
+                  <small class="hint">Saldo: Bs {{ d.cuota.saldo | number: '1.2-2' }}. Un monto menor deja la cuota con abono.</small>
+                </label>
+                <label>
+                  Forma de pago *
+                  <select name="formaPago" [(ngModel)]="cobro.formaPagoId" required>
+                    <option [ngValue]="null" disabled>Elegir...</option>
+                    @for (f of formasPago(); track f.id) { <option [ngValue]="f.id">{{ f.nombre }}</option> }
+                  </select>
+                </label>
+                <label>
+                  Fecha de cobro
+                  <input name="fechaCobro" type="date" [(ngModel)]="cobro.fechaCobro" />
+                </label>
+                <label>
+                  N° de transacción
+                  <input name="transaccion" [(ngModel)]="cobro.transaccionExterna" maxlength="100" placeholder="QR, transferencia o voucher" />
+                </label>
+                <label class="wide">
+                  Observaciones
+                  <input name="observaciones" [(ngModel)]="cobro.observaciones" maxlength="500" />
+                </label>
+              </div>
+              @if (errorCobro()) { <p class="message error" role="alert">{{ errorCobro() }}</p> }
+              <div class="actions">
+                <button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Registrando...' : 'Registrar cobro' }}</button>
+                <button type="button" [disabled]="busy()" (click)="cobrando.set(false)">Cancelar</button>
+              </div>
+            </form>
+          }
+
+          <h4>Cobros registrados</h4>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Recibo</th><th>Fecha</th><th>Forma de pago</th><th class="num">Monto Bs</th><th>Registrado por</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (c of d.cobros; track c.id) {
+                  <tr>
+                    <td class="mono"><strong>{{ c.numeroRecibo }}</strong></td>
+                    <td>{{ c.fechaCobro }}</td>
+                    <td>{{ c.formaPago }} @if (c.transaccionExterna) { <br /><small>{{ c.transaccionExterna }}</small> }</td>
+                    <td class="num">{{ c.monto | number: '1.2-2' }}</td>
+                    <td>{{ c.usuario || '—' }}</td>
+                    <td><button class="link" (click)="imprimir(d, c)">Recibo</button></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6">Todavía no tiene cobros.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
+
+    <!-- ======================================================== ESTADO DE CUENTA -->
+    @case ('estado-cuenta') {
+      @if (estadoCuenta(); as e) {
+        <section class="panel">
+          <h3>Estado de cuenta · {{ e.razonSocial }}</h3>
+          <p class="hint">NIT/CI {{ e.nitCi }} @if (e.limiteCredito) { · límite de crédito Bs {{ e.limiteCredito | number: '1.2-2' }} }</p>
+          <div class="kpis">
+            <div><span>Vendido a crédito</span><strong>Bs {{ e.totalFacturadoCredito | number: '1.2-2' }}</strong></div>
+            <div><span>Cobrado</span><strong>Bs {{ e.totalCobrado | number: '1.2-2' }}</strong></div>
+            <div><span>Saldo</span><strong>Bs {{ e.saldo | number: '1.2-2' }}</strong></div>
+            <div class="alerta"><span>Vencido</span><strong>Bs {{ e.vencido | number: '1.2-2' }}</strong></div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Documento</th><th>Cuota</th><th>Vencimiento</th><th class="num">Total Bs</th><th class="num">Cobrado Bs</th><th class="num">Saldo Bs</th><th>Estado</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (c of e.cuotas; track c.id) {
+                  <tr [class.vencida]="c.vencida">
+                    <td class="mono">{{ c.documento }}</td>
+                    <td>{{ c.numeroCuota }}</td>
+                    <td>{{ c.fechaVencimiento }}</td>
+                    <td class="num">{{ c.montoTotal | number: '1.2-2' }}</td>
+                    <td class="num">{{ c.montoCobrado | number: '1.2-2' }}</td>
+                    <td class="num">{{ c.saldo | number: '1.2-2' }}</td>
+                    <td><span class="badge" [attr.data-estado]="c.vencida ? 'VENCIDA' : c.estado">{{ c.vencida ? 'VENCIDA' : c.estado }}</span></td>
+                    <td><button [disabled]="busy()" (click)="abrir(c.id)">Ver</button></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="8">El cliente no tiene cuotas.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
+  }
+}

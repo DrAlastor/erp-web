@@ -40,6 +40,8 @@ import { CuentasPorPagarComponent } from '../../modulos/tesoreria-y-cajas/cu34-c
 import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-dashboard-analitico-kpis/components/dashboard-ejecutivo.component';
 import { PlanDeCuentasComponent } from '../../modulos/contabilidad-y-finanzas/cu25-plan-de-cuentas/components/plan-de-cuentas.component';
 import { PeriodosContablesComponent } from '../../modulos/contabilidad-y-finanzas/cu26-periodos-contables/components/periodos-contables.component';
+import { AsientosContablesComponent } from '../../modulos/contabilidad-y-finanzas/cu27-gestionar-asientos-contables/components/asientos-contables.component';
+import { CuentasPorCobrarComponent } from '../../modulos/contabilidad-y-finanzas/cu29-cuentas-por-cobrar-y-cobros/components/cuentas-por-cobrar.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -50,7 +52,8 @@ import { PeriodosContablesComponent } from '../../modulos/contabilidad-y-finanza
     ConsultarKardexComponent, ValidacionComercialComponent, FacturacionComponent, DevolucionesComponent,
     BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,
     ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
-    CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent],
+    CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent,
+    AsientosContablesComponent, CuentasPorCobrarComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

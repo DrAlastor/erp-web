@@ -1,0 +1,75 @@
+// Estilos de Contabilidad y Finanzas (CU27 asientos, CU29 cuentas por cobrar).
+// Reutilizan la línea visual de compras y agregan los estados contables.
+@use '../compras-y-proveedores/compras-comun';
+
+.badge {
+  &[data-estado='MAYORIZADO'],
+  &[data-estado='PAGADO'] {
+    background: rgba(52, 199, 89, 0.12);
+    color: #1b7a3e;
+  }
+
+  &[data-estado='BORRADOR'],
+  &[data-estado='PARCIAL'] {
+    background: rgba(255, 149, 0, 0.14);
+    color: #9a5b00;
+  }
+
+  &[data-estado='ANULADO'],
+  &[data-estado='ANULADA'],
+  &[data-estado='VENCIDA'] {
+    background: rgba(255, 59, 48, 0.1);
+    color: var(--destructive);
+  }
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 4px 0 18px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  strong {
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .alerta strong {
+    color: var(--destructive);
+  }
+}
+
+.ficha {
+  grid-template-columns: max-content 1fr;
+  justify-content: start;
+
+  dd {
+    text-align: left;
+  }
+}
+
+@media (max-width: 760px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

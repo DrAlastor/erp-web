@@ -1,0 +1,111 @@
+@use '../../asientos-cobros-comun';
+
+.kpis {
+  small {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  &.tres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+
+  section {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+
+  h4 {
+    margin: 0 0 8px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+}
+
+.barras li {
+  display: grid;
+  grid-template-columns: 110px 1fr 110px;
+}
+
+.barra {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border, rgba(0, 0, 0, 0.08));
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--destructive);
+  }
+}
+
+tr.vencida td {
+  background: rgba(255, 59, 48, 0.04);
+}
+
+.texto-alerta {
+  color: var(--destructive);
+}
+
+.cobro {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+
+  h4 {
+    margin-top: 0;
+  }
+
+  .hint {
+    font-size: 11px;
+  }
+}
+
+.message .link {
+  margin-left: 8px;
+}
+
+@media (max-width: 760px) {
+  .tablero,
+  .kpis.tres {
+    grid-template-columns: 1fr;
+  }
+}

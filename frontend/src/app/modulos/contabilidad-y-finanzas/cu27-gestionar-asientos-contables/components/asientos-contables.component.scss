@@ -1,0 +1,68 @@
+@use '../../asientos-cobros-comun';
+
+.form-grid .full {
+  grid-column: 1 / -1;
+
+  textarea {
+    resize: vertical;
+    font: inherit;
+  }
+}
+
+.glosa {
+  max-width: 320px;
+}
+
+.tag {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lineas {
+  input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cuenta {
+    min-width: 240px;
+  }
+
+  td.num input {
+    width: 110px;
+    text-align: right;
+  }
+
+  tfoot td {
+    padding-top: 10px;
+
+    button + button {
+      margin-left: 8px;
+    }
+  }
+
+  .icon {
+    padding: 4px 8px;
+  }
+}
+
+.cuadre {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 59, 48, 0.08);
+  color: var(--destructive);
+  font-variant-numeric: tabular-nums;
+
+  &.ok {
+    background: rgba(52, 199, 89, 0.12);
+    color: #1b7a3e;
+  }
+}
+
+ul.message {
+  margin: 12px 0 0;
+  padding-left: 28px;
+}
