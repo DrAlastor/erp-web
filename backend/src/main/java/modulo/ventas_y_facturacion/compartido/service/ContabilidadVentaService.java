@@ -44,15 +44,18 @@ public class ContabilidadVentaService {
     public static final String VENTAS = "4.1.1.01";
     public static final String IT_GASTO = "5.2.1.01";
 
-    /** Cuentas que se crean si faltan: nombre, tipo, naturaleza y código del grupo padre. */
+    /**
+     * Cuentas que se crean si faltan: nombre, tipo y naturaleza. Se cuelgan del grupo existente
+     * más cercano en el plan de cuentas (ej. 1.1.2.01 de 1.1.2 o, si no existe, de 1.1).
+     */
     private static final Map<String, DefinicionCuenta> CUENTAS_AUTOMATICAS = Map.of(
-            CAJA, new DefinicionCuenta("Caja Moneda Nacional", "ACTIVO", "DEUDORA", "1.1.1"),
-            BANCO, new DefinicionCuenta("Bancos Cuenta Corriente", "ACTIVO", "DEUDORA", "1.1.1"),
-            CUENTAS_POR_COBRAR, new DefinicionCuenta("Cuentas por Cobrar Clientes", "ACTIVO", "DEUDORA", "1.1"),
-            DEBITO_FISCAL_IVA, new DefinicionCuenta("Debito Fiscal IVA", "PASIVO", "ACREEDORA", "2.1"),
-            IT_POR_PAGAR, new DefinicionCuenta("IT por Pagar", "PASIVO", "ACREEDORA", "2.1"),
-            VENTAS, new DefinicionCuenta("Ventas de Productos", "INGRESO", "ACREEDORA", "4"),
-            IT_GASTO, new DefinicionCuenta("Impuesto a las Transacciones", "EGRESO", "DEUDORA", "5"));
+            CAJA, new DefinicionCuenta("Caja Moneda Nacional", "ACTIVO", "DEUDORA"),
+            BANCO, new DefinicionCuenta("Bancos Cuenta Corriente", "ACTIVO", "DEUDORA"),
+            CUENTAS_POR_COBRAR, new DefinicionCuenta("Cuentas por Cobrar Clientes", "ACTIVO", "DEUDORA"),
+            DEBITO_FISCAL_IVA, new DefinicionCuenta("Debito Fiscal IVA", "PASIVO", "ACREEDORA"),
+            IT_POR_PAGAR, new DefinicionCuenta("IT por Pagar", "PASIVO", "ACREEDORA"),
+            VENTAS, new DefinicionCuenta("Ventas de Productos", "INGRESO", "ACREEDORA"),
+            IT_GASTO, new DefinicionCuenta("Impuesto a las Transacciones", "EGRESO", "DEUDORA"));
 
     private final AsientoContableRepository asientoRepository;
     private final CuentaContableRepository cuentaRepository;
@@ -75,7 +78,7 @@ public class ContabilidadVentaService {
         }
     }
 
-    private record DefinicionCuenta(String nombre, String tipo, String naturaleza, String codigoPadre) {
+    private record DefinicionCuenta(String nombre, String tipo, String naturaleza) {
     }
 
     /**
@@ -158,7 +161,7 @@ public class ContabilidadVentaService {
         if (definicion == null) {
             throw new IllegalStateException("La cuenta contable " + codigo + " no existe en el plan de cuentas");
         }
-        Long padreId = cuentaRepository.findByCodigo(definicion.codigoPadre()).map(CuentaContable::getId).orElse(null);
+        Long padreId = padreMasCercano(codigo);
         log.info("Creando la cuenta contable {} - {} para la integración de ventas", codigo, definicion.nombre());
         return cuentaRepository.save(CuentaContable.builder()
                 .codigo(codigo)
@@ -170,6 +173,20 @@ public class ContabilidadVentaService {
                 .padreId(padreId)
                 .activo(true)
                 .build());
+    }
+
+    /** Id de la cuenta existente cuyo código es el prefijo más largo de {@code codigo}, o null. */
+    private Long padreMasCercano(String codigo) {
+        String actual = codigo;
+        int punto;
+        while ((punto = actual.lastIndexOf('.')) > 0) {
+            actual = actual.substring(0, punto);
+            var padre = cuentaRepository.findByCodigo(actual);
+            if (padre.isPresent()) {
+                return padre.get().getId();
+            }
+        }
+        return null;
     }
 
     private static String nombreMes(LocalDate fecha) {

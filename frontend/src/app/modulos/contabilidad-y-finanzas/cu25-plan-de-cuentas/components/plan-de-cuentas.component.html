@@ -1,0 +1,225 @@
+<div class="header">
+  <div>
+    <h2>Plan de Cuentas</h2>
+    <p>Estructura jerárquica de cuentas contables de la empresa ({{ total() }} cuentas).</p>
+  </div>
+  @if (!forbidden() && puedeCrear()) {
+    <button class="primary" [disabled]="busy()" (click)="nuevaRaiz()">Nueva cuenta raíz</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  @if (editor(); as ed) {
+    <form class="panel editor" (ngSubmit)="guardar()">
+      <h3>
+        @switch (ed.modo) {
+          @case ('raiz') { Nueva cuenta raíz }
+          @case ('hijo') { Nueva subcuenta de {{ ed.padre.codigo }} - {{ ed.padre.nombre }} }
+          @case ('editar') { Editar cuenta {{ ed.cuenta.codigo }} }
+        }
+      </h3>
+      <div class="form-grid">
+        <label>
+          Código
+          <input
+            name="codigo"
+            class="mono"
+            [(ngModel)]="form.codigo"
+            maxlength="50"
+            [disabled]="ed.modo === 'editar'"
+            placeholder="1.1.1.01"
+          />
+          @if (errores().codigo) {
+            <span class="field-error">{{ errores().codigo }}</span>
+          }
+        </label>
+        <label class="wide">
+          Nombre
+          <input name="nombre" [(ngModel)]="form.nombre" maxlength="150" placeholder="Caja Moneda Nacional" />
+          @if (errores().nombre) {
+            <span class="field-error">{{ errores().nombre }}</span>
+          }
+        </label>
+        <label>
+          Tipo
+          <select
+            name="tipo"
+            [ngModel]="form.tipo"
+            (ngModelChange)="cambiarTipo($event)"
+            [disabled]="ed.modo !== 'raiz'"
+          >
+            @for (t of tipos; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Naturaleza
+          <select name="naturaleza" [(ngModel)]="form.naturaleza" [disabled]="ed.modo !== 'raiz'">
+            <option value="DEUDORA">DEUDORA</option>
+            <option value="ACREEDORA">ACREEDORA</option>
+          </select>
+        </label>
+        <label class="check">
+          <input
+            type="checkbox"
+            name="permiteMovimiento"
+            [(ngModel)]="form.permiteMovimiento"
+            [disabled]="ed.modo === 'editar' && ed.cuenta.tieneHijos"
+          />
+          Permite movimiento (cuenta de detalle)
+        </label>
+      </div>
+      @if (ed.modo !== 'raiz') {
+        <p class="hint">Tipo y naturaleza se heredan de la cuenta raíz y no se modifican.</p>
+      }
+      <div class="actions">
+        <button type="button" [disabled]="busy()" (click)="cerrarEditor()">Cancelar</button>
+        <button class="primary" [disabled]="busy()">{{ busy() ? 'Guardando...' : 'Guardar' }}</button>
+      </div>
+    </form>
+  }
+
+  <div class="filters">
+    <label>
+      Buscar
+      <input
+        name="texto"
+        [ngModel]="filtro().texto"
+        (ngModelChange)="filtrar({ texto: $event })"
+        maxlength="150"
+        placeholder="Código o nombre"
+      />
+    </label>
+    <label>
+      Tipo
+      <select name="tipo" [ngModel]="filtro().tipo" (ngModelChange)="filtrar({ tipo: $event })">
+        <option value="">Todos</option>
+        @for (t of tipos; track t) {
+          <option [value]="t">{{ t }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Estado
+      <select name="activo" [ngModel]="filtro().activo" (ngModelChange)="filtrar({ activo: $event })">
+        <option value="true">Activas</option>
+        <option value="false">Inactivas</option>
+        <option value="">Todas</option>
+      </select>
+    </label>
+    <button type="button" (click)="expandirTodo()">Expandir todo</button>
+    <button type="button" (click)="contraerTodo()">Contraer</button>
+  </div>
+
+  @if (loading() && !arbol().length) {
+    <p role="status">Cargando plan de cuentas...</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <caption class="sr-only">Plan de cuentas</caption>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Naturaleza</th>
+            <th>Clase</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of filas(); track f.cuenta.id) {
+            <tr [class.inactiva]="!f.cuenta.activo">
+              <td class="mono codigo">
+                <span class="arbol" [style.padding-left]="sangria(f.profundidad)">
+                  @if (f.expandible) {
+                    <button
+                      type="button"
+                      class="toggle"
+                      [attr.aria-expanded]="f.expandida"
+                      [attr.aria-label]="(f.expandida ? 'Contraer ' : 'Expandir ') + f.cuenta.codigo"
+                      (click)="alternar(f.cuenta.id)"
+                    >
+                      {{ f.expandida ? '▾' : '▸' }}
+                    </button>
+                  } @else {
+                    <span class="toggle-espacio"></span>
+                  }
+                  {{ f.cuenta.codigo }}
+                </span>
+              </td>
+              <td [class.grupo]="!f.cuenta.permiteMovimiento">
+                {{ f.cuenta.nombre }}
+                @if (f.cuenta.cuentaIntegracion) {
+                  <small class="hint" title="La usa la contabilización automática de ventas">· ventas</small>
+                }
+              </td>
+              <td>{{ f.cuenta.tipo }}</td>
+              <td>{{ f.cuenta.naturaleza }}</td>
+              <td>
+                <span class="badge" [attr.data-estado]="f.cuenta.permiteMovimiento ? 'MOVIMIENTO' : 'AGRUPACION'">
+                  {{ f.cuenta.permiteMovimiento ? 'Detalle' : 'Agrupación' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [attr.data-estado]="f.cuenta.activo ? 'ACTIVO' : 'INACTIVO'">
+                  {{ f.cuenta.activo ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td class="actions">
+                @if (f.cuenta.activo && puedeCrear() && !f.cuenta.tieneMovimientos) {
+                  <button [disabled]="busy()" (click)="nuevaSubcuenta(f.cuenta)">+ Subcuenta</button>
+                }
+                @if (puedeModificar()) {
+                  <button [disabled]="busy()" (click)="editar(f.cuenta)">Editar</button>
+                  @if (f.cuenta.activo) {
+                    @if (!f.cuenta.cuentaIntegracion) {
+                      <button class="danger" [disabled]="busy()" (click)="pedirDesactivar(f.cuenta)">Desactivar</button>
+                    }
+                  } @else {
+                    <button [disabled]="busy()" (click)="reactivar(f.cuenta)">Reactivar</button>
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                @if (arbol().length) {
+                  No hay cuentas con estos filtros.
+                } @else {
+                  El plan de cuentas está vacío. Registra una cuenta raíz para empezar.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+
+@if (confirmando(); as c) {
+  <div class="modal-backdrop" (click)="confirmando.set(null)">
+    <div class="confirmation" role="dialog" aria-modal="true" aria-labelledby="titulo-desactivar" (click)="$event.stopPropagation()">
+      <h3 id="titulo-desactivar">Desactivar cuenta {{ c.codigo }}</h3>
+      <p>
+        {{ c.nombre }} dejará de ofrecerse para nuevos registros. Los asientos existentes no cambian y podrás
+        reactivarla después.
+      </p>
+      <div class="actions">
+        <button [disabled]="busy()" (click)="confirmando.set(null)">Cancelar</button>
+        <button class="danger" [disabled]="busy()" (click)="desactivar()">Desactivar</button>
+      </div>
+    </div>
+  </div>
+}

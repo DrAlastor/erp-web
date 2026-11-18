@@ -69,8 +69,8 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Contabilidad y Finanzas',
     icon: '≡',
     functions: [
-      { id: 'plan-de-cuentas', slug: 'plan-de-cuentas', name: 'Gestionar Plan de Cuentas', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
-      { id: 'periodos-contables', slug: 'periodos-contables', name: 'Gestionar Periodos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
+      { id: 'plan-de-cuentas', slug: 'plan-de-cuentas', name: 'Gestionar Plan de Cuentas', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CONTADOR', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] },
+      { id: 'periodos-contables', slug: 'periodos-contables', name: 'Gestionar Periodos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CONTADOR', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] },
       { id: 'asientos-contables', slug: 'asientos-contables', name: 'Gestionar Asientos Contables', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
       { id: 'integracion-contable-automatica', slug: 'integracion-contable-automatica', name: 'Integración Contable Automática', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
       { id: 'cuentas-por-cobrar-y-cobros', slug: 'cuentas-por-cobrar-y-cobros', name: 'Gestionar Cuentas por Cobrar y Cobros', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'CAJERO'] },
