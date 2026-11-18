@@ -1,0 +1,56 @@
+@use 'arqueo-base';
+
+.card {
+  margin-top: 14px;
+}
+
+.diferencia {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bg-card-border);
+  background: var(--bg-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  strong {
+    font-size: 20px;
+    font-weight: 750;
+  }
+
+  &.confirmado {
+    border-color: rgba(52, 199, 89, 0.4);
+    background: var(--success-light);
+    color: #1b7a3e;
+  }
+
+  &.pendiente {
+    border-color: rgba(255, 149, 0, 0.4);
+    background: var(--warning-light);
+    color: #b45309;
+  }
+
+  &.vencida {
+    border-color: rgba(255, 59, 48, 0.4);
+    background: var(--destructive-light);
+    color: var(--destructive);
+  }
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirmar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}

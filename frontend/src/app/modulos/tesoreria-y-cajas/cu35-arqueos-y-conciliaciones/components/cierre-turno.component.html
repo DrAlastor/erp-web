@@ -1,0 +1,31 @@
+@if (loading()) {
+  <div class="card cargando" aria-busy="true" aria-label="Cargando arqueo del turno">
+    <span class="skeleton line-sm"></span><span class="skeleton line-lg"></span>
+  </div>
+} @else if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+    <button type="button" class="retry" (click)="cargar()">Reintentar</button>
+  </div>
+} @else if (turno(); as t) {
+  <p class="turno-meta">
+    <span class="badge parcial">Turno #{{ t.id }} ABIERTO</span>
+    {{ t.sucursalNombre }} · Cajero {{ t.cajeroNombre }} · abierto el {{ fecha(t.fechaApertura) }}
+  </p>
+  @if (arqueo(); as a) {
+    <app-arqueo-desglose [arqueo]="a" />
+    <app-cierre-form *siPermiso="'FACTURACION_CREAR'" [turnoId]="t.id" [efectivoEsperado]="a.efectivoEsperado"
+      (cerrado)="onCerrado($event)" (fallo)="recargarArqueo(t.id)" />
+    @if (!puedeCerrar()) {
+      <p class="message warning" role="status">Puedes ver el arqueo, pero no tienes permiso para cerrar el turno (FACTURACION_CREAR). Pide a un administrador que lo cierre.</p>
+    }
+  }
+} @else {
+  <section class="card empty-state">
+    <span class="empty-icon" aria-hidden="true">🔒</span>
+    <strong>No tienes un turno de caja abierto</strong>
+    <p>Para hacer un arqueo y cerrar caja primero debes abrir tu turno. Puedes revisar turnos anteriores en la pestaña Historial.</p>
+    <a class="primary" [routerLink]="rutaApertura">Ir a apertura de caja</a>
+  </section>
+}

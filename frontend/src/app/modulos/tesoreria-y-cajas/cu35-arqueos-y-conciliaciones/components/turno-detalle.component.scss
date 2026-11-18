@@ -1,0 +1,43 @@
+@use 'arqueo-base';
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+
+  dt {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 4px 0 0;
+  }
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+h4 {
+  margin: 18px 0 10px;
+  font-size: 14px;
+}
+
+.skeleton.line {
+  width: 50%;
+  height: 14px;
+  margin-bottom: 14px;
+}
+
+.skeleton.block {
+  height: 160px;
+}
+
+.alert-banner .retry {
+  margin-left: auto;
+}

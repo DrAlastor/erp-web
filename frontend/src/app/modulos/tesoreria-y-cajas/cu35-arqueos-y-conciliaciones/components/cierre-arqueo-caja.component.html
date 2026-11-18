@@ -1,0 +1,33 @@
+<div class="caja-header">
+  <div>
+    <h2>Cierre, arqueo y consulta de caja</h2>
+    <p>Cuenta el efectivo, compáralo con lo esperado y cierra tu turno. Consulta los turnos anteriores en el historial.</p>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Secciones de cierre de caja">
+    <button type="button" role="tab" id="tab-cierre" aria-controls="panel-caja" [class.active]="tab() === 'cierre'"
+      [attr.aria-selected]="tab() === 'cierre'" (click)="cambiarTab('cierre')">Cerrar mi turno</button>
+    <button type="button" role="tab" id="tab-historial" aria-controls="panel-caja" [class.active]="tab() === 'historial'"
+      [attr.aria-selected]="tab() === 'historial'" (click)="cambiarTab('historial')">Historial</button>
+  </div>
+</div>
+
+@if (ultimoCierre(); as c) {
+  <div class="message success cierre-ok" role="status">
+    <span>
+      Turno #{{ c.id }} cerrado con Bs {{ c.montoCierre | number: '1.2-2' }} contados ·
+      diferencia Bs {{ c.diferencia | number: '1.2-2' }}
+      {{ (c.diferencia ?? 0) === 0 ? '(la caja cuadra)' : (c.diferencia ?? 0) > 0 ? '(sobrante)' : '(faltante)' }}.
+    </span>
+    @if (tab() === 'cierre') {
+      <button type="button" (click)="verCierreEnHistorial()">Ver en historial</button>
+    }
+  </div>
+}
+
+<div id="panel-caja" role="tabpanel" [attr.aria-labelledby]="tab() === 'cierre' ? 'tab-cierre' : 'tab-historial'">
+  @if (tab() === 'cierre') {
+    <app-cierre-turno (cerrado)="onCerrado($event)" />
+  } @else {
+    <app-historial-turnos [detalleInicial]="detalleAbrir()" />
+  }
+</div>

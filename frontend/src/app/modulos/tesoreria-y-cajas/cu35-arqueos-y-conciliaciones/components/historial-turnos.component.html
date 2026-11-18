@@ -1,0 +1,54 @@
+<form class="filters" (ngSubmit)="load(true)" role="search" aria-label="Filtrar historial de caja">
+  <label>
+    Sucursal
+    <select name="sucursalId" [(ngModel)]="filtros.sucursalId" (ngModelChange)="load(true)">
+      <option [ngValue]="null">Todas las sucursales</option>
+      @for (s of sucursales(); track s.id) {
+        <option [ngValue]="s.id">{{ s.nombre }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Estado
+    <select name="estado" [(ngModel)]="filtros.estado" (ngModelChange)="load(true)">
+      <option value="">Todos los estados</option>
+      <option value="ABIERTO">Abierto</option>
+      <option value="CERRADO">Cerrado</option>
+    </select>
+  </label>
+  <label>
+    Apertura desde
+    <input name="desde" type="date" [(ngModel)]="filtros.desde" [max]="filtros.hasta || null" />
+  </label>
+  <label>
+    Hasta
+    <input name="hasta" type="date" [(ngModel)]="filtros.hasta" [min]="filtros.desde || null" />
+  </label>
+  <button type="submit" class="primary" [disabled]="loading()">Buscar</button>
+  @if (filtrado()) {
+    <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
+  }
+</form>
+
+@if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+    <button type="button" class="retry" [disabled]="loading()" (click)="load()">Reintentar</button>
+  </div>
+}
+
+<app-historial-tabla
+  [turnos]="turnos()"
+  [loading]="loading()"
+  [filtrado]="filtrado()"
+  [page]="page"
+  [pages]="pages()"
+  [total]="total()"
+  (ver)="detalle.set($event)"
+  (navegar)="navigate($event)"
+  (limpiar)="limpiarFiltros()" />
+
+@if (detalle(); as id) {
+  <app-turno-detalle [turnoId]="id" (closed)="detalle.set(null)" />
+}

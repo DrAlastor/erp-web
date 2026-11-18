@@ -1,0 +1,54 @@
+<section class="card" aria-labelledby="caja-mov-title">
+  <p class="eyebrow" id="caja-mov-title">Registrar movimiento</p>
+  <form class="form-grid" (ngSubmit)="registrar()" aria-label="Registrar movimiento de caja">
+    <fieldset class="tipo" [disabled]="busy()">
+      <legend>Tipo *</legend>
+      <label class="opt ingreso" [class.on]="tipo === 'INGRESO'">
+        <input type="radio" name="tipo" value="INGRESO" [(ngModel)]="tipo" /> Ingreso
+      </label>
+      <label class="opt egreso" [class.on]="tipo === 'EGRESO'">
+        <input type="radio" name="tipo" value="EGRESO" [(ngModel)]="tipo" /> Egreso
+      </label>
+    </fieldset>
+    <label>
+      Forma de pago *
+      <select name="formaPagoId" [(ngModel)]="formaPagoId" [disabled]="busy()" required
+        [class.invalid]="intentado() && !formaPagoId">
+        <option [ngValue]="null">{{ formasPago().length ? 'Selecciona una forma de pago' : 'No hay formas de pago activas' }}</option>
+        @for (f of formasPago(); track f.id) {
+          <option [ngValue]="f.id">{{ f.nombre }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Monto (Bs) *
+      <input name="monto" type="number" min="0.01" step="0.01" placeholder="0.00" required
+        [ngModel]="monto" (ngModelChange)="onMonto($event)" [disabled]="busy()"
+        [class.invalid]="intentado() && !(monto && monto > 0)" />
+    </label>
+    <label class="wide">
+      Concepto *
+      <input name="concepto" minlength="3" maxlength="255" required [(ngModel)]="concepto" [disabled]="busy()"
+        [class.invalid]="intentado() && concepto.trim().length < 3"
+        [placeholder]="tipo === 'INGRESO' ? 'Ej. Reposición de fondo, cobro de anticipo' : 'Ej. Pago de movilidad, compra de insumos'" />
+    </label>
+    <label>
+      N° de comprobante
+      <input name="numeroComprobante" maxlength="50" [(ngModel)]="numeroComprobante" [disabled]="busy()"
+        placeholder="Opcional (se genera MOV-…)" />
+    </label>
+    <div class="acciones">
+      <button type="submit" class="primary" [disabled]="busy()">
+        {{ busy() ? 'Registrando...' : tipo === 'INGRESO' ? 'Registrar ingreso' : 'Registrar egreso' }}
+      </button>
+    </div>
+  </form>
+  <small class="hint">Los movimientos no se editan ni eliminan: para corregir uno, registra el movimiento contrario.</small>
+
+  @if (intentado() && validacion()) {
+    <p class="message error" role="alert">{{ validacion() }}</p>
+  }
+  @if (error()) {
+    <p class="message error" role="alert">{{ error() }}</p>
+  }
+</section>

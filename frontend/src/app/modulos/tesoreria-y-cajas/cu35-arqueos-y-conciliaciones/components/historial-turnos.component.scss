@@ -1,0 +1,33 @@
+@use 'arqueo-base';
+
+:host {
+  display: block;
+}
+
+.filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+
+  input,
+  select {
+    min-width: 160px;
+  }
+}
+
+.alert-banner .retry {
+  margin-left: auto;
+}
+
+@media (max-width: 650px) {
+  .filters {
+    align-items: stretch;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

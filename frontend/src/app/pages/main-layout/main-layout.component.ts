@@ -37,6 +37,8 @@ import { OrdenesCompraComponent } from '../../modulos/compras-y-proveedores/cu23
 import { ReportesPorVozComponent } from '../../modulos/reportes-y-bi/cu39-reportes-por-comando-de-voz/components/reportes-por-voz.component';
 import { ConstructorQbeComponent } from '../../modulos/reportes-y-bi/cu38-constructor-reportes-qbe/components/constructor-qbe.component';
 import { CuentasPorPagarComponent } from '../../modulos/tesoreria-y-cajas/cu34-cuentas-por-pagar-cxp/components/cuentas-por-pagar.component';
+import { MovimientosCajaComponent } from '../../modulos/tesoreria-y-cajas/cu32-cuentas-bancarias-y-cajas/components/movimientos-caja.component';
+import { CierreArqueoCajaComponent } from '../../modulos/tesoreria-y-cajas/cu35-arqueos-y-conciliaciones/components/cierre-arqueo-caja.component';
 import { DashboardEjecutivoComponent } from '../../modulos/reportes-y-bi/cu39-dashboard-analitico-kpis/components/dashboard-ejecutivo.component';
 import { PlanDeCuentasComponent } from '../../modulos/contabilidad-y-finanzas/cu25-plan-de-cuentas/components/plan-de-cuentas.component';
 import { PeriodosContablesComponent } from '../../modulos/contabilidad-y-finanzas/cu26-periodos-contables/components/periodos-contables.component';
@@ -58,7 +60,7 @@ import { VentaPosComponent } from '../../modulos/tesoreria-y-cajas/cu33-venta-en
     ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
     CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent,
     AsientosContablesComponent, CuentasPorCobrarComponent, LibrosContablesComponent, InformacionFinancieraComponent,
-    AperturaCajaComponent, VentaPosComponent],
+    AperturaCajaComponent, VentaPosComponent, MovimientosCajaComponent, CierreArqueoCajaComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,44 @@
+@use 'arqueo-base';
+
+td {
+  vertical-align: middle;
+}
+
+.skeleton.row {
+  height: 18px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px;
+
+  button {
+    margin-left: 10px;
+  }
+}
+
+.pagination,
+.pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination {
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 650px) {
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.empty .link-btn {
+  margin-left: 10px;
+}

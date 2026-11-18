@@ -1,0 +1,7 @@
+// Estilos de CU35: misma base que la caja de CU34 (que reutiliza CxP / CU16).
+@use '../../cu32-cuentas-bancarias-y-cajas/components/caja-base';
+
+.badge.vencida {
+  background: var(--destructive-light);
+  color: var(--destructive);
+}

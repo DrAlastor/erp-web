@@ -1,0 +1,43 @@
+<div class="modal-backdrop">
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="turno-detalle-title"
+    appModalFoco (cerrar)="closed.emit()">
+    <header class="modal-header">
+      <div>
+        <h3 id="turno-detalle-title">Turno de caja #{{ turnoId() }}</h3>
+        @if (detalle(); as d) {
+          <p>{{ d.turno.sucursalNombre }} · Cajero {{ d.turno.cajeroNombre }}</p>
+        }
+      </div>
+      <button type="button" class="close-btn" aria-label="Cerrar" (click)="closed.emit()">✕</button>
+    </header>
+
+    @if (loading()) {
+      <div aria-busy="true" aria-label="Cargando detalle del turno">
+        <span class="skeleton line"></span><span class="skeleton block"></span>
+      </div>
+    } @else if (error()) {
+      <div class="message error alert-banner" role="alert">
+        <span class="alert-icon">⚠️</span>
+        <span>{{ error() }}</span>
+        <button type="button" class="retry" (click)="cargar(turnoId())">Reintentar</button>
+      </div>
+    } @else if (detalle(); as d) {
+      <dl class="datos">
+        <div><dt>Estado</dt><dd><span class="badge" [class]="claseEstado(d.turno.estado)">{{ d.turno.estado }}</span></dd></div>
+        <div><dt>Apertura</dt><dd class="mono">{{ fecha(d.turno.fechaApertura) }}</dd></div>
+        <div><dt>Cierre</dt><dd class="mono">{{ fecha(d.turno.fechaCierre) }}</dd></div>
+        <div><dt>Fondo</dt><dd class="money">Bs {{ d.turno.montoApertura | number: '1.2-2' }}</dd></div>
+        @if (d.turno.observaciones) {
+          <div class="wide"><dt>Observaciones</dt><dd>{{ d.turno.observaciones }}</dd></div>
+        }
+      </dl>
+      <app-arqueo-desglose [arqueo]="d.arqueo" />
+      <h4>Movimientos</h4>
+      <app-movimientos-tabla [movimientos]="d.movimientos" vacio="Este turno no registró movimientos manuales." />
+    }
+
+    <footer class="modal-footer">
+      <button type="button" (click)="closed.emit()">Cerrar</button>
+    </footer>
+  </section>
+</div>

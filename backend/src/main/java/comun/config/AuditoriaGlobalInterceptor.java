@@ -88,6 +88,7 @@ public class AuditoriaGlobalInterceptor implements HandlerInterceptor {
         if (uri.contains("/categorias")) return "CATEGORIAS";
         if (uri.contains("/unidades-medida")) return "UNIDADES_MEDIDA";
         if (uri.contains("/almacenes")) return "ALMACENES";
+        if (uri.contains("/caja")) return "CAJA";
         if (uri.contains("/movimientos") || uri.contains("/inventario")) return "INVENTARIO";
         if (uri.contains("/kardex")) return "KARDEX";
         if (uri.contains("/clientes") || uri.contains("/perfil-cliente")) return "CLIENTES";

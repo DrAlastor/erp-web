@@ -1,0 +1,10 @@
+@use 'caja-base';
+
+.card {
+  margin-top: 20px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+}

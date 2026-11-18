@@ -1,0 +1,53 @@
+@let a = arqueo();
+<div class="desglose">
+  <section class="card" aria-labelledby="arqueo-calc-title">
+    <p class="eyebrow" id="arqueo-calc-title">Efectivo esperado</p>
+    <dl class="calc">
+      <div><dt>Fondo de apertura</dt><dd class="money">Bs {{ a.montoApertura | number: '1.2-2' }}</dd></div>
+      <div><dt>+ Ventas en efectivo</dt><dd class="money ok">Bs {{ a.ventasEfectivo | number: '1.2-2' }}</dd></div>
+      <div><dt>+ Ingresos en efectivo</dt><dd class="money ok">Bs {{ a.ingresosEfectivo | number: '1.2-2' }}</dd></div>
+      <div><dt>− Egresos en efectivo</dt><dd class="money neg">Bs {{ a.egresosEfectivo | number: '1.2-2' }}</dd></div>
+      <div class="total"><dt>= Efectivo esperado</dt><dd class="money">Bs {{ a.efectivoEsperado | number: '1.2-2' }}</dd></div>
+      @if (a.montoContado !== null) {
+        <div><dt>Monto contado</dt><dd class="money">Bs {{ a.montoContado | number: '1.2-2' }}</dd></div>
+        <div>
+          <dt>Diferencia <span class="badge" [class]="claseResultado(resultado())">{{ resultado() }}</span></dt>
+          <dd class="money" [class.ok]="(a.diferencia ?? 0) > 0" [class.neg]="(a.diferencia ?? 0) < 0">
+            Bs {{ a.diferencia | number: '1.2-2' }}
+          </dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="arqueo-fp-title">
+    <p class="eyebrow" id="arqueo-fp-title">Por forma de pago · {{ a.cantidadMovimientos }} movimientos</p>
+    <div class="table-scroll">
+      <table>
+        <caption class="sr-only">Totales del turno por forma de pago</caption>
+        <thead>
+          <tr><th>Forma de pago</th><th class="num">Ventas</th><th class="num">Ingresos</th><th class="num">Egresos</th></tr>
+        </thead>
+        <tbody>
+          @for (f of a.porFormaPago; track f.formaPagoId) {
+            <tr>
+              <td>{{ f.nombre }}</td>
+              <td class="num">{{ f.ventas | number: '1.2-2' }}</td>
+              <td class="num ok">{{ f.ingresos | number: '1.2-2' }}</td>
+              <td class="num neg">{{ f.egresos | number: '1.2-2' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="empty">Sin ventas ni movimientos en este turno.</td></tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th><th></th>
+            <th class="num">{{ a.totalIngresos | number: '1.2-2' }}</th>
+            <th class="num">{{ a.totalEgresos | number: '1.2-2' }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+</div>

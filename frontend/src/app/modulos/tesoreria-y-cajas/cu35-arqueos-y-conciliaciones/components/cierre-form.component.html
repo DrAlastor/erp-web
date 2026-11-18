@@ -1,0 +1,53 @@
+<section class="card" aria-labelledby="cierre-form-title">
+  <p class="eyebrow" id="cierre-form-title">Conteo y cierre</p>
+  <form class="form-grid" (ngSubmit)="solicitarCierre()" aria-label="Cerrar turno de caja">
+    <label>
+      Monto contado en caja (Bs) *
+      <input name="montoContado" type="number" min="0" step="0.01" placeholder="0.00" required autofocus
+        [ngModel]="montoContado()" (ngModelChange)="onMonto($event)" [disabled]="busy()"
+        [class.invalid]="intentado() && montoContado() === null" aria-describedby="cierre-diferencia" />
+    </label>
+    <div id="cierre-diferencia" class="diferencia" [class]="claseResultado(resultado())" aria-live="polite">
+      <span>Diferencia</span>
+      @if (diferencia() !== null) {
+        <strong class="money">{{ (diferencia() ?? 0) > 0 ? '+' : '' }}Bs {{ diferencia() | number: '1.2-2' }}</strong>
+        <small>{{ resultado() === 'CUADRA' ? 'La caja cuadra' : resultado() === 'SOBRANTE' ? 'Sobrante' : 'Faltante' }}
+          · esperado Bs {{ efectivoEsperado() | number: '1.2-2' }}</small>
+      } @else {
+        <small>Ingresa el monto contado para ver la diferencia.</small>
+      }
+    </div>
+    <label class="wide">
+      Observaciones {{ obsRequeridas() ? '*' : '' }}
+      <textarea name="observaciones" rows="2" maxlength="500" [ngModel]="observaciones()"
+        (ngModelChange)="observaciones.set($event)" [disabled]="busy()"
+        [class.invalid]="intentado() && obsRequeridas() && !observaciones().trim()"
+        [placeholder]="obsRequeridas() ? 'Obligatorio: explica el sobrante o faltante' : 'Opcional'"></textarea>
+    </label>
+    @if (!confirmando()) {
+      <div class="wide acciones">
+        <button type="submit" class="primary" [disabled]="busy()">Cerrar turno</button>
+      </div>
+    }
+  </form>
+
+  @if (confirmando()) {
+    <div class="message warning confirmar" role="alertdialog" aria-labelledby="cierre-confirmar-txt">
+      <span id="cierre-confirmar-txt">
+        ¿Confirmas el cierre con Bs {{ montoContado() | number: '1.2-2' }} contados? El turno quedará CERRADO y no admitirá más movimientos.
+      </span>
+      <div class="acciones">
+        <button type="button" [disabled]="busy()" (click)="confirmando.set(false)">Revisar</button>
+        <button type="button" class="primary" [disabled]="busy()" (click)="confirmar()">
+          {{ busy() ? 'Cerrando...' : 'Confirmar cierre' }}
+        </button>
+      </div>
+    </div>
+  }
+  @if (intentado() && validacion()) {
+    <p class="message error" role="alert">{{ validacion() }}</p>
+  }
+  @if (error()) {
+    <p class="message error" role="alert">{{ error() }}</p>
+  }
+</section>
