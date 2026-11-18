@@ -165,7 +165,7 @@ public class PlanCuentasService {
         }
         if (ReglasPlanCuentas.esCuentaIntegracion(cuenta.getCodigo())) {
             throw rechazo(HttpStatus.CONFLICT, "La cuenta " + cuenta.getCodigo()
-                    + " la usa la contabilización automática de ventas; no se puede desactivar.");
+                    + " la usa la contabilización automática de ventas o compras; no se puede desactivar.");
         }
         if (cuentas.existsByPadreIdAndActivoTrue(id)) {
             throw rechazo(HttpStatus.CONFLICT,

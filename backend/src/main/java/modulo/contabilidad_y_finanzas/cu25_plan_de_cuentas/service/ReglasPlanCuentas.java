@@ -18,7 +18,7 @@ public final class ReglasPlanCuentas {
     public static final Set<String> TIPOS = Set.of("ACTIVO", "PASIVO", "PATRIMONIO", "INGRESO", "EGRESO");
     public static final Set<String> NATURALEZAS = Set.of("DEUDORA", "ACREEDORA");
 
-    /** Cuentas que usa la integración contable automática de ventas: no se pueden desactivar. */
+    /** Cuentas que usa la integración contable automática de ventas y compras (CU28): no se pueden desactivar. */
     public static final Set<String> CUENTAS_INTEGRACION = Set.of(
             ContabilidadVentaService.CAJA,
             ContabilidadVentaService.BANCO,
@@ -26,7 +26,10 @@ public final class ReglasPlanCuentas {
             ContabilidadVentaService.DEBITO_FISCAL_IVA,
             ContabilidadVentaService.IT_POR_PAGAR,
             ContabilidadVentaService.VENTAS,
-            ContabilidadVentaService.IT_GASTO);
+            ContabilidadVentaService.IT_GASTO,
+            ContabilidadVentaService.INVENTARIO,
+            ContabilidadVentaService.CREDITO_FISCAL_IVA,
+            ContabilidadVentaService.CUENTAS_POR_PAGAR);
 
     private static final Pattern CODIGO = Pattern.compile("^\\d+(\\.\\d+)*$");
 

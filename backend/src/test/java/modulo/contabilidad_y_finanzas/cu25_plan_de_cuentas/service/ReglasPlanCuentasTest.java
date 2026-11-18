@@ -43,6 +43,10 @@ class ReglasPlanCuentasTest {
     void reconoceLasCuentasDeIntegracionDeVentas() {
         assertThat(ReglasPlanCuentas.esCuentaIntegracion("1.1.1.01")).isTrue();
         assertThat(ReglasPlanCuentas.esCuentaIntegracion("4.1.1.01")).isTrue();
-        assertThat(ReglasPlanCuentas.esCuentaIntegracion("1.1.3.01")).isFalse();
+        // Las de compras (CU28) también: inventario, crédito fiscal y cuentas por pagar.
+        assertThat(ReglasPlanCuentas.esCuentaIntegracion("1.1.3.01")).isTrue();
+        assertThat(ReglasPlanCuentas.esCuentaIntegracion("1.1.4.01")).isTrue();
+        assertThat(ReglasPlanCuentas.esCuentaIntegracion("2.1.1.01")).isTrue();
+        assertThat(ReglasPlanCuentas.esCuentaIntegracion("5.1.1.01")).isFalse();
     }
 }
