@@ -316,7 +316,7 @@ public class CompraService {
      * Haber: caja si fue al contado o cuentas por pagar si fue a crédito, por el total. Con
      * {@code inverso} se genera la reversión (anulación o devolución): mismas cuentas, lados cambiados.
      */
-    private static List<Partida> partidasCompra(String tipoPago, String glosa, BigDecimal subtotal,
+    static List<Partida> partidasCompra(String tipoPago, String glosa, BigDecimal subtotal,
                                                 BigDecimal iva, BigDecimal total, boolean inverso) {
         String contrapartida = "CREDITO".equals(tipoPago)
                 ? ContabilidadVentaService.CUENTAS_POR_PAGAR : ContabilidadVentaService.CAJA;
