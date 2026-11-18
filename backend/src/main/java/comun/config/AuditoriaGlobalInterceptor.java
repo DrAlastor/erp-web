@@ -101,6 +101,7 @@ public class AuditoriaGlobalInterceptor implements HandlerInterceptor {
         if (uri.contains("/pagos") || uri.contains("/stripe")) return "PAGOS";
         if (uri.contains("/notificaciones")) return "NOTIFICACIONES";
         if (uri.contains("/superadmin")) return "SUPERADMIN";
+        if (uri.contains("/plan-cuentas") || uri.contains("/periodos-contables")) return "CONTABILIDAD";
         return "SISTEMA";
     }
 

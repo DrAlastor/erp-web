@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class PeriodoContable {
 
     public static final String ESTADO_ABIERTO = "ABIERTO";
+    public static final String ESTADO_CERRADO = "CERRADO";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,5 +48,9 @@ public class PeriodoContable {
 
     public boolean estaAbierto() {
         return ESTADO_ABIERTO.equalsIgnoreCase(estado);
+    }
+
+    public boolean estaCerrado() {
+        return ESTADO_CERRADO.equalsIgnoreCase(estado);
     }
 }
