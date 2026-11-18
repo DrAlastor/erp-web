@@ -44,6 +44,8 @@ import { AsientosContablesComponent } from '../../modulos/contabilidad-y-finanza
 import { CuentasPorCobrarComponent } from '../../modulos/contabilidad-y-finanzas/cu29-cuentas-por-cobrar-y-cobros/components/cuentas-por-cobrar.component';
 import { LibrosContablesComponent } from '../../modulos/contabilidad-y-finanzas/cu30-consultar-libros-contables/components/libros-contables.component';
 import { InformacionFinancieraComponent } from '../../modulos/contabilidad-y-finanzas/cu31-consultar-informacion-financiera/components/informacion-financiera.component';
+import { AperturaCajaComponent } from '../../modulos/tesoreria-y-cajas/cu32-apertura-de-caja/components/apertura-caja.component';
+import { VentaPosComponent } from '../../modulos/tesoreria-y-cajas/cu33-venta-en-caja-pos/components/venta-pos.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -55,7 +57,8 @@ import { InformacionFinancieraComponent } from '../../modulos/contabilidad-y-fin
     BackupsRestoreComponent, BitacoraTenantComponent, PersonalizarAparienciaComponent, ReportesPredefinidosComponent,
     ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
     CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent,
-    AsientosContablesComponent, CuentasPorCobrarComponent, LibrosContablesComponent, InformacionFinancieraComponent],
+    AsientosContablesComponent, CuentasPorCobrarComponent, LibrosContablesComponent, InformacionFinancieraComponent,
+    AperturaCajaComponent, VentaPosComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

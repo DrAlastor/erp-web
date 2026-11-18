@@ -1,0 +1,123 @@
+<section class="pos-page">
+  @if (error()) {
+    <div class="message error" role="alert"><span>⚠️ {{ error() }}</span><button type="button" (click)="error.set('')">✕</button></div>
+  }
+
+  @if (ultimaVenta(); as v) {
+    <div class="message success" role="status">
+      <span>✓ {{ v.tipoComprobante === 'FACTURA' ? 'Factura' : 'Nota de venta' }} N° {{ v.numero }} emitida ·
+        {{ v.razonSocialCliente }} · {{ v.formaPago }} · Total Bs {{ v.total | number:'1.2-2' }}
+        @if (v.cambio > 0) { · <strong>Cambio Bs {{ v.cambio | number:'1.2-2' }}</strong> }</span>
+      <button type="button" (click)="ultimaVenta.set(null)">✕</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <section class="card"><p class="muted">Cargando caja…</p></section>
+  } @else if (!turno()) {
+    <section class="card vacio">
+      <span class="icon">🔒</span>
+      <div>
+        <h2>No tienes una caja abierta</h2>
+        <p>Para vender en caja primero abre tu turno en <strong>Tesorería y Cajas → Apertura de Caja</strong>.
+          Cada venta del POS queda registrada en el arqueo de ese turno.</p>
+        <button class="primary" type="button" (click)="cargar()">Ya la abrí, volver a consultar</button>
+      </div>
+    </section>
+  } @else {
+    <div class="toolbar">
+      <span class="estado abierto">● Turno #{{ turno()!.id }} · {{ sucursalNombre() }}</span>
+      <span class="muted">Abierto {{ turno()!.fechaApertura | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="pos-grid">
+      <!-- Catálogo -->
+      <section class="card catalogo">
+        <input class="buscador" type="search" placeholder="Buscar producto por nombre o código…"
+               [(ngModel)]="textoProducto" (ngModelChange)="buscarProductos($event)" />
+        @if (buscandoProductos()) { <p class="muted">Buscando…</p> }
+        <div class="productos">
+          @for (p of productos(); track p.id) {
+            <button type="button" class="producto" [class.agotado]="p.stockDisponible <= 0" (click)="agregar(p)">
+              <span class="codigo">{{ p.codigo }}</span>
+              <strong>{{ p.nombre }}</strong>
+              <span class="precio">Bs {{ p.precioVenta | number:'1.2-2' }}</span>
+              <span class="stock">Stock: {{ p.stockDisponible | number:'1.0-2' }}</span>
+            </button>
+          } @empty {
+            @if (!buscandoProductos()) { <p class="muted">No se encontraron productos con stock en esta sucursal.</p> }
+          }
+        </div>
+      </section>
+
+      <!-- Ticket -->
+      <section class="card ticket">
+        <h2>Venta actual <span class="muted">({{ items() | number:'1.0-2' }} ítems)</span></h2>
+
+        <div class="cliente">
+          @if (cliente(); as c) {
+            <div class="cliente-sel"><span>{{ c.razonSocial }} · NIT/CI {{ c.nitCi }}</span>
+              <button type="button" class="link" (click)="elegirCliente(null)">Quitar</button></div>
+          } @else {
+            <input type="search" placeholder="Cliente (opcional): buscar por nombre o NIT…"
+                   [(ngModel)]="textoCliente" (ngModelChange)="buscarClientes($event)" />
+            <small class="muted">Sin cliente se emite a "Cliente Pasante / Sin Nombre".</small>
+            @if (clientes().length) {
+              <ul class="sugerencias">
+                @for (c of clientes(); track c.id) {
+                  <li><button type="button" (click)="elegirCliente(c)">{{ c.razonSocial }} · {{ c.nitCi }}</button></li>
+                }
+              </ul>
+            }
+          }
+        </div>
+
+        <div class="lineas">
+          @for (l of carrito(); track l.productoId) {
+            <div class="linea">
+              <div class="linea-info"><strong>{{ l.nombre }}</strong><span class="muted">Bs {{ l.precio | number:'1.2-2' }} c/u</span></div>
+              <input type="number" min="0" [max]="l.stock" step="1" [ngModel]="l.cantidad" (ngModelChange)="cambiarCantidad(l, $event)" />
+              <span class="subtotal">Bs {{ l.cantidad * l.precio | number:'1.2-2' }}</span>
+              <button type="button" class="quitar" (click)="quitar(l)" aria-label="Quitar">✕</button>
+            </div>
+          } @empty {
+            <p class="muted">Agrega productos desde el catálogo.</p>
+          }
+        </div>
+
+        <div class="total"><span>Total</span><strong>Bs {{ total() | number:'1.2-2' }}</strong></div>
+
+        <div class="cobro">
+          <label>Comprobante
+            <select [(ngModel)]="tipoComprobante">
+              <option value="FACTURA" [disabled]="!facturaDisponible()">Factura{{ facturaDisponible() ? '' : ' (sin dosificación vigente)' }}</option>
+              <option value="NOTA_VENTA">Nota de venta</option>
+            </select>
+          </label>
+          <label>Forma de pago
+            <select [ngModel]="formaPagoId()" (ngModelChange)="formaPagoId.set($event)">
+              @for (f of formasPago(); track f.id) { <option [ngValue]="f.id">{{ f.nombre }}</option> }
+            </select>
+          </label>
+          @if (esEfectivo()) {
+            <label>Efectivo recibido (Bs)
+              <input type="number" min="0" step="0.01" placeholder="0.00"
+                     [ngModel]="montoRecibido()" (ngModelChange)="montoRecibido.set($event)" />
+            </label>
+            <div class="cambio" [class.falta]="cambio() < 0">
+              <span>{{ cambio() < 0 ? 'Falta' : 'Cambio' }}</span>
+              <strong>Bs {{ (cambio() < 0 ? -cambio() : cambio()) | number:'1.2-2' }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="acciones">
+          <button type="button" class="secundario" [disabled]="busy() || !carrito().length" (click)="nuevaVenta()">Vaciar</button>
+          <button type="button" class="primary" [disabled]="!puedeCobrar()" (click)="cobrar()">
+            {{ busy() ? 'Procesando…' : 'Cobrar Bs ' + (total() | number:'1.2-2') }}
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+</section>

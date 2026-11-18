@@ -1,0 +1,96 @@
+<section class="caja-page">
+  @if (error()) {
+    <div class="message error" role="alert"><span>⚠️ {{ error() }}</span><button type="button" (click)="error.set('')">✕</button></div>
+  }
+  @if (success()) {
+    <div class="message success" role="status"><span>✓ {{ success() }}</span><button type="button" (click)="success.set('')">✕</button></div>
+  }
+
+  @if (loading() && !estado()) {
+    <section class="card vacio"><p>Cargando estado de caja…</p></section>
+  }
+
+  @if (estado(); as data) {
+    @if (!data.sucursales.length) {
+      <section class="card vacio">
+        <span class="icon">!</span>
+        <div>
+          <h2>No hay sucursales registradas</h2>
+          <p>Para abrir una caja primero registra una sucursal activa en
+            <strong>Configuración y Seguridad → Empresas, Sucursales y Configuración</strong>.</p>
+          <button class="primary" type="button" (click)="cargar()">Volver a consultar</button>
+        </div>
+      </section>
+    } @else {
+    <div class="toolbar">
+      <label>Sucursal
+        <select [(ngModel)]="sucursalId" (ngModelChange)="cargar()">
+          @for (sucursal of data.sucursales; track sucursal.id) {
+            <option [ngValue]="sucursal.id">{{ sucursal.nombre }}</option>
+          }
+        </select>
+      </label>
+      <span class="estado" [class.abierto]="data.turno">● {{ data.turno ? 'Caja abierta' : 'Caja cerrada' }}</span>
+    </div>
+
+    @if (!data.turno) {
+      <section class="card apertura-card">
+        <div class="card-heading">
+          <span class="icon">+</span>
+          <div><h2>Apertura de turno</h2><p>Define el fondo inicial antes de habilitar ventas en caja.</p></div>
+        </div>
+        <div class="form-grid">
+          <label>Fondo inicial (Bs)
+            <input type="number" min="0" step="0.01" [(ngModel)]="montoApertura" placeholder="0.00" />
+          </label>
+          <label>Observaciones
+            <input type="text" maxlength="255" [(ngModel)]="observacionesApertura" placeholder="Entrega de efectivo, responsable..." />
+          </label>
+        </div>
+        <button class="primary" type="button" [disabled]="busy()" (click)="abrir()">Abrir caja</button>
+      </section>
+    } @else {
+      <section class="card activo-card">
+        <div class="card-heading">
+          <span class="icon live">●</span>
+          <div>
+            <h2>Turno #{{ data.turno.id }} en curso</h2>
+            <p>{{ data.turno.sucursalNombre }} · Apertura {{ data.turno.fechaApertura | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+
+        @if (data.resumen; as resumen) {
+          <div class="kpis">
+            <article><span>Fondo inicial</span><strong>Bs {{ resumen.montoApertura | number:'1.2-2' }}</strong></article>
+            <article><span>Ventas / cobros</span><strong>Bs {{ resumen.ventasContado | number:'1.2-2' }}</strong></article>
+            <article><span>Ingresos efectivo</span><strong>Bs {{ resumen.ingresos | number:'1.2-2' }}</strong></article>
+            <article><span>Egresos efectivo</span><strong>Bs {{ resumen.egresos | number:'1.2-2' }}</strong></article>
+            <article class="destacado"><span>Efectivo esperado</span><strong>Bs {{ resumen.montoEsperado | number:'1.2-2' }}</strong></article>
+          </div>
+        }
+
+        <div class="form-grid cierre">
+          <label>Conteo físico (Bs)
+            <input type="number" min="0" step="0.01" [(ngModel)]="montoCierre" placeholder="0.00" />
+          </label>
+          <label>Observaciones de cierre
+            <input type="text" maxlength="255" [(ngModel)]="observacionesCierre" placeholder="Resultado del arqueo..." />
+          </label>
+        </div>
+        <button class="danger" type="button" [disabled]="busy()" (click)="cerrar()">Cerrar y realizar arqueo</button>
+      </section>
+    }
+
+    @if (cierre(); as resultado) {
+      <section class="card resumen-cierre">
+        <h2>Arqueo finalizado</h2>
+        <p>Esperado: <strong>Bs {{ resultado.montoEsperado | number:'1.2-2' }}</strong></p>
+        <p>Contado: <strong>Bs {{ resultado.montoCierre | number:'1.2-2' }}</strong></p>
+        <p [class.sobrante]="resultado.diferencia > 0" [class.faltante]="resultado.diferencia < 0">
+          Diferencia: <strong>Bs {{ resultado.diferencia | number:'1.2-2' }}</strong>
+        </p>
+      </section>
+    }
+    }
+  }
+</section>

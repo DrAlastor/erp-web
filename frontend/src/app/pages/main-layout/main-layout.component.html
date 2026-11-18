@@ -151,6 +151,10 @@
       <app-libros-contables />
       } @else if (fn.id === 'consultar-informacion-financiera' || fn.slug === 'consultar-informacion-financiera') {
       <app-informacion-financiera />
+      } @else if (fn.id === 'apertura-de-caja' || fn.id === 'cu32-apertura-de-caja') {
+      <app-apertura-caja />
+      } @else if (fn.id === 'venta-en-caja-pos' || fn.id === 'cu33-venta-en-caja-pos') {
+      <app-venta-pos />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

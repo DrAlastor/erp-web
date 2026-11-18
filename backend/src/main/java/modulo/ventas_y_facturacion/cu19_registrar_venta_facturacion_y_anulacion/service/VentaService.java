@@ -68,6 +68,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
@@ -86,8 +87,12 @@ public class VentaService {
 
     private static final int DIAS_CREDITO_POR_DEFECTO = 30;
     private static final int MAX_RESULTADOS_SELECTOR = 30;
-    /** Moneda de los cobros en Stripe: bolivianos, la misma de la factura. */
-    private static final String MONEDA_STRIPE = "bob";
+    /** Moneda usada por Stripe para los cobros. Por defecto es USD porque Stripe no opera BOB. */
+    @Value("${stripe.currency:usd}")
+    private String monedaStripe;
+    /** Tipo de cambio fijo BOB por USD usado para convertir el total mostrado en bolivianos. */
+    @Value("${stripe.bob-rate:6.96}")
+    private BigDecimal tasaBobStripe;
     /** Marca en la metadata de Stripe que identifica los cobros de ventas del ERP. */
     private static final String TIPO_COBRO_STRIPE = "VENTA_ERP";
     /** Clave del bloqueo consultivo que pone en fila las emisiones de comprobantes. */
@@ -366,7 +371,10 @@ public class VentaService {
         LocalDate hoy = LocalDate.now();
         ImpuestoVentaService.Tasas tasas = impuestoService.vigentes();
 
-        List<TurnoCaja> turnosDb = turnoRepository.findByEstadoOrderByFechaAperturaDesc(TurnoCaja.ESTADO_ABIERTO);
+        // Solo los turnos del cajero autenticado: no se puede vender en la caja de otro.
+        Long cajeroActual = UsuarioActual.obtener().usuarioId();
+        List<TurnoCaja> turnosDb = turnoRepository.findByEstadoOrderByFechaAperturaDesc(TurnoCaja.ESTADO_ABIERTO)
+                .stream().filter(t -> cajeroActual.equals(t.getCajeroId())).toList();
         List<CatalogosVentaResponse.Turno> turnos = new ArrayList<>(turnosDb.stream().map(mapper::toTurno).toList());
 
         var sucursalesActivas = almacenRepository.findByActivoTrue();
@@ -379,14 +387,32 @@ public class VentaService {
                     "FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id " +
                     "WHERE c.estado IN ('EMITIDA', 'PENDIENTE', 'BORRADOR', 'ACEPTADA') ORDER BY c.id DESC LIMIT 30"
             );
+            // Todas las líneas en una sola consulta (antes era una consulta por cotización).
+            Map<Integer, List<Map<String, Object>>> detallesPorCotizacion = new HashMap<>();
+            if (!cotizRows.isEmpty()) {
+                Integer[] ids = cotizRows.stream().map(r -> ((Number) r.get("id")).intValue()).toArray(Integer[]::new);
+                jdbcTemplate.query(con -> {
+                    var ps = con.prepareStatement(
+                            "SELECT cd.cotizacion_id, cd.producto_id, p.codigo, p.nombre, cd.cantidad, cd.precio_unitario, cd.descuento, cd.subtotal " +
+                            "FROM cotizacion_detalles cd JOIN productos p ON cd.producto_id = p.id " +
+                            "WHERE cd.cotizacion_id = ANY(?) ORDER BY cd.cotizacion_id, cd.id ASC");
+                    ps.setArray(1, con.createArrayOf("integer", ids));
+                    return ps;
+                }, rs -> {
+                    Map<String, Object> d = new HashMap<>();
+                    d.put("producto_id", rs.getObject("producto_id"));
+                    d.put("codigo", rs.getString("codigo"));
+                    d.put("nombre", rs.getString("nombre"));
+                    d.put("cantidad", rs.getBigDecimal("cantidad"));
+                    d.put("precio_unitario", rs.getBigDecimal("precio_unitario"));
+                    d.put("descuento", rs.getBigDecimal("descuento"));
+                    d.put("subtotal", rs.getBigDecimal("subtotal"));
+                    detallesPorCotizacion.computeIfAbsent(rs.getInt("cotizacion_id"), k -> new ArrayList<>()).add(d);
+                });
+            }
             for (Map<String, Object> r : cotizRows) {
                 Integer cId = ((Number) r.get("id")).intValue();
-                List<Map<String, Object>> detRows = jdbcTemplate.queryForList(
-                        "SELECT cd.producto_id, p.codigo, p.nombre, cd.cantidad, cd.precio_unitario, cd.descuento, cd.subtotal " +
-                        "FROM cotizacion_detalles cd JOIN productos p ON cd.producto_id = p.id " +
-                        "WHERE cd.cotizacion_id = ? ORDER BY cd.id ASC",
-                        cId
-                );
+                List<Map<String, Object>> detRows = detallesPorCotizacion.getOrDefault(cId, List.of());
                 List<CatalogosVentaResponse.CotizacionLinea> lineas = detRows.stream().map(d -> new CatalogosVentaResponse.CotizacionLinea(
                         ((Number) d.get("producto_id")).longValue(),
                         (String) d.get("codigo"),
@@ -479,8 +505,8 @@ public class VentaService {
                 ? venta.getRazonSocialCliente()
                 : "Cliente General";
         StripeCheckoutRequestDTO checkout = new StripeCheckoutRequestDTO(
-                venta.getTotal(),
-                MONEDA_STRIPE,
+                convertirMontoStripe(venta.getTotal()),
+                monedaStripe.toLowerCase(),
                 "Venta - " + razonSocial,
                 resumen.length() > 450 ? resumen.substring(0, 447) + "..." : resumen,
                 null,
@@ -640,7 +666,7 @@ public class VentaService {
                 .sucursal(sucursal)
                 .cliente(cliente)
                 .cajeroId(usuarioId)
-                .turnoCajaId(validarTurno(request.turnoCajaId(), sucursal))
+                .turnoCajaId(validarTurno(request.turnoCajaId(), sucursal, usuarioId))
                 .nitCliente(cliente.getNitCi())
                 .razonSocialCliente(cliente.getRazonSocial())
                 .fecha(ahora)
@@ -784,12 +810,30 @@ public class VentaService {
                     "El cobro con tarjeta no está completado en Stripe (estado: " + sesion.estadoPago()
                             + (sesion.montoReembolsado() > 0 ? ", reembolsado" : "") + ").");
         }
-        if (!MONEDA_STRIPE.equalsIgnoreCase(sesion.moneda())
-                || sesion.montoTotal() != importe.movePointRight(2).longValueExact()) {
+        String monedaEsperada = monedaEsperadaStripe();
+        long importeEsperadoCents = convertirMontoStripe(importe)
+                .movePointRight(2).setScale(0, RoundingMode.HALF_UP).longValueExact();
+        if (!monedaEsperada.equalsIgnoreCase(sesion.moneda())
+                || sesion.montoTotal() != importeEsperadoCents) {
             throw rechazo("El monto cobrado en Stripe (" + sesion.moneda().toUpperCase() + " "
-                    + BigDecimal.valueOf(sesion.montoTotal(), 2) + ") no coincide con el importe del pago (Bs "
-                    + importe + ").");
+                    + BigDecimal.valueOf(sesion.montoTotal(), 2) + ") no coincide con el importe convertido "
+                    + "del pago (Bs " + importe + ").");
         }
+    }
+
+    private String monedaEsperadaStripe() {
+        return monedaStripe == null || monedaStripe.isBlank() ? "usd" : monedaStripe.trim().toLowerCase();
+    }
+
+    private BigDecimal convertirMontoStripe(BigDecimal montoBob) {
+        BigDecimal monto = Montos.redondear(montoBob);
+        if ("usd".equalsIgnoreCase(monedaEsperadaStripe())) {
+            if (tasaBobStripe == null || tasaBobStripe.compareTo(BigDecimal.ZERO) <= 0) {
+                throw rechazo("La tasa de conversión STRIPE_BOB_RATE no es válida.");
+            }
+            return monto.divide(tasaBobStripe, 2, RoundingMode.HALF_UP);
+        }
+        return monto;
     }
 
     private void reembolsarEnStripe(String sesionId) {
@@ -859,7 +903,7 @@ public class VentaService {
         return sucursal;
     }
 
-    private Long validarTurno(Long turnoId, Almacen sucursal) {
+    private Long validarTurno(Long turnoId, Almacen sucursal, Long usuarioId) {
         if (turnoId == null) return null;
         TurnoCaja turno = turnoRepository.findById(turnoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Turno de caja no encontrado."));
@@ -868,6 +912,9 @@ public class VentaService {
         }
         if (!turno.getSucursalId().equals(sucursal.getId())) {
             throw rechazo("El turno de caja #" + turnoId + " pertenece a otra sucursal.");
+        }
+        if (usuarioId != null && !usuarioId.equals(turno.getCajeroId())) {
+            throw rechazo("El turno de caja #" + turnoId + " pertenece a otro cajero.");
         }
         return turno.getId();
     }
