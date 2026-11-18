@@ -34,6 +34,12 @@ public class TurnoCaja {
     @Column(name = "monto_apertura", nullable = false, precision = 12, scale = 2)
     private BigDecimal montoApertura;
 
+    @Column(name = "monto_cierre", precision = 12, scale = 2)
+    private BigDecimal montoCierre;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal diferencia;
+
     @Column(name = "fecha_apertura", nullable = false)
     private LocalDateTime fechaApertura;
 
