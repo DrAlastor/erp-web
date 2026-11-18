@@ -73,7 +73,8 @@ public class CompraController {
     public ResponseEntity<CompraDTO> anular(
             @PathVariable Integer id, @Valid @RequestBody AnularCompraRequest request,
             Principal actor, HttpServletRequest http) {
-        return ResponseEntity.ok(service.anularCompra(id, request, actor(actor), http.getRemoteAddr()));
+        UsuarioPrincipal usuario = UsuarioActual.obtener();
+        return ResponseEntity.ok(service.anularCompra(id, request, usuario.usuarioId(), actor(actor), http.getRemoteAddr()));
     }
 
     @GetMapping("/devoluciones")

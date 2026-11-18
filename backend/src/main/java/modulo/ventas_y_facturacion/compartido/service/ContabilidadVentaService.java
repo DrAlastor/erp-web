@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Integración contable automática de ventas, anulaciones y notas de crédito: arma el
+ * Integración contable automática de ventas, anulaciones, notas de crédito y compras a proveedores: arma el
  * comprobante de partida doble en asientos_contables y asiento_detalles.
  *
  * <p>Las cuentas se buscan por código en el plan de cuentas. Las que el plan inicial de
@@ -43,6 +43,10 @@ public class ContabilidadVentaService {
     public static final String IT_POR_PAGAR = "2.1.2.02";
     public static final String VENTAS = "4.1.1.01";
     public static final String IT_GASTO = "5.2.1.01";
+    // Compras a proveedores (CU28): inventario y cuentas por pagar vienen en el plan inicial de ERP_Asus.
+    public static final String INVENTARIO = "1.1.3.01";
+    public static final String CREDITO_FISCAL_IVA = "1.1.4.01";
+    public static final String CUENTAS_POR_PAGAR = "2.1.1.01";
 
     /** Cuentas que se crean si faltan: nombre, tipo, naturaleza y código del grupo padre. */
     private static final Map<String, DefinicionCuenta> CUENTAS_AUTOMATICAS = Map.of(
@@ -52,7 +56,10 @@ public class ContabilidadVentaService {
             DEBITO_FISCAL_IVA, new DefinicionCuenta("Debito Fiscal IVA", "PASIVO", "ACREEDORA", "2.1"),
             IT_POR_PAGAR, new DefinicionCuenta("IT por Pagar", "PASIVO", "ACREEDORA", "2.1"),
             VENTAS, new DefinicionCuenta("Ventas de Productos", "INGRESO", "ACREEDORA", "4"),
-            IT_GASTO, new DefinicionCuenta("Impuesto a las Transacciones", "EGRESO", "DEUDORA", "5"));
+            IT_GASTO, new DefinicionCuenta("Impuesto a las Transacciones", "EGRESO", "DEUDORA", "5"),
+            INVENTARIO, new DefinicionCuenta("Inventario de Mercaderia", "ACTIVO", "DEUDORA", "1.1.3"),
+            CREDITO_FISCAL_IVA, new DefinicionCuenta("Credito Fiscal IVA", "ACTIVO", "DEUDORA", "1.1"),
+            CUENTAS_POR_PAGAR, new DefinicionCuenta("Cuentas por Pagar Proveedores", "PASIVO", "ACREEDORA", "2.1"));
 
     private final AsientoContableRepository asientoRepository;
     private final CuentaContableRepository cuentaRepository;

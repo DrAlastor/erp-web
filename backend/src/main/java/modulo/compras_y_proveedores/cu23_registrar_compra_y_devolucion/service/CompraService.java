@@ -10,6 +10,8 @@ import modulo.compras_y_proveedores.cu23_registrar_compra_y_devolucion.dto.Compr
 import modulo.compras_y_proveedores.cu23_registrar_compra_y_devolucion.entity.*;
 import modulo.compras_y_proveedores.cu23_registrar_compra_y_devolucion.repository.CompraRepository;
 import modulo.compras_y_proveedores.cu23_registrar_compra_y_devolucion.repository.DevolucionProveedorRepository;
+import modulo.ventas_y_facturacion.compartido.service.ContabilidadVentaService;
+import modulo.ventas_y_facturacion.compartido.service.ContabilidadVentaService.Partida;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.entity.BitacoraLog;
 import modulo.seguridad_y_auditoria.cu02_gestionar_usuarios.repository.BitacoraLogRepository;
 import modulo.seguridad_y_auditoria.cu04_gestionar_empleados.entity.Sucursal;
@@ -46,6 +48,7 @@ public class CompraService {
     private final ProductoRepository productoRepository;
     private final SucursalRepository sucursalRepository;
     private final EmpresaConfiguracionService configuracionService;
+    private final ContabilidadVentaService contabilidadService;
     private final BitacoraLogRepository bitacoraLogRepository;
     private final JdbcTemplate jdbc;
 
@@ -154,13 +157,19 @@ public class CompraService {
                     .build(), actor);
         }
 
+        // Asiento contable automático (CU28): inventario e IVA crédito fiscal contra caja o cuentas por pagar.
+        String asiento = contabilidadService.registrarAsiento(guardada.getFecha(), "COMPRAS",
+                "Compra a proveedor FAC-" + factura, usuarioId,
+                partidasCompra(guardada.getTipoPago(), "Compra FAC-" + factura,
+                        guardada.getSubtotal(), guardada.getIva(), guardada.getTotal(), false));
+
         bitacora("REGISTRAR_COMPRA", actor, "compras", guardada.getId().longValue(), ip);
-        log.info("CU23: compra {} registrada, total {}", guardada.getId(), guardada.getTotal());
+        log.info("CU23: compra {} registrada, total {}, asiento {}", guardada.getId(), guardada.getTotal(), asiento);
         return obtenerCompra(guardada.getId());
     }
 
     @Transactional
-    public CompraDTO anularCompra(Integer id, AnularCompraRequest req, String actor, String ip) {
+    public CompraDTO anularCompra(Integer id, AnularCompraRequest req, Long usuarioId, String actor, String ip) {
         Compra compra = buscarCompra(id);
         if (!compra.estaVigente()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -185,6 +194,11 @@ public class CompraService {
         String nota = "Anulada: " + req.motivo().trim();
         compra.setObservaciones(compra.getObservaciones() == null ? nota : compra.getObservaciones() + " | " + nota);
         compraRepository.save(compra);
+        // Asiento inverso al de la compra (CU28).
+        contabilidadService.registrarAsiento(LocalDate.now(), "ANULACION",
+                "Anulación de compra FAC-" + compra.getNumeroFactura() + ". Motivo: " + req.motivo().trim(), usuarioId,
+                partidasCompra(compra.getTipoPago(), "Anulación compra FAC-" + compra.getNumeroFactura(),
+                        compra.getSubtotal(), compra.getIva(), compra.getTotal(), true));
         bitacora("ANULAR_COMPRA", actor, "compras", id.longValue(), ip);
         return obtenerCompra(id);
     }
@@ -284,12 +298,37 @@ public class CompraService {
         compra.setEstado(todoDevuelto ? Compra.DEVUELTA : Compra.DEVUELTA_PARCIAL);
         compraRepository.save(compra);
 
+        // Asiento inverso de la parte devuelta (CU28).
+        contabilidadService.registrarAsiento(LocalDate.now(), "DEVOLUCION",
+                "Devolución a proveedor " + guardada.getNumeroDevolucion() + " de FAC-" + compra.getNumeroFactura(), usuarioId,
+                partidasCompra(compra.getTipoPago(), "Devolución " + guardada.getNumeroDevolucion(),
+                        guardada.getSubtotal(), guardada.getIva(), guardada.getTotal(), true));
+
         bitacora("REGISTRAR_DEVOLUCION_PROVEEDOR", actor, "devoluciones_proveedor", guardada.getId().longValue(), ip);
         log.info("CU23: devolucion {} de la compra {} por {}", guardada.getNumeroDevolucion(), compraId, guardada.getTotal());
         return listarDevoluciones(compraId).stream().filter(x -> x.id().equals(guardada.getId())).findFirst().orElseThrow();
     }
 
     // ---------------------------------------------------------------- Privado
+
+    /**
+     * Partidas del comprobante de una compra. Debe: inventario (subtotal) e IVA crédito fiscal.
+     * Haber: caja si fue al contado o cuentas por pagar si fue a crédito, por el total. Con
+     * {@code inverso} se genera la reversión (anulación o devolución): mismas cuentas, lados cambiados.
+     */
+    private static List<Partida> partidasCompra(String tipoPago, String glosa, BigDecimal subtotal,
+                                                BigDecimal iva, BigDecimal total, boolean inverso) {
+        String contrapartida = "CREDITO".equals(tipoPago)
+                ? ContabilidadVentaService.CUENTAS_POR_PAGAR : ContabilidadVentaService.CAJA;
+        List<Partida> debe = List.of(
+                Partida.debe(ContabilidadVentaService.INVENTARIO, "Ingreso de mercadería " + glosa, subtotal),
+                Partida.debe(ContabilidadVentaService.CREDITO_FISCAL_IVA, "Crédito fiscal IVA " + glosa, iva));
+        Partida haber = Partida.haber(contrapartida, "Contrapartida " + glosa, total);
+        if (!inverso) {
+            return List.of(debe.get(0), debe.get(1), haber);
+        }
+        return List.of(debe.get(0).invertida(), debe.get(1).invertida(), haber.invertida());
+    }
 
     private Compra buscarCompra(Integer id) {
         return compraRepository.findById(id)
