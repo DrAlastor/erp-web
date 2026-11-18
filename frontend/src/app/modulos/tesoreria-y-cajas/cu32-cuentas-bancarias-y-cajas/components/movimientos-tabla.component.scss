@@ -1,0 +1,19 @@
+@use 'caja-base';
+
+:host {
+  margin-top: 0;
+}
+
+td {
+  vertical-align: middle;
+}
+
+.skeleton.row {
+  height: 18px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px;
+}

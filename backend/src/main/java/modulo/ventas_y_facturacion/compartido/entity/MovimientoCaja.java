@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class MovimientoCaja {
 
+    public static final String TIPO_INGRESO = "INGRESO";
     public static final String TIPO_EGRESO = "EGRESO";
 
     @Id

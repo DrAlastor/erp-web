@@ -1,0 +1,35 @@
+<p class="turno-meta">
+  <span class="badge parcial">Turno #{{ turno().id }} ABIERTO</span>
+  {{ turno().sucursalNombre }} · Cajero {{ turno().cajeroNombre }} · desde {{ fecha(turno().fechaApertura) }}
+</p>
+
+@if (arqueo(); as a) {
+  <section class="kpis" aria-label="Resumen del turno de caja">
+    <article class="card">
+      <p class="eyebrow">Fondo de apertura</p>
+      <strong class="kpi-val">Bs {{ a.montoApertura | number: '1.2-2' }}</strong>
+      <small>Efectivo inicial en caja</small>
+    </article>
+    <article class="card">
+      <p class="eyebrow">Ingresos</p>
+      <strong class="kpi-val ok">Bs {{ a.totalIngresos | number: '1.2-2' }}</strong>
+      <small>Ventas en efectivo Bs {{ a.ventasEfectivo | number: '1.2-2' }}</small>
+    </article>
+    <article class="card">
+      <p class="eyebrow">Egresos</p>
+      <strong class="kpi-val neg">Bs {{ a.totalEgresos | number: '1.2-2' }}</strong>
+      <small>{{ a.cantidadMovimientos }} movimientos registrados</small>
+    </article>
+    <article class="card destacado">
+      <p class="eyebrow">Efectivo esperado</p>
+      <strong class="kpi-val">Bs {{ a.efectivoEsperado | number: '1.2-2' }}</strong>
+      <small>Fondo + ventas + ingresos − egresos en efectivo</small>
+    </article>
+  </section>
+} @else if (loading()) {
+  <div class="kpis" aria-busy="true" aria-label="Cargando resumen del turno">
+    @for (p of placeholders; track p) {
+      <div class="card"><span class="skeleton line-sm"></span><span class="skeleton line-lg"></span></div>
+    }
+  </div>
+}

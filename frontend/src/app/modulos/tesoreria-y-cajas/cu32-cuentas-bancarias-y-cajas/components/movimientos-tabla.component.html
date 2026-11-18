@@ -1,0 +1,37 @@
+<div class="table-scroll" [attr.aria-busy]="loading()">
+  <table>
+    <caption class="sr-only">Movimientos del turno de caja</caption>
+    <thead>
+      <tr>
+        <th>Fecha y hora</th>
+        <th>Tipo</th>
+        <th>Concepto</th>
+        <th>Forma de pago</th>
+        <th>Comprobante</th>
+        <th class="num">Monto</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        @for (f of filasSkeleton; track f) {
+          <tr aria-hidden="true"><td colspan="6"><span class="skeleton row"></span></td></tr>
+        }
+      } @else {
+        @for (m of movimientos(); track m.id) {
+          <tr>
+            <td class="mono">{{ fecha(m.fechaHora) }}</td>
+            <td><span class="badge" [class]="claseTipo(m.tipo)">{{ m.tipo }}</span></td>
+            <td>{{ m.concepto }}</td>
+            <td>{{ m.formaPagoNombre }}</td>
+            <td class="mono">{{ m.numeroComprobante }}</td>
+            <td class="num" [class.neg]="m.tipo === 'EGRESO'" [class.ok]="m.tipo === 'INGRESO'">
+              <strong>{{ m.tipo === 'EGRESO' ? '−' : '+' }} Bs {{ m.monto | number: '1.2-2' }}</strong>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty">{{ vacio() }}</td></tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

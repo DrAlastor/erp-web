@@ -137,6 +137,12 @@
       <app-reportes-por-voz />
       } @else if (fn.id === 'gestionar-cuentas-por-pagar' || fn.id === 'cu24-gestionar-cuentas-por-pagar') {
       <app-cuentas-por-pagar />
+      } @else if (fn.id === 'apertura-de-caja') {
+      <app-movimientos-caja vista="apertura" />
+      } @else if (fn.id === 'registrar-movimiento-de-caja') {
+      <app-movimientos-caja vista="movimientos" />
+      } @else if (fn.id === 'cierre-arqueo-consulta-caja') {
+      <app-cierre-arqueo-caja />
       } @else if (fn.id === 'dashboard-ejecutivo' || fn.id === 'cu36-dashboard-ejecutivo') {
       <app-dashboard-ejecutivo />
       } @else {

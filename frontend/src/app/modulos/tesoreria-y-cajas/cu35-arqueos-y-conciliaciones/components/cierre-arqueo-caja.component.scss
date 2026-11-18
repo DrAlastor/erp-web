@@ -1,0 +1,51 @@
+@use 'arqueo-base';
+
+:host {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.caja-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.tabs {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--bg-card-border);
+
+  button {
+    border: none;
+    background: transparent;
+
+    &.active {
+      background: var(--bg-surface);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      font-weight: 600;
+    }
+  }
+}
+
+.cierre-ok {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 650px) {
+  .caja-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

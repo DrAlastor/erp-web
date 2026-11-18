@@ -1,0 +1,69 @@
+@use 'caja-base';
+
+.card {
+  margin: 20px 0;
+}
+
+.tipo {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+
+  legend {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 7px;
+  }
+
+  .opt {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--bg-card-border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+
+    input {
+      accent-color: currentColor;
+    }
+
+    &.ingreso.on {
+      border-color: #1b7a3e;
+      color: #1b7a3e;
+      background: var(--success-light);
+    }
+
+    &.egreso.on {
+      border-color: var(--destructive);
+      color: var(--destructive);
+      background: var(--destructive-light);
+    }
+  }
+}
+
+.acciones {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+}
+
+.hint {
+  display: block;
+  margin-top: 10px;
+}
+
+.tipo .opt input[type='radio'] {
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  width: 15px;
+  height: 15px;
+}

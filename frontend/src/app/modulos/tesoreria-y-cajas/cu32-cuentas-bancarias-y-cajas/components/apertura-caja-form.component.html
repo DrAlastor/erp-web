@@ -1,0 +1,45 @@
+<section class="card" aria-labelledby="caja-apertura-title">
+  <div class="empty-state">
+    <span class="empty-icon" aria-hidden="true">🗝️</span>
+    <strong id="caja-apertura-title">No tienes un turno de caja abierto</strong>
+    <p>Abre tu turno indicando la sucursal y el fondo inicial en efectivo. A partir de ahí podrás registrar ingresos y egresos.</p>
+  </div>
+
+  @if (puedeAbrir()) {
+  <form class="form-grid" (ngSubmit)="abrir()" aria-label="Abrir turno de caja">
+    <label>
+      Sucursal *
+      <select name="sucursalId" [(ngModel)]="sucursalId" [disabled]="busy()" required
+        [class.invalid]="intentado() && !sucursalId">
+        <option [ngValue]="null">{{ sucursales().length ? 'Selecciona una sucursal' : 'No hay sucursales activas' }}</option>
+        @for (s of sucursales(); track s.id) {
+          <option [ngValue]="s.id">{{ s.nombre }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Monto de apertura (Bs) *
+      <input name="montoApertura" type="number" min="0" step="0.01" placeholder="0.00" required
+        [ngModel]="montoApertura" (ngModelChange)="onMonto($event)" [disabled]="busy()"
+        [class.invalid]="intentado() && montoApertura === null" />
+    </label>
+    <label class="wide">
+      Observaciones
+      <textarea name="observaciones" rows="2" maxlength="500" [(ngModel)]="observaciones" [disabled]="busy()"
+        placeholder="Opcional: billetes recibidos, caja asignada, etc."></textarea>
+    </label>
+    <div class="wide acciones">
+      <button type="submit" class="primary" [disabled]="busy()">{{ busy() ? 'Abriendo caja...' : 'Abrir caja' }}</button>
+    </div>
+  </form>
+  } @else if (permisosCargados()) {
+    <p class="message warning" role="status">No tienes el permiso Facturación · Crear para abrir una caja. Pide a un administrador que lo asigne.</p>
+  }
+
+  @if (intentado() && validacion()) {
+    <p class="message error" role="alert">{{ validacion() }}</p>
+  }
+  @if (error()) {
+    <p class="message error" role="alert">{{ error() }}</p>
+  }
+</section>

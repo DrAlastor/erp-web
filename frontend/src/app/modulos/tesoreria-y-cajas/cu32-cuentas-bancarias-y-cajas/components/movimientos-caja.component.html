@@ -1,0 +1,43 @@
+<div class="caja-header">
+  <div>
+    <h2>{{ vista() === 'apertura' ? 'Apertura de caja' : 'Movimientos de caja' }}</h2>
+    <p>
+      {{ vista() === 'apertura'
+        ? 'Abre tu turno con el fondo inicial y empieza a registrar ingresos y egresos de efectivo.'
+        : 'Registra ingresos y egresos del turno abierto y controla el efectivo esperado en caja.' }}
+    </p>
+  </div>
+  @if (turno()) {
+    <a class="primary" [routerLink]="rutaCierre">Ir a cierre de caja →</a>
+  }
+</div>
+
+@if (error()) {
+  <div class="message error alert-banner" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+    <button type="button" class="retry" [disabled]="loading()" (click)="cargar()">Reintentar</button>
+  </div>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (loading()) {
+  <div class="card cargando" aria-busy="true" aria-label="Cargando turno de caja">
+    <span class="skeleton line-sm"></span><span class="skeleton line-lg"></span>
+  </div>
+} @else if (turno(); as t) {
+  @if (vista() === 'apertura' && !success()) {
+    <p class="message warning" role="status">
+      Ya tienes el turno #{{ t.id }} abierto. Registra sus movimientos aquí o ciérralo antes de abrir otro.
+    </p>
+  }
+  <app-caja-resumen [turno]="t" [arqueo]="arqueo()" [loading]="!arqueo() && !arqueoFallo()" />
+  <app-movimiento-form *siPermiso="'FACTURACION_CREAR'" [turnoId]="t.id" [formasPago]="opciones().formasPago"
+    (registrado)="onRegistrado($event)" />
+  <h3 class="tabla-title">Movimientos del turno</h3>
+  <app-movimientos-tabla [movimientos]="movimientos()" [loading]="movLoading()" />
+} @else if (!error()) {
+  <app-apertura-caja-form [sucursales]="opciones().sucursales" (abierto)="onAbierto($event)" />
+}

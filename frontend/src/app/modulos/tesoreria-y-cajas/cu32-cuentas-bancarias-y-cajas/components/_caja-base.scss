@@ -1,0 +1,76 @@
+// Estilos compartidos de caja (CU34 movimientos / CU35 cierre): reutiliza la base de CxP
+// (que a su vez trae la de CU16: inputs, botones, tabla, badges, modales, tarjetas y skeleton).
+@use '../../cu34-cuentas-por-pagar-cxp/components/cxp-base';
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 36px 20px;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  strong {
+    font-size: 15px;
+    color: var(--text-main);
+  }
+
+  p {
+    margin: 0 0 8px;
+    max-width: 460px;
+  }
+}
+
+.money {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ok {
+  color: #1b7a3e;
+}
+
+.neg {
+  color: var(--destructive);
+}
+
+a.primary,
+a.link-btn {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.link-btn {
+  border: 1px solid var(--bg-card-border);
+  color: var(--text-main);
+  background: var(--bg-surface);
+
+  &:hover {
+    border-color: var(--text-muted);
+  }
+}

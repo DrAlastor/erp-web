@@ -1,0 +1,69 @@
+<div class="table-scroll" [attr.aria-busy]="loading()">
+  <table>
+    <caption class="sr-only">Historial de turnos de caja</caption>
+    <thead>
+      <tr>
+        <th>Turno</th>
+        <th>Sucursal / cajero</th>
+        <th>Apertura</th>
+        <th>Cierre</th>
+        <th class="num">Fondo</th>
+        <th class="num">Esperado</th>
+        <th class="num">Contado</th>
+        <th class="num">Diferencia</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (loading()) {
+        @for (f of filasSkeleton; track f) {
+          <tr aria-hidden="true"><td colspan="10"><span class="skeleton row"></span></td></tr>
+        }
+      } @else {
+        @for (t of turnos(); track t.id) {
+          @let r = resultado(t.diferencia);
+          <tr>
+            <td class="mono">#{{ t.id }}</td>
+            <td><strong>{{ t.sucursalNombre }}</strong><span class="cell-sub">{{ t.cajeroNombre }}</span></td>
+            <td class="mono">{{ fecha(t.fechaApertura) }}</td>
+            <td class="mono">{{ fecha(t.fechaCierre) }}</td>
+            <td class="num">{{ t.montoApertura | number: '1.2-2' }}</td>
+            <td class="num">{{ t.efectivoEsperado | number: '1.2-2' }}</td>
+            <td class="num">{{ t.montoCierre === null ? '—' : (t.montoCierre | number: '1.2-2') }}</td>
+            <td class="num">
+              @if (r) {
+                <span class="badge" [class]="claseResultado(r)">{{ t.diferencia | number: '1.2-2' }}</span>
+              } @else { — }
+            </td>
+            <td><span class="badge" [class]="claseEstado(t.estado)">{{ t.estado }}</span></td>
+            <td>
+              <button type="button" class="btn-action-view" (click)="ver.emit(t.id)"
+                [attr.aria-label]="'Ver detalle del turno ' + t.id">Ver detalle</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="empty">
+              @if (filtrado()) {
+                No hay turnos con estos filtros.
+                <button type="button" (click)="limpiar.emit()">Limpiar filtros</button>
+              } @else {
+                Aún no hay turnos de caja registrados.
+                <a class="link-btn" [routerLink]="rutaApertura">Abrir el primer turno</a>
+              }
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
+<nav class="pagination" aria-label="Paginación del historial de caja">
+  <span>{{ total() }} turnos</span>
+  <div>
+    <button type="button" [disabled]="page() === 0 || loading()" (click)="navegar.emit(-1)">Anterior</button>
+    <span>Página {{ pages() ? page() + 1 : 0 }} de {{ pages() }}</span>
+    <button type="button" [disabled]="page() + 1 >= pages() || loading()" (click)="navegar.emit(1)">Siguiente</button>
+  </div>
+</nav>
