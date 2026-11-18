@@ -1,0 +1,33 @@
+@use '../../contabilidad-comun';
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  strong {
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (max-width: 650px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+}

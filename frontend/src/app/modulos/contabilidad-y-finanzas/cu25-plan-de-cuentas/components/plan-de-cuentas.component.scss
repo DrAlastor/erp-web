@@ -1,0 +1,46 @@
+@use '../../contabilidad-comun';
+
+.editor {
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+}
+
+.codigo {
+  white-space: nowrap;
+}
+
+.arbol {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toggle {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  line-height: 1;
+}
+
+.toggle-espacio {
+  display: inline-block;
+  width: 22px;
+}
+
+.grupo {
+  font-weight: 600;
+}
+
+tr.inactiva td {
+  opacity: 0.6;
+}

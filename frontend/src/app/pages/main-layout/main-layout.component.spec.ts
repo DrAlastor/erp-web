@@ -29,7 +29,10 @@ describe('Panel de control compartido', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: ActivatedRoute, useValue: { queryParamMap: params } },
+        {
+          provide: ActivatedRoute,
+          useValue: { queryParamMap: params, paramMap: new BehaviorSubject(convertToParamMap({})) },
+        },
         {
           provide: AuthService,
           useValue: {
@@ -168,6 +171,44 @@ describe('Panel de control compartido', () => {
     expect(fixture.nativeElement.querySelector('app-catalogo')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('main').textContent).toContain('No tienes permiso');
     http.verify();
+  });
+
+  it('renderiza CU25 Plan de Cuentas y CU26 Periodos Contables para el contador', () => {
+    params.next(convertToParamMap({ modulo: 'contabilidad-y-finanzas', funcion: 'plan-de-cuentas' }));
+    const fixture = TestBed.createComponent(MainLayoutComponent);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${environment.apiUrl}/seguridad/mis-permisos`).flush({
+      usuarioId: 1, empresaId: 'erp', nombre: 'Contador',
+      permisos: ['CONTABILIDAD_CONSULTAR', 'CONTABILIDAD_CREAR', 'CONTABILIDAD_MODIFICAR'], roles: ['CONTADOR'],
+    });
+    fixture.detectChanges();
+    const cuenta = (id: number, codigo: string, nombre: string, padreId: number | null, movimiento: boolean) => ({
+      id, codigo, nombre, nivel: codigo.split('.').length, tipo: 'ACTIVO', naturaleza: 'DEUDORA',
+      permiteMovimiento: movimiento, padreId, codigoPadre: null, activo: true,
+      tieneHijos: !movimiento, tieneMovimientos: false, cuentaIntegracion: false,
+    });
+    http.expectOne(`${environment.apiUrl}/plan-cuentas/arbol`).flush([
+      { cuenta: cuenta(1, '1', 'ACTIVO', null, false), hijos: [
+        { cuenta: cuenta(2, '1.1', 'ACTIVO CORRIENTE', 1, false), hijos: [] },
+      ] },
+    ]);
+    fixture.detectChanges();
+    let main = fixture.nativeElement.querySelector('main') as HTMLElement;
+    expect(main.querySelector('app-plan-de-cuentas table')).not.toBeNull();
+    expect(main.textContent).toContain('ACTIVO CORRIENTE');
+    expect(main.textContent).not.toContain('En desarrollo');
+
+    params.next(convertToParamMap({ modulo: 'contabilidad-y-finanzas', funcion: 'periodos-contables' }));
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/periodos-contables/gestiones`).flush([2026]);
+    http.expectOne((req) => req.url === `${environment.apiUrl}/periodos-contables`).flush({
+      gestion: 2026, abiertos: 0, cerrados: 0, creados: 0, periodos: [],
+    });
+    fixture.detectChanges();
+    main = fixture.nativeElement.querySelector('main') as HTMLElement;
+    expect(main.querySelector('app-periodos-contables')).not.toBeNull();
+    expect(main.textContent).toContain('no tiene periodos');
+    expect(main.textContent).not.toContain('En desarrollo');
   });
 
 });

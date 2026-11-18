@@ -1,0 +1,121 @@
+<div class="header">
+  <div>
+    <h2>Periodos Contables</h2>
+    <p>Periodos mensuales de cada gestión. Un periodo cerrado no admite asientos.</p>
+  </div>
+</div>
+
+@if (error()) {
+  <p class="message error" role="alert">{{ error() }}</p>
+}
+@if (success()) {
+  <p class="message success" role="status">{{ success() }}</p>
+}
+
+@if (!forbidden()) {
+  <div class="filters">
+    <label>
+      Gestión
+      <select name="gestion" [ngModel]="seleccionada()" (ngModelChange)="seleccionar($event)">
+        @for (g of opciones(); track g) {
+          <option [ngValue]="g">{{ g }}</option>
+        }
+      </select>
+    </label>
+    @if (puedeCrear() && faltantes() > 0) {
+      <button class="primary" [disabled]="busy() || loading()" (click)="generar()">
+        {{ faltantes() === 12 ? 'Generar gestión ' + seleccionada() : 'Completar ' + faltantes() + ' meses faltantes' }}
+      </button>
+    }
+  </div>
+
+  @if (datos(); as g) {
+    <div class="kpis">
+      <div><span>Periodos</span><strong>{{ g.periodos.length }} / 12</strong></div>
+      <div><span>Abiertos</span><strong>{{ g.abiertos }}</strong></div>
+      <div><span>Cerrados</span><strong>{{ g.cerrados }}</strong></div>
+    </div>
+  }
+
+  @if (loading() && !datos()) {
+    <p role="status">Cargando periodos...</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <caption class="sr-only">Periodos contables de la gestión {{ seleccionada() }}</caption>
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Periodo</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th class="num">Asientos</th>
+            <th>Estado</th>
+            <th>Cerrado el</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of datos()?.periodos ?? []; track p.id) {
+            <tr>
+              <td class="num">{{ p.mes }}</td>
+              <td><strong>{{ p.nombre }}</strong></td>
+              <td>{{ fecha(p.fechaInicio) }}</td>
+              <td>{{ fecha(p.fechaFin) }}</td>
+              <td class="num">{{ p.cantidadAsientos }}</td>
+              <td>
+                <span class="badge" [attr.data-estado]="p.estado">{{ p.estado === 'ABIERTO' ? 'Abierto' : 'Cerrado' }}</span>
+              </td>
+              <td>{{ p.fechaCierre ? fecha(p.fechaCierre) : '—' }}</td>
+              <td class="actions">
+                @if (puedeModificar()) {
+                  @switch (accion(p)) {
+                    @case ('cerrar') {
+                      <button [disabled]="busy()" (click)="pedir(p, 'cerrar')">Cerrar</button>
+                    }
+                    @case ('reabrir') {
+                      <button [disabled]="busy()" (click)="pedir(p, 'reabrir')">Reabrir</button>
+                    }
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">
+                La gestión {{ seleccionada() }} no tiene periodos.
+                @if (puedeCrear()) { Usa «Generar gestión» para crear sus 12 meses. }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">
+      Los periodos se cierran en orden (enero, febrero, ...) y solo se puede reabrir el último cerrado. Los
+      asientos de ajuste y cierre del ejercicio se registran en el CU28.
+    </p>
+  }
+}
+
+@if (confirmando(); as c) {
+  <div class="modal-backdrop" (click)="confirmando.set(null)">
+    <div class="confirmation" role="dialog" aria-modal="true" aria-labelledby="titulo-periodo" (click)="$event.stopPropagation()">
+      <h3 id="titulo-periodo">{{ c.accion === 'cerrar' ? 'Cerrar' : 'Reabrir' }} {{ c.periodo.nombre }}</h3>
+      @if (c.accion === 'cerrar') {
+        <p>
+          No se podrán registrar más asientos con fecha de {{ c.periodo.nombre }}: las ventas, anulaciones y notas
+          de crédito de ese mes serán rechazadas hasta que se reabra.
+        </p>
+      } @else {
+        <p>El periodo volverá a admitir asientos. Esta acción queda registrada en la bitácora.</p>
+      }
+      <div class="actions">
+        <button [disabled]="busy()" (click)="confirmando.set(null)">Cancelar</button>
+        <button [class.danger]="c.accion === 'cerrar'" [class.primary]="c.accion === 'reabrir'" [disabled]="busy()" (click)="confirmar()">
+          {{ c.accion === 'cerrar' ? 'Cerrar periodo' : 'Reabrir periodo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
