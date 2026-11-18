@@ -394,6 +394,38 @@
 				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
 				<properties sType="Class" scope="public"/>
 			</element>
+			<element xmi:idref="LL_31_B1" name="g: Gerente General" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B2" name="ctrl: InformacionFinancieraController" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B3" name="srv: InformacionFinancieraServiceImpl" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_B4" name="repo: InformacionFinancieraRepository" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R1" name="g: Gerente General" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R2" name="ctrl: InformacionFinancieraController" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R3" name="srv: InformacionFinancieraServiceImpl" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_31_R4" name="repo: InformacionFinancieraRepository" scope="public">
+				<model package="EAPK_CU31_FINANCIERA" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
 		</elements>
 		<packages>
 			<package xmi:id="EAPK_CU31_FINANCIERA" name="CU31 - Consultar Informacion Financiera">
@@ -456,106 +488,191 @@
 				<properties ea_type="Association" direction="Source -> Destination"/>
 			</connector>
 			<connector xmi:idref="M_31_B1">
-				<source xmi:idref="LL_31_B1"/>
-				<target xmi:idref="LL_31_B2"/>
+				<source xmi:idref="LL_31_B1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</target>
 				<properties name="1: obtenerBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B2">
-				<source xmi:idref="LL_31_B2"/>
-				<target xmi:idref="LL_31_B3"/>
+				<source xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="2: generarBalanceGeneral(gestion, mes, fechaCorte, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2"/>
+				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B3">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B4"/>
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B4">
+					<model type="Sequence"/>
+				</target>
 				<properties name="3: obtenerSaldosAcumuladosAFecha(fechaCorte)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3"/>
+				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B4">
-				<source xmi:idref="LL_31_B4"/>
-				<target xmi:idref="LL_31_B3"/>
-				<properties name="4: saldosCuentas" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="4"/>
+				<source xmi:idref="LL_31_B4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: saldosCuentas" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B5">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B3"/>
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="5: calcularSaldoRollupJerarquico(saldos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5"/>
+				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B6">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B3"/>
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="6: calcularUtilidadEjercicio(ingresos, egresos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6"/>
+				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=600;PtEndY=-320;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B7">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B3"/>
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="7: validarEcuacionPatrimonial(activo, pasivo, patrimonio)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7"/>
+				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=600;PtEndY=-360;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B8">
-				<source xmi:idref="LL_31_B3"/>
-				<target xmi:idref="LL_31_B2"/>
-				<properties name="8: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="8"/>
+				<source xmi:idref="LL_31_B3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="8: balanceGeneralResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="8" style="PtStartX=560;PtStartY=-380;PtEndX=350;PtEndY=-380;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_B9">
-				<source xmi:idref="LL_31_B2"/>
-				<target xmi:idref="LL_31_B1"/>
-				<properties name="9: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
+				<source xmi:idref="LL_31_B2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_B1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="9: 200 OK (balanceGeneralResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="9" style="PtStartX=350;PtStartY=-420;PtEndX=140;PtEndY=-420;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_BALANCE"/>
 			</connector>
 			<connector xmi:idref="M_31_R1">
-				<source xmi:idref="LL_31_R1"/>
-				<target xmi:idref="LL_31_R2"/>
+				<source xmi:idref="LL_31_R1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</target>
 				<properties name="1: obtenerEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R2">
-				<source xmi:idref="LL_31_R2"/>
-				<target xmi:idref="LL_31_R3"/>
+				<source xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="2: generarEstadoResultados(gestion, inicio, fin, nivel)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2"/>
+				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R3">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R4"/>
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R4">
+					<model type="Sequence"/>
+				</target>
 				<properties name="3: obtenerMovimientosPeriodo(inicio, fin)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3"/>
+				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R4">
-				<source xmi:idref="LL_31_R4"/>
-				<target xmi:idref="LL_31_R3"/>
-				<properties name="4: movimientosPeriodo" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="4"/>
+				<source xmi:idref="LL_31_R4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: movimientosPeriodo" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R5">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R3"/>
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="5: calcularEstructuraEscalonada(movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5"/>
+				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R6">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R3"/>
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="6: calcularAnalisisVertical(ingresos, costos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6"/>
+				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=600;PtEndY=-320;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R7">
-				<source xmi:idref="LL_31_R3"/>
-				<target xmi:idref="LL_31_R2"/>
-				<properties name="7: estadoResultadosResponse" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7"/>
+				<source xmi:idref="LL_31_R3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="7: estadoResultadosResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=350;PtEndY=-340;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 			<connector xmi:idref="M_31_R8">
-				<source xmi:idref="LL_31_R2"/>
-				<target xmi:idref="LL_31_R1"/>
-				<properties name="8: 200 OK (estadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="8"/>
+				<source xmi:idref="LL_31_R2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_31_R1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="8: 200 OK (estadoResultadosResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="8" style="PtStartX=350;PtStartY=-380;PtEndX=140;PtEndY=-380;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU31_RESULTADOS"/>
 			</connector>
 		</connectors>
 		<diagrams>
@@ -578,10 +695,10 @@
 				<properties name="Diagrama de Secuencia - CU31 Balance General" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_31_B1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
-					<element subject="LL_31_B2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
-					<element subject="LL_31_B3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
-					<element subject="LL_31_B4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_31_B1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=575;"/>
+					<element subject="LL_31_B2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=575;"/>
+					<element subject="LL_31_B3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=575;"/>
+					<element subject="LL_31_B4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=575;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU31_RESULTADOS">
@@ -589,10 +706,10 @@
 				<properties name="Diagrama de Secuencia - CU31 Estado de Resultados" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_31_R1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
-					<element subject="LL_31_R2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
-					<element subject="LL_31_R3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
-					<element subject="LL_31_R4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_31_R1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=530;"/>
+					<element subject="LL_31_R2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=530;"/>
+					<element subject="LL_31_R3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=530;"/>
+					<element subject="LL_31_R4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=530;"/>
 				</elements>
 			</diagram>
 		</diagrams>

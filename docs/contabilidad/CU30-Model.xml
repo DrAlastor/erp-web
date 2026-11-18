@@ -409,6 +409,38 @@
 				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
 				<properties sType="Class" scope="public"/>
 			</element>
+			<element xmi:idref="LL_30_D1" name="c: Contador" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_D2" name="ctrl: LibrosContablesController" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_D3" name="srv: LibrosContablesServiceImpl" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_D4" name="repoDiario: LibroDiarioRepository" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_M1" name="c: Contador" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_M2" name="ctrl: LibrosContablesController" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_M3" name="srv: LibrosContablesServiceImpl" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
+			<element xmi:idref="LL_30_M4" name="repoMayor: LibroMayorRepository" scope="public">
+				<model package="EAPK_CU30_LIBROS" ea_eleType="element"/>
+				<properties sType="Sequence" scope="public"/>
+			</element>
 		</elements>
 		<packages>
 			<package xmi:id="EAPK_CU30_LIBROS" name="CU30 - Consultar Libros Contables">
@@ -480,100 +512,180 @@
 				<properties ea_type="Association" direction="Source -> Destination"/>
 			</connector>
 			<connector xmi:idref="M_30_D1">
-				<source xmi:idref="LL_30_D1"/>
-				<target xmi:idref="LL_30_D2"/>
+				<source xmi:idref="LL_30_D1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D2">
+					<model type="Sequence"/>
+				</target>
 				<properties name="1: consultarLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D2">
-				<source xmi:idref="LL_30_D2"/>
-				<target xmi:idref="LL_30_D3"/>
+				<source xmi:idref="LL_30_D2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="2: obtenerLibroDiario(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2"/>
+				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D3">
-				<source xmi:idref="LL_30_D3"/>
-				<target xmi:idref="LL_30_D4"/>
+				<source xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D4">
+					<model type="Sequence"/>
+				</target>
 				<properties name="3: findAll(spec)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3"/>
+				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D4">
-				<source xmi:idref="LL_30_D4"/>
-				<target xmi:idref="LL_30_D3"/>
-				<properties name="4: listaAsientos" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="4"/>
+				<source xmi:idref="LL_30_D4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: listaAsientos" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D5">
-				<source xmi:idref="LL_30_D3"/>
-				<target xmi:idref="LL_30_D3"/>
+				<source xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="5: calcularTotalesYCuadre(asientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5"/>
+				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=600;PtEndY=-280;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D6">
-				<source xmi:idref="LL_30_D3"/>
-				<target xmi:idref="LL_30_D2"/>
-				<properties name="6: libroDiarioResponse" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6"/>
+				<source xmi:idref="LL_30_D3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="6: libroDiarioResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="6" style="PtStartX=560;PtStartY=-300;PtEndX=350;PtEndY=-300;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_D7">
-				<source xmi:idref="LL_30_D2"/>
-				<target xmi:idref="LL_30_D1"/>
-				<properties name="7: 200 OK (libroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7"/>
+				<source xmi:idref="LL_30_D2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_D1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="7: 200 OK (libroDiarioResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="7" style="PtStartX=350;PtStartY=-340;PtEndX=140;PtEndY=-340;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_DIARIO"/>
 			</connector>
 			<connector xmi:idref="M_30_M1">
-				<source xmi:idref="LL_30_M1"/>
-				<target xmi:idref="LL_30_M2"/>
+				<source xmi:idref="LL_30_M1">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M2">
+					<model type="Sequence"/>
+				</target>
 				<properties name="1: consultarLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="1"/>
+				<appearance seq_no="1" style="PtStartX=140;PtStartY=-100;PtEndX=350;PtEndY=-100;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M2">
-				<source xmi:idref="LL_30_M2"/>
-				<target xmi:idref="LL_30_M3"/>
+				<source xmi:idref="LL_30_M2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="2: obtenerLibroMayor(filtro)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="2"/>
+				<appearance seq_no="2" style="PtStartX=350;PtStartY=-140;PtEndX=560;PtEndY=-140;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M3">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M4"/>
+				<source xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M4">
+					<model type="Sequence"/>
+				</target>
 				<properties name="3: sumSaldosAnterioresBatch(fechaInicio)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="3"/>
+				<appearance seq_no="3" style="PtStartX=560;PtStartY=-180;PtEndX=770;PtEndY=-180;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M4">
-				<source xmi:idref="LL_30_M4"/>
-				<target xmi:idref="LL_30_M3"/>
-				<properties name="4: saldosAnteriores" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="4"/>
+				<source xmi:idref="LL_30_M4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="4: saldosAnteriores" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="4" style="PtStartX=770;PtStartY=-220;PtEndX=560;PtEndY=-220;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M5">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M4"/>
+				<source xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M4">
+					<model type="Sequence"/>
+				</target>
 				<properties name="5: findMovimientosMayorBatch(fechaInicio, fechaFin)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="5"/>
+				<appearance seq_no="5" style="PtStartX=560;PtStartY=-260;PtEndX=770;PtEndY=-260;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M6">
-				<source xmi:idref="LL_30_M4"/>
-				<target xmi:idref="LL_30_M3"/>
-				<properties name="6: movimientos" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="6"/>
+				<source xmi:idref="LL_30_M4">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</target>
+				<properties name="6: movimientos" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="6" style="PtStartX=770;PtStartY=-300;PtEndX=560;PtEndY=-300;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M7">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M3"/>
+				<source xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</target>
 				<properties name="7: calcularSaldoProgresivo(saldos, movimientos)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="7"/>
+				<appearance seq_no="7" style="PtStartX=560;PtStartY=-340;PtEndX=600;PtEndY=-360;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M8">
-				<source xmi:idref="LL_30_M3"/>
-				<target xmi:idref="LL_30_M2"/>
-				<properties name="8: libroMayorResponse" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="8"/>
+				<source xmi:idref="LL_30_M3">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M2">
+					<model type="Sequence"/>
+				</target>
+				<properties name="8: libroMayorResponse" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="8" style="PtStartX=560;PtStartY=-380;PtEndX=350;PtEndY=-380;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 			<connector xmi:idref="M_30_M9">
-				<source xmi:idref="LL_30_M2"/>
-				<target xmi:idref="LL_30_M1"/>
-				<properties name="9: 200 OK (libroMayorResponse)" ea_type="Sequence" direction="Source -> Destination"/>
-				<appearance seq_no="9"/>
+				<source xmi:idref="LL_30_M2">
+					<model type="Sequence"/>
+				</source>
+				<target xmi:idref="LL_30_M1">
+					<model type="Sequence"/>
+				</target>
+				<properties name="9: 200 OK (libroMayorResponse)" ea_type="Sequence" direction="Source -> Destination" subtype="8"/>
+				<appearance seq_no="9" style="PtStartX=350;PtStartY=-420;PtEndX=140;PtEndY=-420;"/>
+				<extendedProperties diagram="EAID_DIAG_SEQ_INT_CU30_MAYOR"/>
 			</connector>
 		</connectors>
 		<diagrams>
@@ -597,10 +709,10 @@
 				<properties name="Diagrama de Secuencia - CU30 Libro Diario" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_30_D1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
-					<element subject="LL_30_D2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
-					<element subject="LL_30_D3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
-					<element subject="LL_30_D4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_30_D1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=485;"/>
+					<element subject="LL_30_D2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=485;"/>
+					<element subject="LL_30_D3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=485;"/>
+					<element subject="LL_30_D4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=485;"/>
 				</elements>
 			</diagram>
 			<diagram xmi:id="EAID_DIAG_SEQ_INT_CU30_MAYOR">
@@ -608,10 +720,10 @@
 				<properties name="Diagrama de Secuencia - CU30 Libro Mayor" type="Sequence"/>
 				<project author="Alessandro" version="1.0" created="2026-11-18 10:00:00" modified="2026-11-18 10:00:00"/>
 				<elements>
-					<element subject="LL_30_M1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=580;"/>
-					<element subject="LL_30_M2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=580;"/>
-					<element subject="LL_30_M3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=580;"/>
-					<element subject="LL_30_M4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=580;"/>
+					<element subject="LL_30_M1" seq="1" geometry="Left=60;Top=50;Right=220;Bottom=575;"/>
+					<element subject="LL_30_M2" seq="2" geometry="Left=270;Top=50;Right=430;Bottom=575;"/>
+					<element subject="LL_30_M3" seq="3" geometry="Left=480;Top=50;Right=640;Bottom=575;"/>
+					<element subject="LL_30_M4" seq="4" geometry="Left=690;Top=50;Right=850;Bottom=575;"/>
 				</elements>
 			</diagram>
 		</diagrams>
