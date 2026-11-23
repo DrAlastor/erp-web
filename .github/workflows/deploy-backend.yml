@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'backend/**'
+      - 'ml-service/**'
       - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
@@ -32,12 +33,18 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: erp-backend
+          ML_REPOSITORY: erp-ml-service
           IMAGE_TAG: deploy-${{ github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest ./backend
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
           echo "IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+          docker build -t $REGISTRY/$ML_REPOSITORY:$IMAGE_TAG -t $REGISTRY/$ML_REPOSITORY:latest ./ml-service
+          docker push $REGISTRY/$ML_REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$ML_REPOSITORY:latest
+          echo "ML_IMAGE_URI=$REGISTRY/$ML_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: 5. Actualizar ECS Fargate y Enrutar CloudFront
         env:
@@ -64,6 +71,7 @@ jobs:
           DISTRIBUTION_ID = "EQDMNRVVJ0UB2"
           SUFIJO_DNS = ".compute-1.amazonaws.com"
           IMAGE_URI = os.environ["IMAGE_URI"]
+          ML_IMAGE_URI = os.environ.get("ML_IMAGE_URI", "")
 
           def run_aws(*args):
               cmd = ["aws", "--region", REGION, "--no-cli-pager", *args]
@@ -81,9 +89,11 @@ jobs:
           for k in ["taskDefinitionArn", "revision", "status", "requiresAttributes", "compatibilities", "registeredAt", "registeredBy"]:
               td.pop(k, None)
 
+          td["cpu"] = "1024"
+          td["memory"] = "2048"
           td["containerDefinitions"][0]["image"] = IMAGE_URI
 
-          # Actualizar variables de entorno del contenedor para apuntar a la base RDS c49qmms6qw5e
+          # Actualizar variables de entorno del contenedor backend
           env_actual = {e["name"]: e["value"] for e in td["containerDefinitions"][0].get("environment", [])}
           print(f"[*] Variables de entorno previas en task: {list(env_actual.keys())}")
 
@@ -113,9 +123,12 @@ jobs:
               "AWS_CLOUDWATCH_ENABLED": "true",
               "AWS_REGION": "us-east-1",
               "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora",
-              "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", ""),
-              "GEMINI_MODEL": "gemini-flash-latest",
+              "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") or base64.b64decode("QVEuQWI4Uk42SjRtUUJWbFBNZHZuR3hCV0xucDQ2TXFnNlljQnAyOWxabGxCUkFBcnRodkE=").decode("utf-8"),
+              "GEMINI_MODEL": "gemini-flash-lite-latest",
+              "AGENTE_GEMINI_MODEL": "gemini-flash-lite-latest",
               "GEMINI_TIMEOUT_MS": "20000",
+              "ML_URL": "http://localhost:8000",
+              "ML_CLAVE_INTERNA": "nexoerp_ml_secret_key_2026",
               "STRIPE_SECRET_KEY": os.environ.get("STRIPE_SECRET_KEY") or base64.b64decode("c2tfdGVzdF81MVRjb3RZR2dWZWFsRmhMZE1ESTVXa1laaWVZdWRvSWFBMVBzQTF4T0FyV0JrcWowRmg4WU5nOUF6amhleVE4OWVnU2k2Zk9ob1hjc0NLZjE3Q2xqVXlSazAwVjE3aUJpUEU=").decode("utf-8"),
               "STRIPE_PUBLIC_KEY": os.environ.get("STRIPE_PUBLIC_KEY") or base64.b64decode("cGtfdGVzdF81MVRjb3RZR2dWZWFsRmhMZDJjYnNxS0w0WXpTNFl1bGRDSUYxaDhFemFUcFlUMGdqVkw5YVZGQk5jblcwQ29pMTRDZnlrcHJOVmlvekQyazRpQXVETWYzUzAwZEI1QVRkZ0M=").decode("utf-8"),
               "STRIPE_RESTRICTED_KEY": os.environ.get("STRIPE_RESTRICTED_KEY") or base64.b64decode("cmtfdGVzdF81MVRjb3RZR2dWZWFsRmhMZE9kaTRwWnJhZnFkbjlaa3pHcVM1Y0JvdE5QWnBqTnRjbUR4ZDFuRUZua3pGZGtUVmdzQ2VvWG95Mmppb2pRQ3VvUVMyY1pySTAwM0FLdHVxYk4=").decode("utf-8"),
@@ -139,6 +152,36 @@ jobs:
               {"name": k, "value": str(v)} for k, v in env_combinado.items()
           ]
           print(f"[*] Variables de entorno actualizadas en task: {list(env_combinado.keys())}")
+
+          # Configurar contenedor secundario de ML (FastAPI en puerto 8000)
+          if ML_IMAGE_URI:
+              ml_container = {
+                  "name": "erp-ml-service",
+                  "image": ML_IMAGE_URI,
+                  "essential": True,
+                  "portMappings": [{"containerPort": 8000, "hostPort": 8000, "protocol": "tcp"}],
+                  "environment": [
+                      {"name": "ML_CLAVE_INTERNA", "value": "nexoerp_ml_secret_key_2026"},
+                      {"name": "ML_MASTER_DATABASE_URL", "value": "postgresql+psycopg://AdminAWS:Adminaws123!@erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com:5432/ERP_Master?sslmode=require"},
+                      {"name": "ML_TENANT_DB_USUARIO", "value": "AdminAWS"},
+                      {"name": "ML_TENANT_DB_CLAVE", "value": "Adminaws123!"},
+                      {"name": "ML_TENANT_DB_HOST_POR_DEFECTO", "value": "erp-database.c49qmms6qw5e.us-east-1.rds.amazonaws.com"},
+                      {"name": "ML_TENANT_DB_SSLMODE", "value": "require"},
+                      {"name": "ML_ZONA_HORARIA", "value": "America/La_Paz"}
+                  ],
+                  "logConfiguration": {
+                      "logDriver": "awslogs",
+                      "options": {
+                          "awslogs-group": "/ecs/erp-backend",
+                          "awslogs-region": "us-east-1",
+                          "awslogs-stream-prefix": "ecs-ml"
+                      }
+                  }
+              }
+              if len(td["containerDefinitions"]) > 1:
+                  td["containerDefinitions"][1] = ml_container
+              else:
+                  td["containerDefinitions"].append(ml_container)
 
           Path("td-temp.json").write_text(json.dumps(td), encoding="utf-8")
           nuevo = json.loads(run_aws("ecs", "register-task-definition", "--cli-input-json", "file://td-temp.json"))
