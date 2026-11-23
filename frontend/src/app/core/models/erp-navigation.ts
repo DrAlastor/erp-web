@@ -99,5 +99,20 @@ export const ERP_MODULES: ErpModule[] = [
       { id: 'gestionar-reportes-qbe', slug: 'gestionar-reportes-qbe', name: 'Gestionar Reportes QBE', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN'] },
       { id: 'gestionar-reportes-por-voz', slug: 'gestionar-reportes-por-voz', name: 'Gestionar Reportes por Voz', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'VENDEDOR'] }
     ]
+  },
+  {
+    // CU40 — Machine Learning (servicio ml-service + backend /api/inteligencia-negocio)
+    id: 'inteligencia-de-negocio',
+    name: 'Inteligencia de Negocio',
+    icon: '◈',
+    functions: [
+      { id: 'panel-modelos-predictivos', slug: 'panel-modelos-predictivos', name: 'Panel de Modelos Predictivos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO'] },
+      { id: 'pronostico-de-ventas', slug: 'pronostico-de-ventas', name: 'Pronóstico de Ventas', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO', 'VENDEDOR'] },
+      { id: 'riesgo-de-abandono', slug: 'riesgo-de-abandono', name: 'Riesgo de Abandono de Clientes', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'VENDEDOR'] },
+      { id: 'segmentacion-de-clientes', slug: 'segmentacion-de-clientes', name: 'Segmentación de Clientes', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'VENDEDOR'] },
+      { id: 'canasta-de-mercado', slug: 'canasta-de-mercado', name: 'Canasta de Mercado', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'VENDEDOR'] },
+      { id: 'deteccion-de-anomalias', slug: 'deteccion-de-anomalias', name: 'Detección de Anomalías', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'AUDITOR_INTERNO'] },
+      { id: 'sugerencia-de-compra', slug: 'sugerencia-de-compra', name: 'Sugerencia de Compra', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'ALMACENERO'] }
+    ]
   }
 ];
