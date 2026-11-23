@@ -50,6 +50,7 @@ import { AperturaCajaComponent } from '../../modulos/tesoreria-y-cajas/cu32-aper
 import { VentaPosComponent } from '../../modulos/tesoreria-y-cajas/cu33-venta-en-caja-pos/components/venta-pos.component';
 import { InteligenciaNegocioComponent } from '../../modulos/inteligencia-de-negocio/cu40-modelos-predictivos/components/inteligencia-negocio.component';
 import { vistaDesdeSlug } from '../../modulos/inteligencia-de-negocio/cu40-modelos-predictivos/utils/ml.utils';
+import { AsistenteIaComponent } from '../../modulos/inteligencia-de-negocio/cu41-agente-ia/components/asistente-ia.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -63,7 +64,7 @@ import { vistaDesdeSlug } from '../../modulos/inteligencia-de-negocio/cu40-model
     CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent,
     AsientosContablesComponent, CuentasPorCobrarComponent, LibrosContablesComponent, InformacionFinancieraComponent,
     AperturaCajaComponent, VentaPosComponent, MovimientosCajaComponent, CierreArqueoCajaComponent,
-    InteligenciaNegocioComponent],
+    InteligenciaNegocioComponent, AsistenteIaComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
