@@ -47,6 +47,7 @@ export function claseEstadoTurno(estado: string): string {
 }
 
 export function claseTipoMovimiento(tipo: string): string {
+  if (tipo === 'VENTA') return 'venta';
   return tipo === 'INGRESO' ? 'confirmado' : 'vencida';
 }
 

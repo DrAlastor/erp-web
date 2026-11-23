@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.dto.MovimientoResponse;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.dto.RegistrarMovimientoRequest;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.mapper.CajaMapper;
+import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.repository.CajaConsultaRepository;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.service.TurnoCajaService.Actor;
 import modulo.ventas_y_facturacion.compartido.entity.FormaPago;
 import modulo.ventas_y_facturacion.compartido.entity.MovimientoCaja;
@@ -21,8 +22,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * HU-34 / CU34: registrar movimientos de caja (ingresos y egresos) en un turno ABIERTO.
@@ -41,6 +44,7 @@ public class MovimientoCajaService {
     private final FormaPagoRepository formasPago;
     private final TurnoCajaService turnoService;
     private final CajaMapper mapper;
+    private final CajaConsultaRepository consultas;
     private final BitacoraCaja bitacora;
 
     public List<MovimientoResponse> listar(Long turnoId, Authentication authentication) {
@@ -48,12 +52,22 @@ public class MovimientoCajaService {
         return listarDeTurno(turnoId);
     }
 
-    /** Movimientos del turno, del más reciente al más antiguo, sin control de acceso. */
+    /**
+     * Movimientos manuales y cobros de ventas del turno, del más reciente al más antiguo, sin
+     * control de acceso. Las ventas no se copian a movimientos_caja (el arqueo ya las suma desde
+     * pago_venta); aquí solo se listan para que el cajero vea lo que vendió.
+     */
     public List<MovimientoResponse> listarDeTurno(Long turnoId) {
-        return movimientos.findByTurnoCajaIdOrderByFechaHoraDescIdDesc(turnoId).stream()
-                .map(mapper::toResponse)
+        return Stream.concat(
+                        movimientos.findByTurnoCajaIdOrderByFechaHoraDescIdDesc(turnoId).stream().map(mapper::toResponse),
+                        consultas.ventasDelTurno(turnoId).stream())
+                .sorted(MAS_RECIENTE_PRIMERO)
                 .toList();
     }
+
+    private static final Comparator<MovimientoResponse> MAS_RECIENTE_PRIMERO = Comparator
+            .comparing(MovimientoResponse::fechaHora, Comparator.nullsLast(Comparator.reverseOrder()))
+            .thenComparing(MovimientoResponse::id, Comparator.reverseOrder());
 
     @Transactional
     public MovimientoResponse registrar(Long turnoId, RegistrarMovimientoRequest request, Authentication authentication) {

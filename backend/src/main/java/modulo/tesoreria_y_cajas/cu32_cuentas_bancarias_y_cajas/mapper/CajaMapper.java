@@ -39,6 +39,7 @@ public class CajaMapper {
                 m.getConcepto(),
                 m.getMonto(),
                 m.getNumeroComprobante(),
-                m.getFechaHora());
+                m.getFechaHora(),
+                MovimientoResponse.ORIGEN_MOVIMIENTO);
     }
 }

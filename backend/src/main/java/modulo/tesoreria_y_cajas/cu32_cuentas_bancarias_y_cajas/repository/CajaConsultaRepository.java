@@ -1,6 +1,7 @@
 package modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.repository;
 
 import lombok.RequiredArgsConstructor;
+import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.dto.MovimientoResponse;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.dto.OpcionesCajaResponse.SucursalOpcion;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.service.CalculadoraArqueo.Partida;
 import modulo.tesoreria_y_cajas.cu32_cuentas_bancarias_y_cajas.service.ReglasCaja;
@@ -127,6 +128,40 @@ public class CajaConsultaRepository {
     }
 
     /** Montos del turno sumados por forma de pago y origen (VENTA, INGRESO, EGRESO). */
+    /**
+     * Cobros de las ventas del turno (POS o Facturación con turno) como líneas de solo lectura de
+     * "Movimientos del turno". Mismo filtro de vigencia que el arqueo, así lista y total coinciden.
+     */
+    public List<MovimientoResponse> ventasDelTurno(Long turnoId) {
+        return jdbc.query(
+                "SELECT pv.id, v.id AS venta_id, v.turno_caja_id, fp.id AS forma_pago_id, fp.nombre AS forma_pago,"
+                        + " v.razon_social_cliente, v.tipo_comprobante, v.numero_factura, pv.importe,"
+                        + " COALESCE(pv.fecha_pago, v.fecha_creacion, v.fecha) AS fecha_hora"
+                        + PAGOS_VIGENTES.formatted(":turnoId")
+                        + " ORDER BY fecha_hora DESC, pv.id DESC",
+                new MapSqlParameterSource("turnoId", turnoId),
+                (rs, n) -> {
+                    String cliente = rs.getString("razon_social_cliente");
+                    String numero = rs.getString("numero_factura");
+                    String comprobante = rs.getString("tipo_comprobante");
+                    Timestamp fecha = rs.getTimestamp("fecha_hora");
+                    return new MovimientoResponse(
+                            rs.getLong("id"),
+                            rs.getLong("turno_caja_id"),
+                            MovimientoResponse.ORIGEN_VENTA,
+                            rs.getLong("forma_pago_id"),
+                            rs.getString("forma_pago"),
+                            "Venta #" + rs.getLong("venta_id")
+                                    + (cliente == null || cliente.isBlank() ? "" : " · " + cliente.trim()),
+                            rs.getBigDecimal("importe"),
+                            numero == null || numero.isBlank()
+                                    ? comprobante
+                                    : (comprobante == null ? "" : comprobante + " ") + numero,
+                            fecha == null ? null : fecha.toLocalDateTime(),
+                            MovimientoResponse.ORIGEN_VENTA);
+                });
+    }
+
     public List<Partida> partidasArqueo(Long turnoId) {
         return jdbc.query(
                 "SELECT fp.id, fp.nombre, fp.codigo, 'VENTA' AS origen, SUM(pv.importe) AS monto"

@@ -6,6 +6,8 @@
 
 export type EstadoTurno = 'ABIERTO' | 'CERRADO';
 export type TipoMovimiento = 'INGRESO' | 'EGRESO';
+/** En la lista del turno también llegan los cobros de ventas (solo lectura). */
+export type TipoLineaTurno = TipoMovimiento | 'VENTA';
 
 export interface SucursalOpcion {
   id: number;
@@ -42,13 +44,15 @@ export interface TurnoResponse {
 export interface MovimientoResponse {
   id: number;
   turnoCajaId: number;
-  tipo: TipoMovimiento;
+  tipo: TipoLineaTurno;
   formaPagoId: number;
   formaPagoNombre: string;
   concepto: string;
   monto: number;
   numeroComprobante: string;
   fechaHora: string;
+  /** MOVIMIENTO = ingreso/egreso manual; VENTA = cobro de una venta del turno. */
+  origen: 'MOVIMIENTO' | 'VENTA';
 }
 
 export interface ArqueoFormaPago {

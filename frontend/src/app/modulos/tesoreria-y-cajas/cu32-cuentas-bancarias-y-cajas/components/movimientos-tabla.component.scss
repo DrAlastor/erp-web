@@ -17,3 +17,9 @@ td {
   color: var(--text-muted);
   padding: 32px;
 }
+
+// Cobro de una venta del turno (solo lectura): se distingue de los ingresos manuales.
+.badge.venta {
+  background: rgba(0, 122, 255, 0.12);
+  color: var(--primary);
+}

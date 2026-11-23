@@ -36,7 +36,7 @@
   <app-caja-resumen [turno]="t" [arqueo]="arqueo()" [loading]="!arqueo() && !arqueoFallo()" />
   <app-movimiento-form *siPermiso="'FACTURACION_CREAR'" [turnoId]="t.id" [formasPago]="opciones().formasPago"
     (registrado)="onRegistrado($event)" />
-  <h3 class="tabla-title">Movimientos del turno</h3>
+  <h3 class="tabla-title">Ventas y movimientos del turno</h3>
   <app-movimientos-tabla [movimientos]="movimientos()" [loading]="movLoading()" />
 } @else if (!error()) {
   <app-apertura-caja-form [sucursales]="opciones().sucursales" (abierto)="onAbierto($event)" />

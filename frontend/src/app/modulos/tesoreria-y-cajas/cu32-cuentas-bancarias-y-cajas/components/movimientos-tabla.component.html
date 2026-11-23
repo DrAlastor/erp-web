@@ -17,14 +17,14 @@
           <tr aria-hidden="true"><td colspan="6"><span class="skeleton row"></span></td></tr>
         }
       } @else {
-        @for (m of movimientos(); track m.id) {
+        @for (m of movimientos(); track m.origen + '-' + m.id) {
           <tr>
             <td class="mono">{{ fecha(m.fechaHora) }}</td>
             <td><span class="badge" [class]="claseTipo(m.tipo)">{{ m.tipo }}</span></td>
             <td>{{ m.concepto }}</td>
             <td>{{ m.formaPagoNombre }}</td>
             <td class="mono">{{ m.numeroComprobante }}</td>
-            <td class="num" [class.neg]="m.tipo === 'EGRESO'" [class.ok]="m.tipo === 'INGRESO'">
+            <td class="num" [class.neg]="m.tipo === 'EGRESO'" [class.ok]="m.tipo !== 'EGRESO'">
               <strong>{{ m.tipo === 'EGRESO' ? '−' : '+' }} Bs {{ m.monto | number: '1.2-2' }}</strong>
             </td>
           </tr>
