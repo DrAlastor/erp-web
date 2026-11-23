@@ -1,0 +1,131 @@
+<div class="asistente">
+  <!-- ============================================================ panel lateral -->
+  <aside class="lateral" aria-label="Historial del asistente">
+    <button type="button" class="primary nueva" (click)="nueva()">＋ Nueva conversación</button>
+
+    <section>
+      <h3>Conversaciones</h3>
+      @for (c of conversaciones(); track c.id) {
+        <div class="item" [class.activo]="idConversacion() === c.id" role="button" tabindex="0"
+          (click)="abrir(c)" (keydown.enter)="abrir(c)">
+          <span class="titulo">{{ c.titulo }}</span>
+          <small>{{ fecha(c.fechaActualizacion) }}</small>
+          <button type="button" class="borrar" (click)="borrar(c, $event)" [attr.aria-label]="'Borrar ' + c.titulo">✕</button>
+        </div>
+      } @empty {
+        <p class="vacio">Todavía no hay conversaciones.</p>
+      }
+    </section>
+
+    <section>
+      <h3>Gráficos guardados</h3>
+      @for (g of graficos(); track g.id) {
+        <div class="item" [class.activo]="graficoAbierto()?.grafico?.id === g.id" role="button" tabindex="0"
+          (click)="abrirGrafico(g)" (keydown.enter)="abrirGrafico(g)">
+          <span class="titulo">◰ {{ g.titulo }}</span>
+          <button type="button" class="borrar" (click)="borrarGrafico(g, $event)" [attr.aria-label]="'Borrar ' + g.titulo">✕</button>
+        </div>
+      } @empty {
+        <p class="vacio">Guarda un gráfico de una respuesta para verlo aquí con datos actualizados.</p>
+      }
+    </section>
+
+    @if (estado(); as e) {
+      <p class="meta">
+        {{ e.configurado ? 'Modelo ' + e.modelo : 'IA sin configurar' }} · {{ e.herramientas }} herramientas<br />
+        {{ e.preguntasHoy }} / {{ e.preguntasPorDia }} preguntas en 24 h
+      </p>
+    }
+  </aside>
+
+  <!-- ============================================================ chat -->
+  <section class="chat" aria-label="Conversación con el asistente">
+    @if (graficoAbierto(); as g) {
+      <div class="grafico-abierto">
+        <div class="cab">
+          <span>Gráfico guardado · recalculado con los datos de hoy</span>
+          <button type="button" (click)="graficoAbierto.set(null)">Cerrar</button>
+        </div>
+        @if (g.ok && g.visual && g.resultado) {
+          <app-grafico-bi [visual]="g.visual" [filas]="g.resultado.filas" />
+        } @else {
+          <p class="message error">{{ g.error ?? 'Sin datos para este gráfico.' }}</p>
+        }
+      </div>
+    }
+    @if (cargandoGrafico()) { <p class="vacio" role="status">Recalculando gráfico…</p> }
+
+    <div class="mensajes" aria-live="polite">
+      @if (!mensajes().length) {
+        <div class="bienvenida">
+          <span class="logo" aria-hidden="true">✦</span>
+          <h2>Asistente de Inteligencia de Negocio</h2>
+          <p>Pregunta en lenguaje natural sobre ventas, inventario, clientes, cartera y los modelos de Machine Learning.
+            Todas las cifras salen de tus datos; el asistente no ve ni escribe SQL.</p>
+          @if (estado() && !estado()!.configurado) {
+            <p class="message error">El asistente no está configurado en el servidor (falta GEMINI_API_KEY).</p>
+          }
+          <div class="sugerencias">
+            @for (s of sugerencias; track s) {
+              <button type="button" (click)="enviar(s)" [disabled]="enviando()">{{ s }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      @for (m of mensajes(); track $index; let i = $index) {
+        @if (m.rol === 'USUARIO') {
+          <div class="burbuja usuario">{{ m.texto }}</div>
+        } @else if (m.pendiente) {
+          <div class="burbuja asistente pensando" role="status"><span></span><span></span><span></span> Analizando tus datos…</div>
+        } @else {
+          <article class="burbuja asistente">
+            <app-texto-asistente [texto]="m.texto" />
+
+            @if (graficosDe(m.herramientas); as gs) {
+              @if (gs.length) {
+                <div class="graficos" [class.dos]="gs.length > 1">
+                  @for (h of gs; track h.nombre) {
+                    <app-grafico-bi [visual]="h.grafico!" [filas]="h.resultado!.filas" [guardable]="true"
+                      [guardado]="guardados().has(claveGrafico(i, h))" (guardar)="guardarGrafico(i, h)" />
+                  }
+                </div>
+              }
+            }
+
+            @if (m.herramientas.length) {
+              <details class="como">
+                <summary>Cómo se calculó ({{ m.herramientas.length }} {{ m.herramientas.length === 1 ? 'consulta' : 'consultas' }})</summary>
+                <ul>
+                  @for (h of m.herramientas; track $index) {
+                    <li [class.fallo]="!h.ok">
+                      <code>{{ h.nombre }}</code> — {{ parametrosTexto(h.parametros) }}
+                      @if (!h.ok) { <span class="nok">No se pudo consultar{{ h.error ? ': ' + h.error : '' }}</span> }
+                      @if (h.resultado?.nota) { <small>{{ h.resultado!.nota }}</small> }
+                      @if (h.resultado?.resumen && (h.resultado!.resumen | json) !== '{}') {
+                        <small class="mono">{{ h.resultado!.resumen | json }}</small>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (m.tokens) { <small class="tokens">Tokens: {{ m.tokens.entrada }} de entrada · {{ m.tokens.salida }} de salida</small> }
+              </details>
+            }
+          </article>
+        }
+      }
+      <div #fin></div>
+    </div>
+
+    @if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
+
+    <form class="entrada" (ngSubmit)="enviar()">
+      <textarea [(ngModel)]="pregunta" name="pregunta" rows="2" maxlength="2000" [disabled]="enviando()"
+        (keydown)="alPresionar($event)" placeholder="Escribe tu pregunta… (Enter para enviar, Shift+Enter para salto de línea)"
+        aria-label="Pregunta para el asistente"></textarea>
+      <button type="submit" class="primary" [disabled]="enviando() || !pregunta.trim()">
+        {{ enviando() ? 'Pensando…' : 'Enviar' }}
+      </button>
+    </form>
+  </section>
+</div>

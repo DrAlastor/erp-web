@@ -106,6 +106,8 @@ export const ERP_MODULES: ErpModule[] = [
     name: 'Inteligencia de Negocio',
     icon: '◈',
     functions: [
+      // CU41 — Agente de IA (chat con Gemini + herramientas de solo lectura)
+      { id: 'asistente-ia', slug: 'asistente-ia', name: 'Asistente IA', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO', 'VENDEDOR'] },
       { id: 'panel-modelos-predictivos', slug: 'panel-modelos-predictivos', name: 'Panel de Modelos Predictivos', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO'] },
       { id: 'pronostico-de-ventas', slug: 'pronostico-de-ventas', name: 'Pronóstico de Ventas', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'CONTADOR', 'AUDITOR_INTERNO', 'VENDEDOR'] },
       { id: 'riesgo-de-abandono', slug: 'riesgo-de-abandono', name: 'Riesgo de Abandono de Clientes', rolesPermitidos: ['ADMINISTRADOR', 'ADMIN', 'SUPERADMIN', 'GERENTE_GENERAL', 'VENDEDOR'] },

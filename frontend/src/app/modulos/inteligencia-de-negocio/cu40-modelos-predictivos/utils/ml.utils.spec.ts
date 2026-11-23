@@ -16,7 +16,9 @@ describe('CU40 utilidades de Inteligencia de Negocio', () => {
   it('cada entrada del sidebar abre una pestaña y todas existen en la navegación', () => {
     const modulo = ERP_MODULES.find((m) => m.id === 'inteligencia-de-negocio');
     expect(modulo?.name).toBe('Inteligencia de Negocio');
-    expect(modulo?.functions.map((f) => f.slug)).toEqual(VISTAS.map((v) => v.slug));
+    // Todas las pestañas del ML están en el sidebar (además del Asistente IA, que es otra pantalla).
+    expect(modulo?.functions.map((f) => f.slug).filter((s) => s !== 'asistente-ia')).toEqual(VISTAS.map((v) => v.slug));
+    expect(modulo?.functions.some((f) => f.slug === 'asistente-ia')).toBe(true);
     expect(vistaDesdeSlug('riesgo-de-abandono')).toBe('abandono');
     expect(vistaDesdeSlug('sugerencia-de-compra')).toBe('reposicion');
     expect(vistaDesdeSlug('otra-cosa')).toBe('panel');
