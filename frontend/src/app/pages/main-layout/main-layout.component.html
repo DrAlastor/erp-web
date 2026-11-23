@@ -161,6 +161,8 @@
       <app-apertura-caja />
       } @else if (fn.id === 'venta-en-caja-pos' || fn.id === 'cu33-venta-en-caja-pos') {
       <app-venta-pos />
+      } @else if (selectedModule()?.id === 'inteligencia-de-negocio') {
+      <app-inteligencia-negocio [vista]="vistaInteligencia()" />
       } @else {
       <section class="module-card function-content">
         <span class="count">En desarrollo</span>

@@ -37,6 +37,20 @@ services:
     networks:
       - erp_network
 
+  # CU40 - Inteligencia de Negocio: servicio interno de ML (sin "ports": no se publica).
+  # En backend/.env: ML_URL=http://ml-service:8000 y la misma ML_CLAVE_INTERNA.
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    image: erp-ml-service:latest
+    container_name: erp_ml_service
+    restart: unless-stopped
+    env_file:
+      - ./ml-service/.env
+    networks:
+      - erp_network
+
   frontend:
     build:
       context: ./frontend

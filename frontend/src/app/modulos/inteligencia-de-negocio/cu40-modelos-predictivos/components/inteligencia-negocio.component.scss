@@ -1,0 +1,382 @@
+// CU40 — Inteligencia de Negocio. Misma base visual que CU16/CU39 (botones, tablas, mensajes).
+@use '../../../ventas-y-facturacion/cu16-pedidos-de-venta/components/pedidos-base';
+
+:host {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.in-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 18px;
+
+  p {
+    margin: 6px 0 0;
+    max-width: 640px;
+  }
+}
+
+.estado-entreno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
+
+  small {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .aviso-config {
+    color: var(--destructive);
+  }
+}
+
+.badge {
+  &.est-ok { background: var(--success-light); color: #1b7a3e; }
+  &.est-parcial, &.est-en_curso, &.est-pendiente { background: var(--warning-light); color: #b45309; }
+  &.est-error { background: var(--destructive-light); color: var(--destructive); }
+  &.nv-alto { background: var(--destructive-light); color: var(--destructive); }
+  &.nv-medio { background: var(--warning-light); color: #b45309; }
+  &.nv-bajo { background: var(--success-light); color: #1b7a3e; }
+}
+
+.girando {
+  display: inline-block;
+  animation: girar 900ms linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.message {
+  margin-top: 14px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 16px;
+  padding: 4px;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--bg-subtle);
+
+  a {
+    flex: 1 0 auto;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    transition: background var(--transition-fast), color var(--transition-fast);
+
+    &:hover { color: var(--text-main); }
+
+    &.activa {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+}
+
+.cargando,
+.nota,
+.sin-metricas {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.aviso {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: var(--warning-light);
+  color: #8a4b00;
+}
+
+.vacio {
+  margin-bottom: 14px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px dashed var(--bg-card-border-hover);
+  background: var(--primary-light);
+
+  p { margin: 6px 0 0; }
+}
+
+// ------------------------------------------------------------------ panel de modelos
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-card-border);
+
+  h3 { margin: 4px 0 0; font-size: 15px; }
+
+  .tipo {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+
+  .pregunta {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--bg-card-border);
+
+    a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+  }
+
+  .tecnica {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
+  margin: 0;
+
+  > div {
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+
+    &.ok { background: var(--success-light); }
+    &.aviso { background: var(--warning-light); }
+  }
+
+  dt { font-size: 11px; color: var(--text-muted); }
+  dd { margin: 2px 0 0; font-size: 17px; font-weight: 700; }
+  small { display: block; margin-top: 2px; font-size: 10px; color: var(--text-muted); }
+}
+
+// ------------------------------------------------------------------ filtros y KPIs
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+
+  label { min-width: 160px; }
+  input[type='search'] { min-width: 260px; }
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg-subtle);
+  }
+
+  span { font-size: 11px; color: var(--text-muted); }
+  strong { font-size: 15px; }
+}
+
+// ------------------------------------------------------------------ barras
+.barra {
+  display: inline-block;
+  width: 90px;
+  height: 6px;
+  margin-right: 8px;
+  overflow: hidden;
+  vertical-align: middle;
+  border-radius: 4px;
+  background: var(--bg-subtle);
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--primary);
+
+    &.b-alto { background: var(--destructive); }
+    &.b-medio { background: var(--warning); }
+    &.b-bajo { background: var(--success); }
+  }
+}
+
+.sube { color: #1b7a3e; }
+.baja { color: var(--destructive); }
+
+.factores {
+  span {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+}
+
+// ------------------------------------------------------------------ abandono
+.niveles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nivel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+
+  span { font-size: 12px; color: var(--text-muted); }
+  strong { font-size: 22px; }
+  small { font-size: 11px; color: var(--text-muted); }
+
+  &.n-alto strong { color: var(--destructive); }
+  &.n-medio strong { color: #b45309; }
+  &.n-bajo strong { color: #1b7a3e; }
+  &.sel { border-color: var(--primary); background: var(--primary-light); }
+}
+
+// ------------------------------------------------------------------ segmentos
+.segmentos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.segmento {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+
+  &.sel { border-color: var(--primary); background: var(--primary-light); }
+
+  .seg-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+
+    span { font-size: 12px; color: var(--text-muted); }
+  }
+
+  .barra { width: 100%; margin: 0; }
+
+  dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    margin: 0;
+  }
+
+  dt { font-size: 10px; color: var(--text-muted); }
+  dd { margin: 0; font-size: 13px; font-weight: 600; }
+}
+
+.sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .niveles { grid-template-columns: 1fr; }
+
+  .filtros {
+    flex-direction: column;
+    align-items: stretch;
+
+    label, input[type='search'] { min-width: 0; width: 100%; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .girando { animation: none; }
+}

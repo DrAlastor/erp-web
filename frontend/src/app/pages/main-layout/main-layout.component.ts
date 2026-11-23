@@ -48,6 +48,8 @@ import { LibrosContablesComponent } from '../../modulos/contabilidad-y-finanzas/
 import { InformacionFinancieraComponent } from '../../modulos/contabilidad-y-finanzas/cu31-consultar-informacion-financiera/components/informacion-financiera.component';
 import { AperturaCajaComponent } from '../../modulos/tesoreria-y-cajas/cu32-apertura-de-caja/components/apertura-caja.component';
 import { VentaPosComponent } from '../../modulos/tesoreria-y-cajas/cu33-venta-en-caja-pos/components/venta-pos.component';
+import { InteligenciaNegocioComponent } from '../../modulos/inteligencia-de-negocio/cu40-modelos-predictivos/components/inteligencia-negocio.component';
+import { vistaDesdeSlug } from '../../modulos/inteligencia-de-negocio/cu40-modelos-predictivos/utils/ml.utils';
 
 @Component({
   selector: 'app-main-layout',
@@ -60,7 +62,8 @@ import { VentaPosComponent } from '../../modulos/tesoreria-y-cajas/cu33-venta-en
     ProveedoresComponent, OrdenesCompraComponent, ReportesPorVozComponent, ConstructorQbeComponent,
     CuentasPorPagarComponent, DashboardEjecutivoComponent, PlanDeCuentasComponent, PeriodosContablesComponent,
     AsientosContablesComponent, CuentasPorCobrarComponent, LibrosContablesComponent, InformacionFinancieraComponent,
-    AperturaCajaComponent, VentaPosComponent, MovimientosCajaComponent, CierreArqueoCajaComponent],
+    AperturaCajaComponent, VentaPosComponent, MovimientosCajaComponent, CierreArqueoCajaComponent,
+    InteligenciaNegocioComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -174,6 +177,9 @@ export class MainLayoutComponent {
   });
 
   readonly hasSelection = computed(() => !!this.currentFuncionSlug());
+
+  /** CU40: cada entrada de "Inteligencia de Negocio" abre la misma pantalla en otra pestaña. */
+  readonly vistaInteligencia = computed(() => vistaDesdeSlug(this.selectedFunction()?.id));
 
   toggleModule(id: string): void {
     this.expanded.update((current) => {

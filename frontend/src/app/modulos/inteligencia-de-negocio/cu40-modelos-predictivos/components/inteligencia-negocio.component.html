@@ -1,0 +1,357 @@
+<header class="in-header">
+  <div>
+    <p class="eyebrow">Machine Learning · 6 modelos</p>
+    <h2>Inteligencia de Negocio</h2>
+    <p>Pronósticos, clientes en riesgo, segmentos, canasta, anomalías y reposición calculados con los datos de tu empresa.</p>
+  </div>
+  <div class="estado-entreno">
+    @if (resumen(); as r) {
+      @if (r.ultimaEjecucion; as e) {
+        <span class="badge" [class]="'est-' + e.estado.toLowerCase()">{{ e.estado === 'EN_CURSO' ? 'Entrenando…' : e.estado }}</span>
+        <small>Último entrenamiento: {{ fecha(e.fin ?? e.inicio) }}</small>
+      } @else {
+        <span class="badge est-pendiente">Sin entrenar</span>
+      }
+      @if (!r.servicioConfigurado) {
+        <small class="aviso-config">Servicio de ML no configurado en el backend.</small>
+      }
+    }
+    <button type="button" class="primary" (click)="entrenar()"
+      [disabled]="entrenando() || enCurso() || !resumen()?.servicioConfigurado" [attr.aria-busy]="entrenando() || enCurso()">
+      <span aria-hidden="true" [class.girando]="entrenando() || enCurso()">⟳</span>
+      {{ entrenando() || enCurso() ? 'Entrenando…' : 'Entrenar modelos' }}
+    </button>
+  </div>
+</header>
+
+@if (mensaje()) { <div class="message success" role="status">{{ mensaje() }}</div> }
+@if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
+
+<nav class="tabs" aria-label="Modelos">
+  @for (v of vistas; track v.vista) {
+    <a [routerLink]="['/app', v.slug]" [class.activa]="vista() === v.vista" [attr.aria-current]="vista() === v.vista ? 'page' : null">
+      <span aria-hidden="true">{{ v.icono }}</span> {{ v.titulo }}
+    </a>
+  }
+</nav>
+
+@if (errorVista()) {
+  <div class="message error" role="alert">{{ errorVista() }} <button type="button" (click)="recargar()">Reintentar</button></div>
+}
+
+<!-- ============================================================ PANEL -->
+@if (vista() === 'panel') {
+  @if (cargandoResumen() && !resumen()) {
+    <p class="cargando" role="status">Cargando modelos…</p>
+  }
+  @if (resumen(); as r) {
+    @if (!r.entrenado) {
+      <div class="vacio">
+        <strong>Los modelos todavía no tienen resultados.</strong>
+        <p>Presiona <em>Entrenar modelos</em>: el servicio de Machine Learning lee las ventas, clientes e inventario de tu
+          empresa y guarda los resultados en uno o dos minutos.</p>
+      </div>
+    }
+    <div class="tarjetas">
+      @for (m of r.modelos; track m.clave) {
+        <article class="tarjeta">
+          <div class="tarjeta-head">
+            <span class="tipo">{{ m.tipo }}</span>
+            <h3>{{ m.titulo }}</h3>
+            <p class="pregunta">{{ m.pregunta }}</p>
+          </div>
+          @if (indicadores(m.clave, m.metricas); as ind) {
+            @if (ind.length) {
+              <dl class="indicadores">
+                @for (i of ind; track i.etiqueta) {
+                  <div [class]="i.tono ?? ''">
+                    <dt>{{ i.etiqueta }}</dt>
+                    <dd class="mono">{{ i.valor }}</dd>
+                    @if (i.nota) { <small>{{ i.nota }}</small> }
+                  </div>
+                }
+              </dl>
+            } @else {
+              <p class="sin-metricas">Sin resultados todavía.</p>
+            }
+          }
+          <footer>
+            <small class="tecnica">{{ m.tecnica }}</small>
+            @for (v of vistas; track v.vista) {
+              @if (v.vista === m.clave) {
+                <a [routerLink]="['/app', v.slug]">Ver detalle →</a>
+              }
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+}
+
+<!-- ============================================================ PRONÓSTICO -->
+@if (vista() === 'pronostico') {
+  <section class="panel">
+    <div class="filtros">
+      <label>Frecuencia
+        <select [(ngModel)]="frecuencia" (ngModelChange)="horizonte = null; recargar()" name="frecuencia">
+          <option value="MENSUAL">Mensual</option>
+          <option value="SEMANAL">Semanal</option>
+        </select>
+      </label>
+      <label>Serie
+        <select [(ngModel)]="filtroSerie" (ngModelChange)="recargar()" name="serie">
+          <option value="TOTAL">Toda la empresa</option>
+          <optgroup label="Sucursales">
+            @for (s of opciones().sucursales; track s.id) { <option [value]="'S:' + s.id">{{ s.nombre }}</option> }
+          </optgroup>
+          <optgroup label="Categorías">
+            @for (c of opciones().categorias; track c) { <option [value]="'C:' + c">{{ c }}</option> }
+          </optgroup>
+        </select>
+      </label>
+      <label>Horizonte
+        <select [(ngModel)]="horizonte" (ngModelChange)="recargar()" name="horizonte">
+          <option [ngValue]="null">Precalculado ({{ frecuencia === 'MENSUAL' ? '6 meses' : '12 semanas' }})</option>
+          @for (h of (frecuencia === 'MENSUAL' ? [12, 18, 24] : [16, 20, 24]); track h) {
+            <option [ngValue]="h">{{ h }} {{ frecuencia === 'MENSUAL' ? 'meses' : 'semanas' }} (al momento)</option>
+          }
+        </select>
+      </label>
+    </div>
+    @if (cargando() && !pronostico()) { <p class="cargando" role="status">Calculando…</p> }
+    @if (pronostico(); as p) {
+      <div class="kpis">
+        <div><span>Serie</span><strong>{{ nombreSerie(p) }}</strong></div>
+        <div><span>Total pronosticado</span><strong class="mono">{{ bs(totalPronosticado()) }}</strong></div>
+        <div><span>Modelo ganador</span><strong class="mono">{{ p.modelo ?? '—' }}</strong></div>
+        @if (p.mape !== null) {
+          <div><span>Error (MAPE) vs. ingenuo</span><strong class="mono">{{ pct(p.mape) }} / {{ pct(p.mapeIngenuo) }}</strong></div>
+        }
+      </div>
+      @if (p.aviso) { <p class="aviso">{{ p.aviso }}</p> }
+      <app-grafico-pronostico [datos]="p" />
+      @if (p.pronostico.length) {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">Pronóstico por periodo</caption>
+            <thead><tr><th>Periodo</th><th class="num">Pronóstico</th><th class="num">Mínimo (80 %)</th><th class="num">Máximo (80 %)</th></tr></thead>
+            <tbody>
+              @for (q of p.pronostico; track q.periodo) {
+                <tr><td>{{ q.periodo }}</td><td class="num mono">{{ bs(q.valor) }}</td><td class="num mono">{{ bs(q.bajo) }}</td><td class="num mono">{{ bs(q.alto) }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="nota">Origen: {{ p.origen === 'AL_MOMENTO' ? 'calculado al momento por el servicio de ML' : 'precalculado en el último entrenamiento' }}.
+          El intervalo se ensancha a medida que el periodo se aleja del último dato real.</p>
+      }
+    }
+  </section>
+}
+
+<!-- ============================================================ ABANDONO -->
+@if (vista() === 'abandono') {
+  <section class="panel">
+    @if (riesgo(); as r) {
+      <div class="niveles" role="group" aria-label="Filtrar por nivel de riesgo">
+        @for (n of ['ALTO', 'MEDIO', 'BAJO']; track n) {
+          <button type="button" class="nivel" [class]="'nivel n-' + n.toLowerCase()" [class.sel]="nivel === n" (click)="filtrarNivel(n)"
+            [attr.aria-pressed]="nivel === n">
+            <span>Riesgo {{ n.toLowerCase() }}</span>
+            <strong class="mono">{{ $any(r.porNivel)[n] ?? 0 }}</strong>
+            <small>{{ totalRiesgo() ? pct(($any(r.porNivel)[n] ?? 0) / totalRiesgo(), 0) : '' }} de los clientes</small>
+          </button>
+        }
+      </div>
+      <p class="nota">Probabilidad de que el cliente <strong>no vuelva a comprar en los próximos 90 días</strong>. Los factores son las
+        variables que más pesan en su caso.</p>
+      @if (r.aviso) { <p class="aviso">{{ r.aviso }}</p> }
+      @if (r.clientes.length) {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Cliente</th><th>Probabilidad</th><th>Nivel</th><th>Factores principales</th></tr></thead>
+            <tbody>
+              @for (c of r.clientes; track c.clienteId) {
+                <tr>
+                  <td>{{ c.cliente ?? 'Cliente #' + c.clienteId }}<span class="cell-sub">{{ c.nitCi }}</span></td>
+                  <td><div class="barra"><i [style.width.%]="c.probabilidad * 100" [class]="'b-' + c.nivel.toLowerCase()"></i></div>
+                    <span class="mono">{{ pct(c.probabilidad, 0) }}</span></td>
+                  <td><span class="badge" [class]="'nv-' + c.nivel.toLowerCase()">{{ c.nivel }}</span></td>
+                  <td class="factores">
+                    @for (f of c.factores; track f.variable) { <span>{{ f.variable }}: <b class="mono">{{ f.valor | number: '1.0-2' }}</b></span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else if (cargando()) { <p class="cargando" role="status">Cargando…</p> }
+  </section>
+}
+
+<!-- ============================================================ SEGMENTACIÓN -->
+@if (vista() === 'segmentacion') {
+  <section class="panel">
+    @if (segmentos(); as s) {
+      @if (s.aviso) { <p class="aviso">{{ s.aviso }}</p> }
+      <div class="segmentos">
+        @for (g of s.segmentos; track g.segmento) {
+          <button type="button" class="segmento" [class.sel]="segmentoSel === g.segmento" (click)="filtrarSegmento(g.segmento)"
+            [attr.aria-pressed]="segmentoSel === g.segmento">
+            <div class="seg-head"><strong>{{ g.segmento }}</strong><span class="mono">{{ g.clientes }} clientes</span></div>
+            <div class="barra"><i [style.width.%]="(g.clientes / maxSegmento()) * 100"></i></div>
+            <dl>
+              <div><dt>Última compra</dt><dd class="mono">{{ g.recenciaPromedio | number: '1.0-0' }} días</dd></div>
+              <div><dt>Compras</dt><dd class="mono">{{ g.frecuenciaPromedio | number: '1.0-1' }}</dd></div>
+              <div><dt>Gasto prom.</dt><dd class="mono">{{ bs(g.montoPromedio) }}</dd></div>
+              <div><dt>Gasto total</dt><dd class="mono">{{ bs(g.montoTotal) }}</dd></div>
+            </dl>
+          </button>
+        }
+      </div>
+      @if (s.clientes.length) {
+        <h3 class="sub">{{ segmentoSel ? 'Clientes de "' + segmentoSel + '"' : 'Clientes de mayor gasto' }}</h3>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Cliente</th><th>Segmento</th><th class="num">Días desde última compra</th><th class="num">Compras</th><th class="num">Monto</th></tr></thead>
+            <tbody>
+              @for (c of s.clientes; track c.clienteId) {
+                <tr><td>{{ c.cliente ?? 'Cliente #' + c.clienteId }}</td><td>{{ c.segmento }}</td>
+                  <td class="num mono">{{ c.recenciaDias }}</td><td class="num mono">{{ c.frecuencia }}</td><td class="num mono">{{ bs(c.monto) }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else if (cargando()) { <p class="cargando" role="status">Cargando…</p> }
+  </section>
+}
+
+<!-- ============================================================ CANASTA -->
+@if (vista() === 'canasta') {
+  <section class="panel">
+    <form class="filtros" (ngSubmit)="recargar()">
+      <label>Producto que se compra (A)
+        <input type="search" [(ngModel)]="producto" name="producto" placeholder="Ej. Laptop, Router, Monitor…" />
+      </label>
+      <button type="submit" class="primary">Buscar</button>
+    </form>
+    <p class="nota"><strong>Confianza</strong>: de las ventas que llevan A, qué porcentaje también lleva B.
+      <strong>Lift</strong> &gt; 1: se compran juntos más de lo que se esperaría por azar.</p>
+    @if (canasta(); as c) {
+      @if (c.aviso) { <p class="aviso">{{ c.aviso }}</p> }
+      @if (c.items.length) {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Si compra (A)</th><th>También compra (B)</th><th>Confianza</th><th class="num">Lift</th><th class="num">Ventas juntas</th></tr></thead>
+            <tbody>
+              @for (r of c.items; track r.productoAId + '-' + r.productoBId) {
+                <tr>
+                  <td>{{ r.productoA }}</td><td>{{ r.productoB }}</td>
+                  <td><div class="barra"><i [style.width.%]="r.confianza * 100"></i></div><span class="mono">{{ pct(r.confianza, 0) }}</span></td>
+                  <td class="num mono">{{ r.lift | number: '1.1-1' }}×</td>
+                  <td class="num mono">{{ r.ventas }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else if (cargando()) { <p class="cargando" role="status">Cargando…</p> }
+  </section>
+}
+
+<!-- ============================================================ ANOMALÍAS -->
+@if (vista() === 'anomalias') {
+  <section class="panel">
+    <form class="filtros" (ngSubmit)="recargar()">
+      <label>Sucursal
+        <select [(ngModel)]="sucursalId" name="sucursalA">
+          <option [ngValue]="null">Todas</option>
+          @for (s of opciones().sucursales; track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+        </select>
+      </label>
+      <label>Desde <input type="date" [(ngModel)]="desde" name="desde" /></label>
+      <label>Hasta <input type="date" [(ngModel)]="hasta" name="hasta" /></label>
+      <button type="submit" class="primary">Filtrar</button>
+      <button type="button" (click)="limpiarFiltros()">Limpiar</button>
+    </form>
+    <p class="nota">Días en que la cantidad de ventas de una sucursal se alejó mucho de lo esperado para ese día de la semana y esa época.
+      Puede ser una promoción, un feriado, un cierre o un problema a revisar.</p>
+    @if (anomalias(); as a) {
+      @if (a.aviso) { <p class="aviso">{{ a.aviso }}</p> }
+      @if (a.items.length) {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Fecha</th><th>Sucursal</th><th class="num">Ventas reales</th><th class="num">Esperadas</th><th class="num">Desviación</th><th>Gravedad</th></tr></thead>
+            <tbody>
+              @for (x of a.items; track x.fecha + '-' + x.sucursalId) {
+                <tr>
+                  <td>{{ x.fecha }}<span class="cell-sub">{{ diaSemana(x.fecha) }}</span></td>
+                  <td>{{ x.sucursal ?? 'Sucursal ' + x.sucursalId }}</td>
+                  <td class="num mono">{{ x.valorReal | number: '1.0-0' }}</td>
+                  <td class="num mono">{{ x.valorEsperado | number: '1.0-1' }}</td>
+                  <td class="num mono" [class.sube]="x.desviacion > 0" [class.baja]="x.desviacion < 0">
+                    {{ x.desviacion > 0 ? '▲' : '▼' }} {{ x.desviacion | number: '1.1-1' }}σ</td>
+                  <td><span class="badge" [class]="x.gravedad === 'ALTA' ? 'nv-alto' : 'nv-medio'">{{ x.gravedad }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else if (cargando()) { <p class="cargando" role="status">Cargando…</p> }
+  </section>
+}
+
+<!-- ============================================================ REPOSICIÓN -->
+@if (vista() === 'reposicion') {
+  <section class="panel">
+    <form class="filtros" (ngSubmit)="recargar()">
+      <label>Sucursal
+        <select [(ngModel)]="sucursalId" name="sucursalR">
+          <option [ngValue]="null">Todas</option>
+          @for (s of opciones().sucursales; track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+        </select>
+      </label>
+      <label>Categoría
+        <select [(ngModel)]="categoria" name="categoria">
+          <option [ngValue]="null">Todas</option>
+          @for (c of opciones().categorias; track c) { <option [ngValue]="c">{{ c }}</option> }
+        </select>
+      </label>
+      <button type="submit" class="primary">Filtrar</button>
+      <button type="button" (click)="limpiarFiltros()">Limpiar</button>
+    </form>
+    @if (reposicion(); as r) {
+      <div class="kpis">
+        <div><span>Productos a reponer</span><strong class="mono">{{ r.items.length }}</strong></div>
+        <div><span>Inversión estimada (a costo)</span><strong class="mono">{{ bs(costoReposicion()) }}</strong></div>
+        <div><span>Cobertura</span><strong>2 meses + stock de seguridad (90 %)</strong></div>
+      </div>
+      @if (r.aviso) { <p class="aviso">{{ r.aviso }}</p> }
+      @if (r.items.length) {
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Producto</th><th>Sucursal</th><th class="num">Demanda 2 meses</th><th class="num">Stock</th><th class="num">Seguridad</th><th class="num">Comprar</th><th class="num">Costo</th></tr></thead>
+            <tbody>
+              @for (s of r.items; track s.productoId + '-' + s.sucursalId) {
+                <tr [title]="s.motivo">
+                  <td>{{ s.producto ?? 'Producto #' + s.productoId }}<span class="cell-sub">{{ s.codigo }} · {{ s.categoria }}</span></td>
+                  <td>{{ s.sucursal ?? s.sucursalId }}</td>
+                  <td class="num mono">{{ s.demandaEsperada | number: '1.1-1' }}</td>
+                  <td class="num mono" [class.baja]="s.stockActual <= 0">{{ s.stockActual | number: '1.0-0' }}</td>
+                  <td class="num mono">{{ s.stockSeguridad | number: '1.1-1' }}</td>
+                  <td class="num mono"><strong>{{ s.cantidadSugerida }}</strong></td>
+                  <td class="num mono">{{ bs(s.costoEstimado) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    } @else if (cargando()) { <p class="cargando" role="status">Cargando…</p> }
+  </section>
+}
