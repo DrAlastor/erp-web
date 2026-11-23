@@ -28,10 +28,17 @@ public class GeminiAgenteCliente {
 
     public static class GeminiException extends RuntimeException {
         private final Falla falla;
+        /** Google respondio pero el modelo no atendio (saturado o retirado): vale probar otro modelo. */
+        private final boolean modeloCaido;
 
         public GeminiException(Falla falla, String mensaje) {
+            this(falla, mensaje, false);
+        }
+
+        GeminiException(Falla falla, String mensaje, boolean modeloCaido) {
             super(mensaje);
             this.falla = falla;
+            this.modeloCaido = modeloCaido;
         }
 
         public Falla falla() {
@@ -46,6 +53,7 @@ public class GeminiAgenteCliente {
     private final ObjectMapper json;
     private final String apiKey;
     private final String modelo;
+    private final String modeloRespaldo;
     private final String urlBase;
     private final long esperaReintentoMs;
 
@@ -53,13 +61,14 @@ public class GeminiAgenteCliente {
     public GeminiAgenteCliente(RestClient.Builder builder, ObjectMapper json,
                                @Value("${gemini.api-key:}") String apiKey,
                                @Value("${agente.gemini-model:${gemini.model:gemini-flash-latest}}") String modelo,
+                               @Value("${agente.gemini-model-respaldo:gemini-flash-lite-latest}") String modeloRespaldo,
                                @Value("${gemini.base-url:https://generativelanguage.googleapis.com/v1beta}") String urlBase,
                                @Value("${agente.timeout-ms:30000}") int timeoutMs) {
-        this(builder, json, apiKey, modelo, urlBase, timeoutMs, 1500);
+        this(builder, json, apiKey, modelo, modeloRespaldo, urlBase, timeoutMs, 1500);
     }
 
-    GeminiAgenteCliente(RestClient.Builder builder, ObjectMapper json, String apiKey, String modelo, String urlBase,
-                        int timeoutMs, long esperaReintentoMs) {
+    GeminiAgenteCliente(RestClient.Builder builder, ObjectMapper json, String apiKey, String modelo,
+                        String modeloRespaldo, String urlBase, int timeoutMs, long esperaReintentoMs) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Math.min(timeoutMs, 10_000));
         factory.setReadTimeout(timeoutMs);
@@ -67,6 +76,7 @@ public class GeminiAgenteCliente {
         this.json = json;
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.modelo = modelo == null || modelo.isBlank() ? "gemini-flash-latest" : modelo.trim();
+        this.modeloRespaldo = modeloRespaldo == null ? "" : modeloRespaldo.trim();
         this.urlBase = urlBase.replaceAll("/+$", "");
         this.esperaReintentoMs = esperaReintentoMs;
     }
@@ -81,6 +91,11 @@ public class GeminiAgenteCliente {
 
     /** Cuerpo del pedido (separado para poder probarlo sin red). */
     ObjectNode cuerpo(String instrucciones, ArrayNode contenidos, ArrayNode declaraciones, boolean sinHerramientas) {
+        return cuerpo(modelo, instrucciones, contenidos, declaraciones, sinHerramientas);
+    }
+
+    private ObjectNode cuerpo(String modelo, String instrucciones, ArrayNode contenidos, ArrayNode declaraciones,
+                              boolean sinHerramientas) {
         ObjectNode c = json.createObjectNode();
         c.set("systemInstruction", json.createObjectNode()
                 .set("parts", json.createArrayNode().add(json.createObjectNode().put("text", instrucciones))));
@@ -104,7 +119,18 @@ public class GeminiAgenteCliente {
             throw new GeminiException(Falla.SIN_CONFIGURAR,
                     "El asistente de IA no esta configurado (falta GEMINI_API_KEY en el backend).");
         }
-        ObjectNode cuerpo = cuerpo(instrucciones, contenidos, declaraciones, sinHerramientas);
+        try {
+            return generarCon(modelo, instrucciones, contenidos, declaraciones, sinHerramientas);
+        } catch (GeminiException e) {
+            if (!e.modeloCaido || modeloRespaldo.isEmpty() || modeloRespaldo.equals(modelo)) throw e;
+            log.warn("CU41: el modelo {} no esta disponible; se usa el de respaldo {}", modelo, modeloRespaldo);
+            return generarCon(modeloRespaldo, instrucciones, contenidos, declaraciones, sinHerramientas);
+        }
+    }
+
+    private JsonNode generarCon(String modelo, String instrucciones, ArrayNode contenidos, ArrayNode declaraciones,
+                                boolean sinHerramientas) {
+        ObjectNode cuerpo = cuerpo(modelo, instrucciones, contenidos, declaraciones, sinHerramientas);
         for (int intento = 1; ; intento++) {
             try {
                 JsonNode r = rest.post()
@@ -119,7 +145,7 @@ public class GeminiAgenteCliente {
             } catch (RestClientResponseException e) {
                 int estado = e.getStatusCode().value();
                 String detalle = e.getResponseBodyAsString().replaceAll("\\s+", " ");
-                log.warn("CU41: Gemini respondio HTTP {} (intento {}): {}", estado, intento,
+                log.warn("CU41: Gemini ({}) respondio HTTP {} (intento {}): {}", modelo, estado, intento,
                         detalle.length() > 300 ? detalle.substring(0, 300) : detalle);
                 if (estado == 503 && intento == 1) {
                     dormir();
@@ -128,7 +154,8 @@ public class GeminiAgenteCliente {
                 if (estado == 429) {
                     throw new GeminiException(Falla.CUOTA, "Se agoto la cuota del servicio de IA; intenta mas tarde.");
                 }
-                throw new GeminiException(Falla.NO_DISPONIBLE, "El servicio de IA no esta disponible (HTTP " + estado + ").");
+                throw new GeminiException(Falla.NO_DISPONIBLE, "El servicio de IA no esta disponible (HTTP " + estado + ").",
+                        estado >= 500 || estado == 404);
             } catch (GeminiException e) {
                 throw e;
             } catch (Exception e) {

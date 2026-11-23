@@ -23,12 +23,18 @@ class GeminiAgenteClienteTest {
 
     private final ObjectMapper json = new ObjectMapper();
     private final List<JsonNode> peticiones = new ArrayList<>();
+    private final List<String> rutas = new ArrayList<>();
     private final Deque<String[]> respuestas = new ConcurrentLinkedDeque<>();
     private HttpServer servidor;
 
     private GeminiAgenteCliente cliente(String key, String modelo) throws IOException {
+        return cliente(key, modelo, "");
+    }
+
+    private GeminiAgenteCliente cliente(String key, String modelo, String respaldo) throws IOException {
         servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         servidor.createContext("/v1beta/models/", ex -> {
+            rutas.add(ex.getRequestURI().getPath());
             peticiones.add(json.readTree(ex.getRequestBody()));
             String[] r = respuestas.poll();
             byte[] b = r[1].getBytes(StandardCharsets.UTF_8);
@@ -38,7 +44,7 @@ class GeminiAgenteClienteTest {
             ex.close();
         });
         servidor.start();
-        return new GeminiAgenteCliente(RestClient.builder(), json, key, modelo,
+        return new GeminiAgenteCliente(RestClient.builder(), json, key, modelo, respaldo,
                 "http://127.0.0.1:" + servidor.getAddress().getPort() + "/v1beta", 5000, 10);
     }
 
@@ -85,6 +91,27 @@ class GeminiAgenteClienteTest {
         assertThatThrownBy(() -> c.generar("s", json.createArrayNode(), json.createArrayNode(), false))
                 .isInstanceOfSatisfying(GeminiAgenteCliente.GeminiException.class,
                         e -> assertThat(e.falla()).isEqualTo(GeminiAgenteCliente.Falla.CUOTA));
+    }
+
+    @Test
+    void modeloSaturadoPasaAlDeRespaldoPeroLaCuotaNo() throws Exception {
+        // Principal: 503 + 503 (con reintento) -> respaldo: 429 (la cuota es de la clave, no del modelo).
+        respuestas.add(new String[]{"503", "{}"});
+        respuestas.add(new String[]{"503", "{}"});
+        respuestas.add(new String[]{"429", "{}"});
+        GeminiAgenteCliente c = cliente("k", "gemini-flash-latest", "gemini-flash-lite-latest");
+        assertThatThrownBy(() -> c.generar("s", json.createArrayNode(), json.createArrayNode(), false))
+                .isInstanceOfSatisfying(GeminiAgenteCliente.GeminiException.class,
+                        e -> assertThat(e.falla()).isEqualTo(GeminiAgenteCliente.Falla.CUOTA));
+        assertThat(rutas).hasSize(3);
+        assertThat(rutas.get(2)).endsWith("/gemini-flash-lite-latest:generateContent");
+
+        respuestas.add(new String[]{"503", "{}"});
+        respuestas.add(new String[]{"503", "{}"});
+        respuestas.add(new String[]{"200", "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"}]}}]}"});
+        JsonNode r = c.generar("s", json.createArrayNode(), json.createArrayNode(), false);
+        assertThat(r.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText()).isEqualTo("ok");
+        assertThat(rutas.get(5)).endsWith("/gemini-flash-lite-latest:generateContent");
     }
 
     @Test
