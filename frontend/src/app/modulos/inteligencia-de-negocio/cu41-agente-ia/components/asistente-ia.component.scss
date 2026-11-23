@@ -11,7 +11,7 @@
   font-family: var(--font-mono);
 }
 
-.asistente {
+.asistente-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
   gap: 16px;
@@ -191,11 +191,15 @@
 
   &.asistente {
     align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
     max-width: 100%;
     background: var(--bg-main);
     border: 1px solid var(--bg-card-border);
     border-bottom-left-radius: 4px;
+    box-sizing: border-box;
   }
 }
 
@@ -225,8 +229,10 @@
 
 .graficos {
   display: grid;
-  gap: 10px;
-  margin-top: 12px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
 
   &.dos { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 }
@@ -272,7 +278,7 @@
 }
 
 @media (max-width: 900px) {
-  .asistente { grid-template-columns: 1fr; }
+  .asistente-layout { grid-template-columns: 1fr; }
   .lateral { max-height: none; }
   .mensajes { max-height: none; }
 }

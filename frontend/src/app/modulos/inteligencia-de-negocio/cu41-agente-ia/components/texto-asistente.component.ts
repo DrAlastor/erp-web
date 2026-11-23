@@ -45,17 +45,41 @@ import { bloques } from '../utils/markdown';
     }
   `,
   styles: [`
-    :host { display: block; font-size: 14px; line-height: 1.55; color: var(--text-main); }
-    p { margin: 0 0 8px; }
+    :host { display: block; width: 100%; font-size: 14px; line-height: 1.55; color: var(--text-main); }
+    p { margin: 0 0 8px; word-break: break-word; }
     p:last-child { margin-bottom: 0; }
-    h4 { margin: 10px 0 6px; font-size: 14px; }
+    h4 { margin: 10px 0 6px; font-size: 14px; font-weight: 600; }
     ul, ol { margin: 0 0 8px; padding-left: 20px; }
     li { margin: 2px 0; }
     code { padding: 1px 5px; border-radius: 5px; font-family: var(--font-mono); font-size: 12px; background: var(--bg-subtle); }
-    .tabla-md { margin: 6px 0 10px; overflow-x: auto; }
-    table { border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 5px 10px; border: 1px solid var(--bg-card-border); text-align: left; }
-    th { background: var(--bg-subtle); font-weight: 600; }
+    .tabla-md {
+      margin: 8px 0 12px;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+      border: 1px solid var(--bg-card-border);
+      background: var(--bg-surface);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+    th, td {
+      padding: 6px 12px;
+      border: 1px solid var(--bg-card-border);
+      text-align: left;
+      vertical-align: top;
+      white-space: normal;
+      word-break: break-word;
+    }
+    th {
+      background: var(--bg-subtle);
+      font-weight: 600;
+      white-space: nowrap;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

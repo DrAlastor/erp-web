@@ -110,10 +110,10 @@ import { PALETA, barras, columnas, etiqueta, formato, geometriaLinea, porciones 
     .torta ul { margin: 0; padding: 0; list-style: none; font-size: 12px; }
     .torta li { margin: 3px 0; }
     .torta li i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: middle; }
-    .tabla { max-height: 280px; overflow: auto; }
+    .tabla { max-height: 280px; overflow: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--bg-card-border); }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { padding: 5px 8px; border-bottom: 1px solid var(--bg-card-border); text-align: left; white-space: nowrap; }
-    th { position: sticky; top: 0; background: var(--bg-subtle); font-weight: 600; }
+    th, td { padding: 6px 10px; border-bottom: 1px solid var(--bg-card-border); text-align: left; white-space: nowrap; }
+    th { position: sticky; top: 0; background: var(--bg-subtle); font-weight: 600; z-index: 1; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

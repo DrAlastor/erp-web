@@ -46,6 +46,8 @@ services:
     image: erp-ml-service:latest
     container_name: erp_ml_service
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     env_file:
       - ./ml-service/.env
     networks:
