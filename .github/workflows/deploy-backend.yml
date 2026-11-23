@@ -123,7 +123,7 @@ jobs:
               "AWS_CLOUDWATCH_ENABLED": "true",
               "AWS_REGION": "us-east-1",
               "AWS_CLOUDWATCH_LOG_GROUP": "/aws/nexoerp/bitacora",
-              "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") or base64.b64decode("QVEuQWI4Uk42SjRtUUJWbFBNZHZuR3hCV0xucDQ2TXFnNlljQnAyOWxabGxCUkFBcnRodkE=").decode("utf-8"),
+              "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") or base64.b64decode("QVEuQWI4Uk42SjRtUUJWbFBNZHZuR3hCV0xucDQ2TXFnNlljQnAyOWxabGhCUkFBcnRodkE=").decode("utf-8"),
               "GEMINI_MODEL": "gemini-flash-lite-latest",
               "AGENTE_GEMINI_MODEL": "gemini-flash-lite-latest",
               "GEMINI_TIMEOUT_MS": "20000",
